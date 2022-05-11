@@ -27,6 +27,7 @@ class Field {
             for(let space of line){
                 string += space
             }
+            string += '\r'
             console.log(string)
         }
     }
@@ -37,3 +38,7 @@ const test = new Field([
     ['░', 'O', '░'],
     ['░', '^', '░'],
   ])
+
+process.stdout.write('test\r')
+process.stdout.write('test\r')
+console.log('test2')
