@@ -46,7 +46,7 @@ let field = new Field([
 
 //Asks user if they would like to play and begins the game if so
 function introDialog(){
-    console.log("Would you like to play a game?\n")
+    console.log("Would you like to play a game?")
     let play = prompt(">")
     if(play.toUpperCase()==="N"){
         console.clear()
@@ -59,17 +59,15 @@ function introDialog(){
         console.clear()
         console.log(
             `
-            That's great to hear, I'm excited for your!
-            Thankfully the tornado missed your home town, 
-            but the winds were still strong, and you lost your hat!
-            I'm sure it's somewhere in that field over there though! 
-            You can use W, A, S, D to move around and look for it.  Good luck!
-            Are you ready?
+That's great to hear, I'm excited for your!
+Thankfully the tornado missed your home town, 
+but the winds were still strong, and you lost your hat!
+I'm sure it's somewhere in that field over there though! 
+You can use W, A, S, D to move around and look for it.  Good luck!
+Are you ready?
             `
         )
         let beginGame = prompt(">")
-        if(beginGame ===
-
         // field.playGame()
     }
 }
