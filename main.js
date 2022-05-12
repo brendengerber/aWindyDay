@@ -42,6 +42,8 @@ let field = new Field([
     ['░', '^', '░'],
   ])
 
+//This function will prompt the user for a Yes or No answer and return Y or N. 
+//This function also clears the console after each answer preparing it for the next dialog.
   function yesNoPrompt(){
     let answer = prompt(">")
     if(answer.toUpperCase()==="N"){
