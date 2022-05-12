@@ -49,8 +49,7 @@ let field = new Field([
         return "N"
     }else if(answer.toUpperCase() !=="N" && answer.toUpperCase() !=="Y"){
         console.clear()
-        console.log("I'm sorry, I'm not very smart. I don't understand. Please enter Y for yes and N for no.")
-        yesNoPrompt()
+        console.log("Pardon me. I'm not very smart, and  I don't understand. Please enter Y for yes and N for no.")
     }else{
         console.clear()
         return "Y"
@@ -63,19 +62,18 @@ function introDialog(){
     console.log("Would you like to play a game?")
     let answer = yesNoPrompt()
     if(answer !=="N" && answer !=="Y"){
-        console.log("I'm sorry, I'm not very smart. I don't understand. Please enter Y for yes and N for no.")
         introDialog()
     }else if(answer === "N"){
         console.log("I'm sorry to hear that. Goodbye.")
     }else{
         console.log(
             `
-            That's great to hear, I'm excited for your!
-            Thankfully the tornado missed your home town, 
-            but the winds were still strong, and you lost your hat!
-            I'm sure it's somewhere in that field over there though! 
-            You can use W, A, S, D to move around and look for it.  Good luck!
-            Are you ready?
+That's great to hear, I'm excited for your!
+Thankfully the tornado missed your home town, 
+but the winds were still strong, and you lost your hat!
+I'm sure it's somewhere in that field over there though! 
+You can use W, A, S, D to move around and look for it.  Good luck!
+Are you ready?
             `
         )
 
