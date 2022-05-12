@@ -42,21 +42,32 @@ let field = new Field([
     ['░', '^', '░'],
   ])
 
+  function yesNoPrompt(){
+    let answer = prompt(">")
+    if(answer.toUpperCase()==="N"){
+        console.clear()
+        return "N"
+    }else if(answer.toUpperCase() !=="N" && answer.toUpperCase() !=="Y"){
+        console.clear()
+        console.log("I'm sorry, I'm not very smart. I don't understand. Please enter Y for yes and N for no.")
+        yesNoPrompt()
+    }else{
+        console.clear()
+        return "Y"
+    }
+}
 
 
 //Asks user if they would like to play and begins the game if so
 function introDialog(){
-    console.log("Would you like to play a game?\n")
-    let play = prompt(">")
-    if(play.toUpperCase()==="N"){
-        console.clear()
-        console.log("I'm sorry to hear that. Goodbye.")
-    }else if(play.toUpperCase() !=="N" && play.toUpperCase() !=="Y"){
-        console.clear()
+    console.log("Would you like to play a game?")
+    let answer = yesNoPrompt()
+    if(answer !=="N" && answer !=="Y"){
         console.log("I'm sorry, I'm not very smart. I don't understand. Please enter Y for yes and N for no.")
         introDialog()
+    }else if(answer === "N"){
+        console.log("I'm sorry to hear that. Goodbye.")
     }else{
-        console.clear()
         console.log(
             `
             That's great to hear, I'm excited for your!
@@ -67,12 +78,12 @@ function introDialog(){
             Are you ready?
             `
         )
-        let beginGame = prompt(">")
-        if(beginGame ===
 
         // field.playGame()
     }
 }
+
+
 
 introDialog()
 // test.print()
