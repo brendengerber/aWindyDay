@@ -14,20 +14,20 @@ const pathCharacter = '*';
 class Field {
     constructor(field){
         this._field = field;
-        this._hiddenField = Field.createHiddenField(field)
-    }
+        this._hiddenField = Field.createHiddenField(field);
+    };
     get field(){
         return this._field
-    }
-    get displayField(){
+    };
+    get hiddenField(){
         return this._hiddenField
-    }
+    };
     //Creates the hidden field that will be logged to the console with objective and holes hidden
     //**need to add the property which will be used to print this.hiddenField
     static createHiddenField(field){
-        let hiddenField = []
-        let rows = field.length
-        let columns = field[0].length
+        let hiddenField = [];
+        let rows = field.length;
+        let columns = field[0].length;
         for(let i = 0; i < rows; i++){
             let row = []
             for(let i = 0; i < columns; i++){
@@ -35,54 +35,53 @@ class Field {
             }
             hiddenField.push(row)
         }
-        hiddenField[0][0] = '*'
+        hiddenField[0][0] = '*';
         return hiddenField
-    }
-
+    };
     playGame(){
-        this.print()
+        this.printHiddenField();
    
-    }
+    };
     //Prints the field that will be displayed with objective and holes hidden
-    printDisplayField(){
-        for(let line of this.displayField){
-            let string = ''
+    printHiddenField(){
+        for(let line of this.hiddenField){
+            let string = '';
             for(let space of line){
-                string += space
+                string += space;
             }
-            console.log(string)
+            console.log(string);
         }
-    }
+    };
     //Prints the actual field with holes and objective revealed
     printField(){
         for(let line of this.field){
-            let string = ''
+            let string = '';
             for(let space of line){
-                string += space
+                string += space;
             }
-            console.log(string)
+            console.log(string);
         }
-    }
-}
+    };
+};
 //This function will prompt the user for a Yes or No answer and return Y or N. 
 //This function also clears the console after each answer preparing it for the next dialog.
 function yesNoPrompt(){
-    let answer = prompt(">")
+    let answer = prompt(">");
     if(answer.toUpperCase()==="N"){
-        console.clear()
+        console.clear();
         return "N"
     }else if(answer.toUpperCase()==="Y"){
-        console.clear()
+        console.clear();
         return "Y"
     }else{
-        console.clear()
-        console.log("Pardon me. I'm not very smart, and  I don't understand. Please enter Y for yes and N for no.")
-        return yesNoPrompt()
+        console.clear();
+        console.log("Pardon me. I'm not very smart, and  I don't understand. Please enter Y for yes and N for no.");
+        return yesNoPrompt();
     }
-}
-
+};
+//This function will prompt the user for direction input
 function directionPrompt(){
-    let direction = prompt(">")
+    let direction = prompt(">");
     if(direction.toUpperCase()==="W"){
         return "W"
     }else if(direction.toUpperCase()==="A"){
@@ -93,15 +92,15 @@ function directionPrompt(){
         return "D"
     }else{
         console.log("Pardon me. I'm not very smart, and  I don't understand. Please enter Y for yes and N for no.")
-        return yesNoPrompt()
+        return directionPrompt()
     }
-}
+};
 
 
 //Asks user if they would like to play and begins the game if so
 function introDialog(){
-    console.log("Would you like to play a game?")
-    let answer = yesNoPrompt()
+    console.log("Would you like to play a game?");
+    let answer = yesNoPrompt();
     // if(answer===undefined){
     //     introDialog()
     // }
@@ -115,15 +114,15 @@ but the winds were still strong, and you lost your hat!
 I'm sure it's somewhere in that field over there though! 
 You can use W, A, S, D to move around and look for it.  Good luck!
 Are you ready?`
-        )
-        let answer2 = yesNoPrompt()
+        );
+        let answer2 = yesNoPrompt();
         if(answer2 === "N"){
 
         }else{
-            field.playGame()
+            field.playGame();
         }
     }
-}
+};
 
 //**eventually add array made with generate field module rather than a predefined array
 //**Add logic for the end. Would you like to play again? Which then generates a new field and assigns it to field
@@ -131,14 +130,14 @@ let field = new Field([
     ['*', '░', 'O'],
     ['░', 'O', '░'],
     ['░', '^', '░'],
-  ])
+  ]);
 
-
+introDialog()
 // field.printDisplayField()
 // field.createDisplayField()
-// field.printDisplayField()
+// field.printHiddenField()
 // field.createDisplayField()
-console.log(field.displayField)
+// console.log(field.displayField)
 //introDialog()
 
 
