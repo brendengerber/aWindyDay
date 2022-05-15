@@ -8,6 +8,8 @@
 //make sure when adding new field that it somehow keeps the first loss status of the previous field. maybe it should just be a global variable
 //*change all instances of holes and path etc to the characters, maybe make them properites of Field objects too. That way it's easier to change if i want to in the future
 //*Add green and brown for path and grass
+//make intro dialog only return and not start the process, then have a function called start game which calls that prompt and runs the loop if it returns y
+//add arrays for different things for the comp to say
 
 //add out of bounds logic
 
@@ -55,10 +57,40 @@ class Field {
         playField[0][0] = '𓀠';
         return playField
     };
+
+
     playGame(){
         let gameOver = false;
         let x = 0;
         let y = 0;
+        
+        
+        //Asks user if they would like to play and begins the game if so
+        let introDialog = function(){
+            console.clear()
+            console.log("Would you like to play a game?");
+            let answer = yesNoPrompt();
+            if(answer === "N"){
+                console.log("I'm sorry to hear that. Goodbye.");
+            }else if(answer === "Y"){
+                console.log(
+        `That's great to hear, I'm excited for your!
+        Thankfully the tornado missed your home town, 
+        but the winds were still strong, and you lost your hat!
+        I'm sure it's somewhere in that field over there though! 
+        You can use W, A, S, D to move around and look for it.  Good luck!
+        Are you ready?`
+                );
+                answer = yesNoPrompt();
+                if(answer === "N"){
+                    waitingPrompt()
+                }else if(answer === "Y"){
+                    playLoop();
+                }
+            }
+        };
+        
+        
         //This function will check the move for Win/Loss and update the playField appropriately.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this"
         let checkMove = function(){
@@ -74,6 +106,8 @@ class Field {
                 win();
             }
         }.bind(this);
+
+
         //This function inniciates the loss dialog and displays the final field.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this"
         //*Add logic to play the same field vs a new field. set field to a new Field (maybe this goes in the play again prompt?)
@@ -88,6 +122,8 @@ class Field {
             }
             resetGame()
         }.bind(this);
+
+
         //This function initiates the loss dialog and displays the final field
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this"
         //*Add logic to play the same field vs a new field
@@ -116,11 +152,12 @@ class Field {
         }.bind(this)
 
 
+        
 
 
         //Allows player to move around the board. Changes playField to show path. Includes win and loss logic.
         let playLoop = function(){
-                while(!gameOver){
+            while(!gameOver){
                 console.clear();
                 this.printPlayField();
                 let direction = directionPrompt();
@@ -143,8 +180,7 @@ class Field {
                 }
             }
         }.bind(this)    
-        //remove after test
-        playLoop()   
+        introDialog()   
     };
     //Prints the field that will be displayed with objective and holes hidden
     printPlayField(){
@@ -186,12 +222,6 @@ function yesNoPrompt(){
 
 
 
-
-
-
-
-
-
 //*Perhaps add the new field option here
 function playAgainPrompt(){
     console.log("Would you like to start over?")
@@ -223,11 +253,6 @@ function waitingPrompt(){
 
 
 
-
-
-
-
-
 //This function will prompt the user for direction input and returns it. If input is invalid it will ask again.
 function directionPrompt(){
     let direction = prompt(">");
@@ -254,30 +279,6 @@ function directionPrompt(){
 
 
 
-//Asks user if they would like to play and begins the game if so
-function introDialog(){
-    console.clear()
-    console.log("Would you like to play a game?");
-    let answer = yesNoPrompt();
-    if(answer === "N"){
-        console.log("I'm sorry to hear that. Goodbye.");
-    }else if(answer === "Y"){
-        console.log(
-`That's great to hear, I'm excited for your!
-Thankfully the tornado missed your home town, 
-but the winds were still strong, and you lost your hat!
-I'm sure it's somewhere in that field over there though! 
-You can use W, A, S, D to move around and look for it.  Good luck!
-Are you ready?`
-        );
-        answer = yesNoPrompt();
-        if(answer === "N"){
-            waitingPrompt()
-        }else if(answer === "Y"){
-            field.playGame();
-        }
-    }
-};
 
 
 
