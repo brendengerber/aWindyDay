@@ -10,6 +10,7 @@
 //*Add green and brown for path and grass
 //make intro dialog only return and not start the process, then have a function called start game which calls that prompt and runs the loop if it returns y
 //add arrays for different things for the comp to say
+//Differentiate between dialogs and yes now prompt
 
 //add out of bounds logic
 
@@ -223,6 +224,7 @@ function yesNoPrompt(){
 
 
 //*Perhaps add the new field option here
+
 function playAgainPrompt(){
     console.log("Would you like to start over?")
     let answer = yesNoPrompt();
@@ -240,7 +242,7 @@ function playAgainPrompt(){
 };
 
 
-
+//This function can be used after a user says they are not ready yet. It will loop through itself until the user says they are ready. Then it will return Y.
 function waitingPrompt(){
     console.log("Oh, okay, I guess I'll wait. Just don't forget about me...Are you ready now?")
     let answer = yesNoPrompt();
