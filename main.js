@@ -10,7 +10,10 @@
 //*Add green and brown for path and grass
 //make intro dialog only return and not start the process, then have a function called start game which calls that prompt and runs the loop if it returns y
 //add arrays for different things for the comp to say
-//Differentiate between dialogs and yes now prompt
+//Differentiate between dialogs and yes no prompt
+
+//add start dialog to start game method, if it is just used to return y or n then it can be a module/function, and the begin game actually runs in the method
+//make a new object in play game? the object can contain x and y stuff, plus start game, play loop, etc
 
 //add out of bounds logic
 
@@ -42,6 +45,7 @@ class Field {
         this._playField = newField
     };
     firstLoss = false;
+
     //Creates the play field that will be logged to the console with objective and holes hidden
     //**need to add the property which will be used to print this.playField
     static createPlayField(field){
@@ -58,38 +62,75 @@ class Field {
         playField[0][0] = '𓀠';
         return playField
     };
+    
+    startGameDialog(){
+        console.clear()
+        console.log("Would you like to play a game?");
+        let answer = yesNoPrompt();
+        if(answer === "N"){
+            console.log("I'm sorry to hear that. Goodbye.");
+        }else if(answer === "Y"){
+            console.log(
+    `That's great to hear, I'm excited for your!
+    Thankfully the tornado missed your home town, 
+    but the winds were still strong, and you lost your hat!
+    I'm sure it's somewhere in that field over there though! 
+    You can use W, A, S, D to move around and look for it.  Good luck!
+    Are you ready?`
+            );
+            answer = yesNoPrompt();
+            if(answer === "N"){
+                this.waitingDialog()
+            }else if(answer === "Y"){
+                this.playGame();
+            }
+        }
+    };
+
+
+    //*Perhaps add the new field option here
+    playAgainDialog(){
+        console.log("Would you like to start over?")
+        let answer = yesNoPrompt();
+        if(answer === "Y"){
+            console.log("You just made me so happy! Are you ready?")
+            answer = yesNoPrompt();
+            if(answer === "Y"){
+                return "Y"
+            }else if(answer === "N"){
+                this.waitingDialog()
+            }
+        }else if(answer === "N"){
+            console.log("I'm really sorry to hear that. I'm going to miss you. Goodbye.");
+        }
+    };
+
+
+
+
+
+
+    //This function can be used after a user says they are not ready yet. It will loop through itself until the user says they are ready. Then it will return Y.
+    waitingDialog(){
+        console.log("Oh, okay, I guess I'll wait. Just don't forget about me...Are you ready now?")
+        let answer = yesNoPrompt();
+        if(answer === "Y"){
+            field.playGame()
+        }else if(answer === "N"){
+            this.waitingDialog()
+        }
+    }
+
 
 
     playGame(){
         let gameOver = false;
         let x = 0;
         let y = 0;
-        
+         
         
         //Asks user if they would like to play and begins the game if so
-        let introDialog = function(){
-            console.clear()
-            console.log("Would you like to play a game?");
-            let answer = yesNoPrompt();
-            if(answer === "N"){
-                console.log("I'm sorry to hear that. Goodbye.");
-            }else if(answer === "Y"){
-                console.log(
-        `That's great to hear, I'm excited for your!
-        Thankfully the tornado missed your home town, 
-        but the winds were still strong, and you lost your hat!
-        I'm sure it's somewhere in that field over there though! 
-        You can use W, A, S, D to move around and look for it.  Good luck!
-        Are you ready?`
-                );
-                answer = yesNoPrompt();
-                if(answer === "N"){
-                    waitingPrompt()
-                }else if(answer === "Y"){
-                    playLoop();
-                }
-            }
-        };
+
         
         
         //This function will check the move for Win/Loss and update the playField appropriately.
@@ -141,7 +182,7 @@ class Field {
 
 
         let resetGame = function(){
-            let answer = playAgainPrompt()
+            let answer = this.playAgainDialog()
             if(answer === "Y"){
                 console.clear();
                 gameOver = false;
@@ -181,7 +222,7 @@ class Field {
                 }
             }
         }.bind(this)    
-        introDialog()   
+        playLoop()   
     };
     //Prints the field that will be displayed with objective and holes hidden
     printPlayField(){
@@ -222,39 +263,6 @@ function yesNoPrompt(){
 };
 
 
-
-//*Perhaps add the new field option here
-
-function playAgainPrompt(){
-    console.log("Would you like to start over?")
-    let answer = yesNoPrompt();
-    if(answer === "Y"){
-        console.log("You just made me so happy! Are you ready?")
-        answer = yesNoPrompt();
-        if(answer === "Y"){
-            return "Y"
-        }else if(answer === "N"){
-            waitingPrompt()
-        }
-    }else if(answer === "N"){
-        console.log("I'm really sorry to hear that. I'm going to miss you. Goodbye.");
-    }
-};
-
-
-//This function can be used after a user says they are not ready yet. It will loop through itself until the user says they are ready. Then it will return Y.
-function waitingPrompt(){
-    console.log("Oh, okay, I guess I'll wait. Just don't forget about me...Are you ready now?")
-    let answer = yesNoPrompt();
-    if(answer === "Y"){
-        field.playGame()
-    }else if(answer === "N"){
-        waitingPrompt()
-    }
-}
-
-
-
 //This function will prompt the user for direction input and returns it. If input is invalid it will ask again.
 function directionPrompt(){
     let direction = prompt(">");
@@ -291,6 +299,9 @@ function directionPrompt(){
 
 
 
+
+
+
 //**eventually add array made with generate field module rather than a predefined array
 //**Add logic for the end. Would you like to play again? Which then generates a new field and assigns it to field
 let field = new Field([
@@ -300,7 +311,7 @@ let field = new Field([
   ]);
 
 // introDialog();
-field.playGame()
+field.startGameDialog()
 // field.printDisplayField()
 // field.createDisplayField()
 // field.printHiddenField()
