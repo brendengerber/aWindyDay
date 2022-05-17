@@ -30,39 +30,14 @@ const fieldCharacter = '░';
 const pathCharacter = '*';
 
 //Field class used to play the game
-class Field {
+class Game {
     constructor(field){
         this._field = field;
-        this._playField = Field.createPlayField(field);
-    };
+    }
     get field(){
         return this._field
-    };
-    get playField(){
-        return this._playField
-    };
-    set playField(newField){
-        this._playField = newField
-    };
-    firstLoss = false;
+    }
 
-    //Creates the play field that will be logged to the console with objective and holes hidden
-    //**need to add the property which will be used to print this.playField
-    static createPlayField(field){
-        let playField = [];
-        let rows = field.length;
-        let columns = field[0].length;
-        for(let i = 0; i < rows; i++){
-            let row = []
-            for(let i = 0; i < columns; i++){
-                row.push('░');
-            }
-            playField.push(row);
-        }
-        playField[0][0] = '𓀠';
-        return playField
-    };
-    
     startGameDialog(){
         console.clear()
         console.log("Would you like to play a game?");
@@ -132,18 +107,18 @@ class Field {
         //Asks user if they would like to play and begins the game if so
 
         
-        
+        //***change field in field object to be something more like hiddenField to avoid field.field */
         //This function will check the move for Win/Loss and update the playField appropriately.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this"
         let checkMove = function(){
-            if(this.field[y][x]!== "O" && this.field[y][x] !== "^"){
-                this.playField[y][x] = "𓀠";
-            }else if(this.field[y][x] === "O"){
-                this.playField[y][x] = "O";
+            if(this.field.hiddenField[y][x]!== "O" && this.field.hiddenField[y][x] !== "^"){
+                this.field.playField[y][x] = "𓀠";
+            }else if(this.field.hiddenField[y][x] === "O"){
+                this.field.playField[y][x] = "O";
                 gameOver = true;
                 lose();
-            }else if(this.field[y][x] === "^"){
-                this.playField[y][x] = "^";
+            }else if(this.field.hiddenField[y][x] === "^"){
+                this.field.playField[y][x] = "^";
                 gameOver = true;
                 win();
             }
@@ -155,9 +130,9 @@ class Field {
         //*Add logic to play the same field vs a new field. set field to a new Field (maybe this goes in the play again prompt?)
         let lose = function(){
             console.clear()
-            this.printPlayField();
-            if(this.firstLoss === false){
-                this.firstLoss = true;
+            field.printPlayField();
+            if(field.firstLoss === false){
+                field.firstLoss = true;
                 console.log("Oops, you fell in a hole!\nDid I forget to mention that there were holes?\nAlright, that one's on me.")
             }else{
                 console.log("Oh you fell in a hole...again.");
@@ -171,7 +146,7 @@ class Field {
         //*Add logic to play the same field vs a new field
         let win = function(){
             console.clear()
-            this.printPlayField();
+            this.field.printPlayField();
             console.log("Woah, you did it! You found your hat! To be honest...I didn't see that coming.");
             resetGame()
         }.bind(this)
@@ -188,35 +163,33 @@ class Field {
                 gameOver = false;
                 x = 0;
                 y = 0;
-                this.playField = Field.createPlayField(this.field);
+                //***********not working, think i just need to add play field and hidden field properties for game. field will be the input field that doesnt change unless it is set to have a new field */
+                this.field.playField = Field.createPlayField(this.field.hiddenField);
                 playLoop() 
             }
         }.bind(this)
-
-
-        
 
 
         //Allows player to move around the board. Changes playField to show path. Includes win and loss logic.
         let playLoop = function(){
             while(!gameOver){
                 console.clear();
-                this.printPlayField();
+                this.field.printPlayField();
                 let direction = directionPrompt();
                 if(direction === "W"){
-                    this.playField[y][x] = "*";
+                    this.field.playField[y][x] = "*";
                     y -= 1;
                     checkMove();
                 }else if(direction === "A"){
-                    this.playField[y][x] = "*";
+                    this.field.playField[y][x] = "*";
                     x -= 1;
                     checkMove();
                 }else if(direction === "S"){
-                    this.playField[y][x] = "*";
+                    this.field.playField[y][x] = "*";
                     y += 1;
                     checkMove();
                 }else if(direction === "D"){
-                    this.playField[y][x] = "*";
+                    this.field.playField[y][x] = "*";
                     x += 1;
                     checkMove();
                 }
@@ -224,6 +197,46 @@ class Field {
         }.bind(this)    
         playLoop()   
     };
+    
+}
+
+
+class Field {
+    constructor(hiddenFieldArray){
+        this._hiddenField = hiddenFieldArray;
+        this._playField = Field.createPlayField(hiddenFieldArray);
+    };
+    get hiddenField(){
+        return this._hiddenField
+    };
+    get playField(){
+        return this._playField
+    };
+    set playField(hiddenFieldArray){
+        this._playField = Field.createPlayField(hiddenFieldArray);
+    };
+
+    //**This needs to be set somewhere outside of the field if the field is going to change */
+    firstLoss = false;
+
+    //Creates the play field that will be logged to the console with objective and holes hidden
+    //**need to add the property which will be used to print this.playField
+    static createPlayField(hiddenFieldArray){
+        let playField = [];
+        let rows = hiddenFieldArray.length;
+        let columns = hiddenFieldArray[0].length;
+        for(let i = 0; i < rows; i++){
+            let row = []
+            for(let i = 0; i < columns; i++){
+                row.push('░');
+            }
+            playField.push(row);
+        }
+        playField[0][0] = '𓀠';
+        return playField
+    };
+    
+
     //Prints the field that will be displayed with objective and holes hidden
     printPlayField(){
         for(let line of this.playField){
@@ -235,8 +248,8 @@ class Field {
         }
     };
     //Prints the actual field with holes and objective revealed (useful for debugging)
-    printField(){
-        for(let line of this.field){
+    printHiddenField(){
+        for(let line of this.hiddenField){
             let string = '';
             for(let space of line){
                 string += space;
@@ -245,6 +258,9 @@ class Field {
         }
     };
 };
+
+
+
 //This function will prompt the user for a Yes or No answer and return Y or N. 
 //This function also clears the console after each answer preparing it for the next dialog.
 function yesNoPrompt(){
@@ -276,7 +292,7 @@ function directionPrompt(){
         return "D"
     }else{
         console.clear()
-        field.printPlayField()
+        this.field.printPlayField()
         console.log("It really is important that you eneter either W, A, S, or D, otherwise I just can't help you!")
         return directionPrompt()
     }
@@ -310,8 +326,11 @@ let field = new Field([
     ['░', '^', '░'],
   ]);
 
+let game1 = new Game(field)
+game1.startGameDialog()
+
+
 // introDialog();
-field.startGameDialog()
 // field.printDisplayField()
 // field.createDisplayField()
 // field.printHiddenField()
