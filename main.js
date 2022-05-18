@@ -1,28 +1,13 @@
-//* create static method on Field to create a random field or a seperate module
-//*do prompt functions belong in the class? maybe as module functions assigned to methods. for now they all work outside of it fine so could be a module
+//* create static method on Field to create a random field 
 //*Is there a way to remove the waiting prompt and display the "here we go text under the new board for example?"
-//IMPORTANT After winning or losing one time, if you answer you don't want to play again the game restarts regardless, while showing the previous board. maybe prompt functions must reset the answer again so it's ready for a new prommpt. winning or losing after the bug causes correct behavior
-//seems the problem is in resetGame as it happens with a n answer even after removing playAgainPrompt
-//possibly it jumps back into the while loop, maybe can fix by turning play game into an object with loop and check methods so they dont run sequentially down
-//maybe add a property which is an object containing game functions
-//make sure when adding new field that it somehow keeps the first loss status of the previous field. maybe it should just be a global variable
+//make sure when adding new field that it somehow keeps the first loss status of the previous field. This is moved to player, once player is integrated change where it checks for the status to the correct player object
 //*change all instances of holes and path etc to the characters, maybe make them properites of Field objects too. That way it's easier to change if i want to in the future
 //*Add green and brown for path and grass
-//make intro dialog only return and not start the process, then have a function called start game which calls that prompt and runs the loop if it returns y
-//add arrays for different things for the comp to say
-//Differentiate between dialogs and yes no prompt
 // after a stats file is made the comp should say "You came back! Would you like to see your stats or play another round?"
 //add arrays for dialogs to pull from
-
-//create a player class. this player should have the info of the player, as well as a stats property containing an object which contains all of the stats (wins, losses, moves per game). There should also be a set stats method, which uses the current stats and has an argument of "newStats", it should update stats without looping through all previous games. Finally this class should have a games property, set to an array of all the games played. The games class will create an object and push it to this array, this should include a game id, and the stats for that game
-
-//add start dialog to start game method, if it is just used to return y or n then it can be a module/function, and the begin game actually runs in the method
-//make a new object in play game? the object can contain x and y stuff, plus start game, play loop, etc
-
+//add logic for accepting input without hitting enter
 //add out of bounds logic
-
-//change all dialogs to return y or to activate playGame(). If all are set to return y or n, then in the game class method i may need to call it and then add if statements. If they all return y or n then they should also go into their own object
-
+//maybe dont need variable names for new objects like player, just add them to an array to be accessed by index, same for games in the game object within player
 
 // Variable names WIP
 // let games = [0];
@@ -41,6 +26,7 @@ const hole = 'O';
 const fieldCharacter = '░';
 const pathCharacter = '*';
 
+//Used to create a new player and to track stats.
 class Player{
     constructor(name){
         this._name = name;
@@ -57,10 +43,9 @@ class Player{
     };
     games = [];
     firstLoss = false;
-}
+};
 
-
-//Field class used to play the game
+//Used to play the game.
 class Game {
     constructor(field){
         this._field = field;
@@ -68,38 +53,22 @@ class Game {
     get field(){
         return this._field;
     }
-
-
-
-
-
-
+    //Used to start the game or exit.
     startGame(){
         let answer = prompts.startGamePrompt()
         if(answer === "Y"){
             this.playGame();
         }else if(answer === "N"){
-            process.exit()
+            process.exit();
         }
     }
-
-
-
-
-
-
+    //Contains game logic.
     playGame(){
         let gameOver = false;
         let x = 0;
         let y = 0;
-         
-        
-        //Asks user if they would like to play and begins the game if so
-
-        
-        //***change field in field object to be something more like hiddenField to avoid field.field */
-        //This function will check the move for Win/Loss and update the playField appropriately.
-        //.bind(this) is used to reference the Field object's "this" rather than the function's "this"
+        //Checks the move for Win/Loss and update the playField appropriately.
+        //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let checkMove = function(){
             if(this.field.hiddenField[y][x]!== "O" && this.field.hiddenField[y][x] !== "^"){
                 this.field.playField[y][x] = "𓀠";
@@ -113,11 +82,8 @@ class Game {
                 win();
             }
         }.bind(this);
-
-
-        //This function inniciates the loss dialog and displays the final field.
-        //.bind(this) is used to reference the Field object's "this" rather than the function's "this"
-        //*Add logic to play the same field vs a new field. set field to a new Field (maybe this goes in the play again prompt?)
+        //Initiates the loss dialog and displays the final field.
+        //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let lose = function(){
             console.clear();
             field.printPlayField();
@@ -129,23 +95,16 @@ class Game {
             }
             resetGame();
         }.bind(this);
-
-
-        //This function initiates the loss dialog and displays the final field
-        //.bind(this) is used to reference the Field object's "this" rather than the function's "this"
-        //*Add logic to play the same field vs a new field
+        //Initiates the loss dialog and displays the final field.
+        //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let win = function(){
             console.clear();
             this.field.printPlayField();
             console.log("Woah, you did it! You found your hat! To be honest...I didn't see that coming.");
             resetGame();
         }.bind(this);
-        //Resets the game and begins again
-
-
-
-
-
+        //Resets the game and begins again.
+        //**Add option for a new field here and make a new a new instance of Game
         let resetGame = function(){
             let answer = prompts.playAgainPrompt();
             if(answer === "Y"){
@@ -160,8 +119,6 @@ class Game {
                 process.exit()
             }
         }.bind(this);
-
-
         //Allows player to move around the board. Changes playField to show path. Includes win and loss logic.
         let playLoop = function(){
             while(!gameOver){
@@ -188,11 +145,10 @@ class Game {
             }
         }.bind(this); 
         playLoop();   
-    };
-    
-}
+    }; 
+};
 
-
+//Used to create the hiddenField and playField and display said fields.
 class Field {
     constructor(hiddenFieldArray){
         this._hiddenField = hiddenFieldArray;
@@ -204,15 +160,13 @@ class Field {
     get playField(){
         return this._playField;
     };
+    //Primarily used to update the playField property after each move and reset it to its original state after a game is over.
     set playField(hiddenFieldArray){
         this._playField = Field.createPlayField(hiddenFieldArray);
     };
-
-    //**This needs to be set somewhere outside of the field if the field is going to change */
+    //**This needs to be set somewhere outside of the field if the field is going to change like in the player object
     firstLoss = false;
-
-    //Creates the play field that will be logged to the console with objective and holes hidden
-    //**need to add the property which will be used to print this.playField
+    //Creates the play field that will be logged to the console with objective and holes hidden.
     static createPlayField(hiddenFieldArray){
         let playField = [];
         let rows = hiddenFieldArray.length;
@@ -227,9 +181,7 @@ class Field {
         playField[0][0] = '𓀠';
         return playField;
     };
-    
-
-    //Prints the field that will be displayed with objective and holes hidden
+    //Prints the field that will be displayed with objective and holes hidden.
     printPlayField(){
         for(let line of this.playField){
             let string = '';
@@ -239,7 +191,7 @@ class Field {
             console.log(string);
         }
     };
-    //Prints the actual field with holes and objective revealed (useful for debugging)
+    //Prints the actual field with holes and objective revealed (useful for debugging).
     printHiddenField(){
         for(let line of this.hiddenField){
             let string = '';
@@ -251,9 +203,10 @@ class Field {
     };
 };
 
-//Does it make sense to add dialogs here? Should these just be put into the game object?
-
+//Contains all the prompts used within the game logic.
 const prompts = {
+    //Prompts the user for a Yes or No answer and return Y or N.
+    //Clears the console after each answer preparing it for the next dialog.
     yesNoPrompt(){
         let answer = prompt(">");
         if(answer.toUpperCase()==="N"){
@@ -268,6 +221,7 @@ const prompts = {
             return this.yesNoPrompt();
         }
     },
+    //Prompts the user for direction input and returns it. If input is invalid it will ask again.
     directionPrompt(){
         let direction = prompt(">");
         if(direction.toUpperCase()==="W"){
@@ -285,8 +239,7 @@ const prompts = {
             return this.directionPrompt();
         }
     },
-    //This function can be used after a user says they are not ready yet. It will loop through itself until the user says they are ready. Then it will return Y.
-    //***why does this function activate field.playGame while playAgainPrompt returns Y? */
+    //To be used after a user says they are not ready yet. Loops through itself until the user says they are ready. Then it will return Y.
     waitingPrompt(){
         console.log("Oh, okay, I guess I'll wait. Just don't forget about me...Are you ready now?")
         let answer = this.yesNoPrompt();
@@ -296,8 +249,7 @@ const prompts = {
             this.waitingPrompt();
         }
     },
-        //*Perhaps add the new field option here
-    //**so if dialogs activate functions then shouldnt this be field.playGame() instead of return y? To match with the way waiting dialog works */
+    //Asks the player if they would like to play again and if they are ready and returns Y or N.
     playAgainPrompt(){
         console.log("Would you like to start over?")
         let answer = this.yesNoPrompt();
@@ -314,6 +266,7 @@ const prompts = {
             return "N";
         }
     },
+    //Asks user if they would like to play and returns Y or N.
     startGamePrompt(){
         console.clear()
         console.log("Would you like to play a game?");
@@ -341,12 +294,10 @@ const prompts = {
 }
 
 
-//This function will prompt the user for a Yes or No answer and return Y or N. 
-//This function also clears the console after each answer preparing it for the next dialog.
 
 
 
-//This function will prompt the user for direction input and returns it. If input is invalid it will ask again.
+
 
 
 
