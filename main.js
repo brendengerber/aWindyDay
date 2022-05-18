@@ -11,11 +11,20 @@
 //make intro dialog only return and not start the process, then have a function called start game which calls that prompt and runs the loop if it returns y
 //add arrays for different things for the comp to say
 //Differentiate between dialogs and yes no prompt
+// after a stats file is made the comp should say "You came back! Would you like to see your stats or play another round?"
+
+//create a player class. this player should have the info of the player, as well as a stats property containing an object which contains all of the stats (wins, losses, moves per game). There should also be a set stats method, which uses the current stats and has an argument of "newStats", it should update stats without looping through all previous games. Finally this class should have a games property, set to an array of all the games played. The games class will create an object and push it to this array, this should include a game id, and the stats for that game
 
 //add start dialog to start game method, if it is just used to return y or n then it can be a module/function, and the begin game actually runs in the method
 //make a new object in play game? the object can contain x and y stuff, plus start game, play loop, etc
 
 //add out of bounds logic
+
+
+// Variable names WIP
+// let games = [0];
+// games.push(games.length)
+// let game+game[games.length-1] = new Game(field)
 
 
 //Need to move input functions to their own module
@@ -28,6 +37,24 @@ const hat = '^';
 const hole = 'O';
 const fieldCharacter = '░';
 const pathCharacter = '*';
+
+class Player{
+    constructor(name){
+        this._name = name
+    }
+    get name(){
+        return this._name
+    }
+    stats = {
+        wins: 0,
+        losses: 0,
+        totalMoves: 0,
+        averageMoves: 0,
+        winPercentage: this.wins/(this.wins + this.losses)
+    }
+    games = []
+}
+
 
 //Field class used to play the game
 class Game {
@@ -259,6 +286,9 @@ class Field {
     };
 };
 
+const dialogs = {
+
+}
 
 
 //This function will prompt the user for a Yes or No answer and return Y or N. 
