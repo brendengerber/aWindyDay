@@ -12,6 +12,7 @@
 //add arrays for different things for the comp to say
 //Differentiate between dialogs and yes no prompt
 // after a stats file is made the comp should say "You came back! Would you like to see your stats or play another round?"
+//add arrays for dialogs to pull from
 
 //create a player class. this player should have the info of the player, as well as a stats property containing an object which contains all of the stats (wins, losses, moves per game). There should also be a set stats method, which uses the current stats and has an argument of "newStats", it should update stats without looping through all previous games. Finally this class should have a games property, set to an array of all the games played. The games class will create an object and push it to this array, this should include a game id, and the stats for that game
 
@@ -19,6 +20,8 @@
 //make a new object in play game? the object can contain x and y stuff, plus start game, play loop, etc
 
 //add out of bounds logic
+
+//change all dialogs to return y or to activate playGame(). If all are set to return y or n, then in the game class method i may need to call it and then add if statements. If they all return y or n then they should also go into their own object
 
 
 // Variable names WIP
@@ -53,6 +56,7 @@ class Player{
         winPercentage: this.wins/(this.wins + this.losses)
     }
     games = []
+    firstLoss = false
 }
 
 
@@ -65,63 +69,19 @@ class Game {
         return this._field
     }
 
-    startGameDialog(){
-        console.clear()
-        console.log("Would you like to play a game?");
-        let answer = yesNoPrompt();
-        if(answer === "N"){
-            console.log("I'm sorry to hear that. Goodbye.");
-        }else if(answer === "Y"){
-            console.log(
-    `That's great to hear, I'm excited for your!
-    Thankfully the tornado missed your home town, 
-    but the winds were still strong, and you lost your hat!
-    I'm sure it's somewhere in that field over there though! 
-    You can use W, A, S, D to move around and look for it.  Good luck!
-    Are you ready?`
-            );
-            answer = yesNoPrompt();
-            if(answer === "N"){
-                this.waitingDialog()
-            }else if(answer === "Y"){
-                this.playGame();
-            }
-        }
-    };
-
-
-    //*Perhaps add the new field option here
-    playAgainDialog(){
-        console.log("Would you like to start over?")
-        let answer = yesNoPrompt();
-        if(answer === "Y"){
-            console.log("You just made me so happy! Are you ready?")
-            answer = yesNoPrompt();
-            if(answer === "Y"){
-                return "Y"
-            }else if(answer === "N"){
-                this.waitingDialog()
-            }
-        }else if(answer === "N"){
-            console.log("I'm really sorry to hear that. I'm going to miss you. Goodbye.");
-        }
-    };
 
 
 
 
 
-
-    //This function can be used after a user says they are not ready yet. It will loop through itself until the user says they are ready. Then it will return Y.
-    waitingDialog(){
-        console.log("Oh, okay, I guess I'll wait. Just don't forget about me...Are you ready now?")
-        let answer = yesNoPrompt();
-        if(answer === "Y"){
-            field.playGame()
-        }else if(answer === "N"){
-            this.waitingDialog()
+    startGame(){
+        if(prompts.startGamePrompt()=== "Y"){
+            this.playGame()
         }
     }
+
+
+
 
 
 
@@ -184,7 +144,7 @@ class Game {
 
 
         let resetGame = function(){
-            let answer = this.playAgainDialog()
+            let answer = prompts.playAgainPrompt()
             if(answer === "Y"){
                 console.clear();
                 gameOver = false;
@@ -202,7 +162,7 @@ class Game {
             while(!gameOver){
                 console.clear();
                 this.field.printPlayField();
-                let direction = directionPrompt();
+                let direction = prompts.directionPrompt();
                 if(direction === "W"){
                     this.field.playField[y][x] = "*";
                     y -= 1;
@@ -286,47 +246,102 @@ class Field {
     };
 };
 
-const dialogs = {
+//Does it make sense to add dialogs here? Should these just be put into the game object?
 
+const prompts = {
+    yesNoPrompt(){
+        let answer = prompt(">");
+        if(answer.toUpperCase()==="N"){
+            console.clear();
+            return "N"
+        }else if(answer.toUpperCase()==="Y"){
+            console.clear();
+            return "Y"
+        }else{
+            console.clear();
+            console.log("Pardon me. I'm not very smart, and  I don't understand. Please enter Y for yes and N for no.");
+            return this.yesNoPrompt();
+        }
+    },
+    directionPrompt(){
+        let direction = prompt(">");
+        if(direction.toUpperCase()==="W"){
+            return "W"
+        }else if(direction.toUpperCase()==="A"){
+            return "A"
+        }else if(direction.toUpperCase()==="S"){
+            return "S"
+        }else if(direction.toUpperCase()==="D"){
+            return "D"
+        }else{
+            console.clear()
+            this.field.printPlayField()
+            console.log("It really is important that you eneter either W, A, S, or D, otherwise I just can't help you!")
+            return this.directionPrompt()
+        }
+    },
+    //This function can be used after a user says they are not ready yet. It will loop through itself until the user says they are ready. Then it will return Y.
+    //***why does this function activate field.playGame while playAgainPrompt returns Y? */
+    waitingPrompt(){
+        console.log("Oh, okay, I guess I'll wait. Just don't forget about me...Are you ready now?")
+        let answer = this.yesNoPrompt();
+        if(answer === "Y"){
+            field.playGame()
+        }else if(answer === "N"){
+            this.waitingPrompt()
+        }
+    },
+        //*Perhaps add the new field option here
+    //**so if dialogs activate functions then shouldnt this be field.playGame() instead of return y? To match with the way waiting dialog works */
+    playAgainPrompt(){
+        console.log("Would you like to start over?")
+        let answer = this.yesNoPrompt();
+        if(answer === "Y"){
+            console.log("You just made me so happy! Are you ready?")
+            answer = this.yesNoPrompt();
+            if(answer === "Y"){
+                return "Y"
+            }else if(answer === "N"){
+                this.waitingPrompt()
+            }
+        }else if(answer === "N"){
+            console.log("I'm really sorry to hear that. I'm going to miss you. Goodbye.");
+        }
+    },
+    startGamePrompt(){
+        console.clear()
+        console.log("Would you like to play a game?");
+        let answer = this.yesNoPrompt();
+        if(answer === "N"){
+            console.log("I'm sorry to hear that. Goodbye.");
+            process.exit()
+        }else if(answer === "Y"){
+            console.log(
+    `That's great to hear, I'm excited for your!
+    Thankfully the tornado missed your home town, 
+    but the winds were still strong, and you lost your hat!
+    I'm sure it's somewhere in that field over there though! 
+    You can use W, A, S, D to move around and look for it.  Good luck!
+    Are you ready?`
+            );
+            answer = this.yesNoPrompt();
+            if(answer === "N"){
+                this.waitingPrompt()
+            }else if(answer === "Y"){
+                return "Y";
+            }
+        }
+    }
 }
 
 
 //This function will prompt the user for a Yes or No answer and return Y or N. 
 //This function also clears the console after each answer preparing it for the next dialog.
-function yesNoPrompt(){
-    let answer = prompt(">");
-    if(answer.toUpperCase()==="N"){
-        console.clear();
-        return "N"
-    }else if(answer.toUpperCase()==="Y"){
-        console.clear();
-        return "Y"
-    }else{
-        console.clear();
-        console.log("Pardon me. I'm not very smart, and  I don't understand. Please enter Y for yes and N for no.");
-        return yesNoPrompt();
-    }
-};
+
 
 
 //This function will prompt the user for direction input and returns it. If input is invalid it will ask again.
-function directionPrompt(){
-    let direction = prompt(">");
-    if(direction.toUpperCase()==="W"){
-        return "W"
-    }else if(direction.toUpperCase()==="A"){
-        return "A"
-    }else if(direction.toUpperCase()==="S"){
-        return "S"
-    }else if(direction.toUpperCase()==="D"){
-        return "D"
-    }else{
-        console.clear()
-        this.field.printPlayField()
-        console.log("It really is important that you eneter either W, A, S, or D, otherwise I just can't help you!")
-        return directionPrompt()
-    }
-};
+
 
 
 
@@ -357,16 +372,9 @@ let field = new Field([
   ]);
 
 let game1 = new Game(field)
-game1.startGameDialog()
+game1.startGame()
 
 
-// introDialog();
-// field.printDisplayField()
-// field.createDisplayField()
-// field.printHiddenField()
-// field.createDisplayField()
-// console.log(field.displayField)
-//introDialog()
 
 
 // readline.clearLine(process.stdout);
