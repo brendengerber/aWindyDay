@@ -43,20 +43,20 @@ const pathCharacter = '*';
 
 class Player{
     constructor(name){
-        this._name = name
-    }
+        this._name = name;
+    };
     get name(){
-        return this._name
-    }
+        return this._name;
+    };
     stats = {
         wins: 0,
         losses: 0,
         totalMoves: 0,
         averageMoves: 0,
         winPercentage: this.wins/(this.wins + this.losses)
-    }
-    games = []
-    firstLoss = false
+    };
+    games = [];
+    firstLoss = false;
 }
 
 
@@ -66,7 +66,7 @@ class Game {
         this._field = field;
     }
     get field(){
-        return this._field
+        return this._field;
     }
 
 
@@ -75,8 +75,11 @@ class Game {
 
 
     startGame(){
-        if(prompts.startGamePrompt()=== "Y"){
-            this.playGame()
+        let answer = prompts.startGamePrompt()
+        if(answer === "Y"){
+            this.playGame();
+        }else if(answer === "N"){
+            process.exit()
         }
     }
 
@@ -116,7 +119,7 @@ class Game {
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this"
         //*Add logic to play the same field vs a new field. set field to a new Field (maybe this goes in the play again prompt?)
         let lose = function(){
-            console.clear()
+            console.clear();
             field.printPlayField();
             if(field.firstLoss === false){
                 field.firstLoss = true;
@@ -124,7 +127,7 @@ class Game {
             }else{
                 console.log("Oh you fell in a hole...again.");
             }
-            resetGame()
+            resetGame();
         }.bind(this);
 
 
@@ -132,11 +135,11 @@ class Game {
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this"
         //*Add logic to play the same field vs a new field
         let win = function(){
-            console.clear()
+            console.clear();
             this.field.printPlayField();
             console.log("Woah, you did it! You found your hat! To be honest...I didn't see that coming.");
-            resetGame()
-        }.bind(this)
+            resetGame();
+        }.bind(this);
         //Resets the game and begins again
 
 
@@ -144,7 +147,7 @@ class Game {
 
 
         let resetGame = function(){
-            let answer = prompts.playAgainPrompt()
+            let answer = prompts.playAgainPrompt();
             if(answer === "Y"){
                 console.clear();
                 gameOver = false;
@@ -152,9 +155,11 @@ class Game {
                 y = 0;
                 //***********not working, think i just need to add play field and hidden field properties for game. field will be the input field that doesnt change unless it is set to have a new field */
                 this.field.playField = Field.createPlayField(this.field.hiddenField);
-                playLoop() 
+                playLoop();
+            }else if(answer === "N"){
+                process.exit()
             }
-        }.bind(this)
+        }.bind(this);
 
 
         //Allows player to move around the board. Changes playField to show path. Includes win and loss logic.
@@ -181,8 +186,8 @@ class Game {
                     checkMove();
                 }
             }
-        }.bind(this)    
-        playLoop()   
+        }.bind(this); 
+        playLoop();   
     };
     
 }
@@ -194,10 +199,10 @@ class Field {
         this._playField = Field.createPlayField(hiddenFieldArray);
     };
     get hiddenField(){
-        return this._hiddenField
+        return this._hiddenField;
     };
     get playField(){
-        return this._playField
+        return this._playField;
     };
     set playField(hiddenFieldArray){
         this._playField = Field.createPlayField(hiddenFieldArray);
@@ -213,14 +218,14 @@ class Field {
         let rows = hiddenFieldArray.length;
         let columns = hiddenFieldArray[0].length;
         for(let i = 0; i < rows; i++){
-            let row = []
+            let row = [];
             for(let i = 0; i < columns; i++){
                 row.push('░');
             }
             playField.push(row);
         }
         playField[0][0] = '𓀠';
-        return playField
+        return playField;
     };
     
 
@@ -253,10 +258,10 @@ const prompts = {
         let answer = prompt(">");
         if(answer.toUpperCase()==="N"){
             console.clear();
-            return "N"
+            return "N";
         }else if(answer.toUpperCase()==="Y"){
             console.clear();
-            return "Y"
+            return "Y";
         }else{
             console.clear();
             console.log("Pardon me. I'm not very smart, and  I don't understand. Please enter Y for yes and N for no.");
@@ -266,18 +271,18 @@ const prompts = {
     directionPrompt(){
         let direction = prompt(">");
         if(direction.toUpperCase()==="W"){
-            return "W"
+            return "W";
         }else if(direction.toUpperCase()==="A"){
-            return "A"
+            return "A";
         }else if(direction.toUpperCase()==="S"){
-            return "S"
+            return "S";
         }else if(direction.toUpperCase()==="D"){
-            return "D"
+            return "D";
         }else{
-            console.clear()
-            this.field.printPlayField()
-            console.log("It really is important that you eneter either W, A, S, or D, otherwise I just can't help you!")
-            return this.directionPrompt()
+            console.clear();
+            this.field.printPlayField();
+            console.log("It really is important that you eneter either W, A, S, or D, otherwise I just can't help you!");
+            return this.directionPrompt();
         }
     },
     //This function can be used after a user says they are not ready yet. It will loop through itself until the user says they are ready. Then it will return Y.
@@ -286,9 +291,9 @@ const prompts = {
         console.log("Oh, okay, I guess I'll wait. Just don't forget about me...Are you ready now?")
         let answer = this.yesNoPrompt();
         if(answer === "Y"){
-            field.playGame()
+            return "Y";
         }else if(answer === "N"){
-            this.waitingPrompt()
+            this.waitingPrompt();
         }
     },
         //*Perhaps add the new field option here
@@ -297,15 +302,16 @@ const prompts = {
         console.log("Would you like to start over?")
         let answer = this.yesNoPrompt();
         if(answer === "Y"){
-            console.log("You just made me so happy! Are you ready?")
+            console.log("You just made me so happy! Are you ready?");
             answer = this.yesNoPrompt();
             if(answer === "Y"){
-                return "Y"
+                return "Y";
             }else if(answer === "N"){
-                this.waitingPrompt()
+                return this.waitingPrompt();
             }
         }else if(answer === "N"){
             console.log("I'm really sorry to hear that. I'm going to miss you. Goodbye.");
+            return "N";
         }
     },
     startGamePrompt(){
@@ -314,7 +320,7 @@ const prompts = {
         let answer = this.yesNoPrompt();
         if(answer === "N"){
             console.log("I'm sorry to hear that. Goodbye.");
-            process.exit()
+            return "N";
         }else if(answer === "Y"){
             console.log(
     `That's great to hear, I'm excited for your!
@@ -326,7 +332,7 @@ const prompts = {
             );
             answer = this.yesNoPrompt();
             if(answer === "N"){
-                this.waitingPrompt()
+                return this.waitingPrompt();
             }else if(answer === "Y"){
                 return "Y";
             }
