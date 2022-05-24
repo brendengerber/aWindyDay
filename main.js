@@ -50,10 +50,11 @@ class Player{
 class Game {
     constructor(field){
         this._field = field;
-    }
+    };
     get field(){
         return this._field;
-    }
+    };
+
     //Used to start the game or exit.
     startGame(){
         let answer = prompts.startGamePrompt()
@@ -62,7 +63,8 @@ class Game {
         }else if(answer === "N"){
             process.exit();
         }
-    }
+    };
+
     //Contains game logic.
     playGame(){
         let gameOver = false;
@@ -89,11 +91,11 @@ class Game {
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let isOutOfBounds = function(x,y){
             if(y < 0 || y > (this.field.hiddenField.length-1)){
-                return true
+                return true;
             }else if(x < 0 || x > (this.field.hiddenField[0].length-1)){
-                return true
+                return true;
             }else{
-                return false
+                return false;
             }
         }.bind(this);
 
@@ -133,7 +135,7 @@ class Game {
                 this.field.playField = Field.createPlayField(this.field.hiddenField);
                 playLoop();
             }else if(answer === "N"){
-                process.exit()
+                process.exit();
             }
         }.bind(this);
 
@@ -145,9 +147,9 @@ class Game {
                 let direction = prompts.directionPrompt();
                 //Resets the board if directionPrompt returns undefined (i.e. a key other than wasd was pressed)
                 if(direction === undefined){
-                    console.clear()
+                    console.clear();
                     this.field.printPlayField();
-                    direction = prompts.directionPrompt()
+                    direction = prompts.directionPrompt();
                 }
                 //Moves the player, sets the possition, and checks for win or loss conditions
                 if(direction === "W"){
@@ -203,6 +205,7 @@ class Field {
     };
     //**This needs to be set somewhere outside of the field if the field is going to change like in the player object
     firstLoss = false;
+
     //Creates the play field that will be logged to the console with objective and holes hidden.
     static createPlayField(hiddenFieldArray){
         let playField = [];
@@ -218,6 +221,7 @@ class Field {
         playField[0][0] = '𓀠';
         return playField;
     };
+
     //Prints the field that will be displayed with objective and holes hidden.
     printPlayField(){
         for(let line of this.playField){
@@ -228,6 +232,7 @@ class Field {
             console.log(string);
         }
     };
+
     //Prints the actual field with holes and objective revealed (useful for debugging).
     printHiddenField(){
         for(let line of this.hiddenField){
@@ -258,6 +263,7 @@ const prompts = {
             return this.yesNoPrompt();
         }
     },
+
     //Prompts the user for direction input and returns it. If input is invalid it will ask again.
     directionPrompt(){
         let direction = prompt(">");
@@ -274,6 +280,7 @@ const prompts = {
             return undefined
         }
     },
+
     //To be used after a user says they are not ready yet. Loops through itself until the user says they are ready. Then it will return Y.
     waitingPrompt(){
         console.log("Oh, okay, I guess I'll wait. Just don't forget about me...Are you ready now?")
@@ -284,6 +291,7 @@ const prompts = {
             this.waitingPrompt();
         }
     },
+
     //Asks the player if they would like to play again and if they are ready and returns Y or N.
     playAgainPrompt(){
         console.log("Would you like to start over?")
@@ -301,9 +309,10 @@ const prompts = {
             return "N";
         }
     },
+
     //Asks user if they would like to play and returns Y or N.
     startGamePrompt(){
-        console.clear()
+        console.clear();
         console.log("Would you like to play a game?");
         let answer = this.yesNoPrompt();
         if(answer === "N"){
@@ -326,7 +335,7 @@ const prompts = {
             }
         }
     }
-}
+};
 
 
 
