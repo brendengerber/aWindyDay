@@ -86,9 +86,9 @@ class Game {
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let lose = function(){
             console.clear();
-            field.printPlayField();
-            if(field.firstLoss === false){
-                field.firstLoss = true;
+            this.field.printPlayField();
+            if(this.field.firstLoss === false){
+                this.field.firstLoss = true;
                 console.log("Oops, you fell in a hole!\nDid I forget to mention that there were holes?\nAlright, that one's on me.")
             }else{
                 console.log("Oh you fell in a hole...again.");
