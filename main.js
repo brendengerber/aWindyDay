@@ -8,6 +8,7 @@
 //add logic for accepting input without hitting enter
 //add out of bounds logic
 //maybe dont need variable names for new objects like player, just add them to an array to be accessed by index, same for games in the game object within player
+//add logic to check starting position based on where the new field shows the person
 
 // Variable names WIP
 // let games = [0];
@@ -67,6 +68,7 @@ class Game {
         let gameOver = false;
         let x = 0;
         let y = 0;
+        
         //Checks the move for Win/Loss and update the playField appropriately.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let checkMove = function(){
@@ -82,6 +84,19 @@ class Game {
                 win();
             }
         }.bind(this);
+
+        //Checks if a move will move out of bounds and returns true if so.
+        //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
+        let isOutOfBounds = function(x,y){
+            if(y < 0 || y > (this.field.hiddenField.length-1)){
+                return true
+            }else if(x < 0 || x > (this.field.hiddenField[0].length-1)){
+                return true
+            }else{
+                return false
+            }
+        }.bind(this);
+
         //Initiates the loss dialog and displays the final field.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let lose = function(){
@@ -95,6 +110,7 @@ class Game {
             }
             resetGame();
         }.bind(this);
+
         //Initiates the loss dialog and displays the final field.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let win = function(){
@@ -103,6 +119,7 @@ class Game {
             console.log("Woah, you did it! You found your hat! To be honest...I didn't see that coming.");
             resetGame();
         }.bind(this);
+
         //Resets the game and begins again.
         //**Add option for a new field here and make a new a new instance of Game
         let resetGame = function(){
@@ -119,7 +136,8 @@ class Game {
                 process.exit()
             }
         }.bind(this);
-        //Allows player to move around the board. Changes playField to show path. Includes win and loss logic.
+
+        //Allows player to move around the board. Changes playField to show path. Includes win/loss and out of bounds logic.
         let playLoop = function(){
             while(!gameOver){
                 console.clear();
@@ -133,21 +151,29 @@ class Game {
                 }
                 //Moves the player, sets the possition, and checks for win or loss conditions
                 if(direction === "W"){
-                    this.field.playField[y][x] = "*";
-                    y -= 1;
-                    checkMove();
+                    if(isOutOfBounds(x, (y-1))===false){
+                        this.field.playField[y][x] = "*";
+                        y -= 1;
+                        checkMove(); 
+                    }
                 }else if(direction === "A"){
-                    this.field.playField[y][x] = "*";
-                    x -= 1;
-                    checkMove();
+                    if(isOutOfBounds((x-1), y)===false){
+                        this.field.playField[y][x] = "*";
+                        x -= 1;
+                        checkMove();
+                    }
                 }else if(direction === "S"){
-                    this.field.playField[y][x] = "*";
-                    y += 1;
-                    checkMove();
+                    if(isOutOfBounds(x, (y+1))===false){
+                        this.field.playField[y][x] = "*";
+                        y += 1;
+                        checkMove();
+                    }    
                 }else if(direction === "D"){
-                    this.field.playField[y][x] = "*";
-                    x += 1;
-                    checkMove();
+                    if(isOutOfBounds((x+1), y)===false){
+                        this.field.playField[y][x] = "*";
+                        x += 1;
+                        checkMove();
+                    }
                 }
             }
         }.bind(this); 
@@ -328,9 +354,9 @@ const prompts = {
 //**eventually add array made with generate field module rather than a predefined array
 //**Add logic for the end. Would you like to play again? Which then generates a new field and assigns it to field
 let field = new Field([
-    ['*', '░', 'O'],
-    ['░', 'O', '░'],
-    ['░', '^', '░'],
+    ['*', '░', '░'],
+    ['░', '░', '░'],
+    ['░', 'O', '^'],
   ]);
 
 let game1 = new Game(field)
@@ -341,3 +367,6 @@ game1.startGame()
 
 // readline.clearLine(process.stdout);
 // readline.cursorTo(process.stdout, 0);
+
+
+//out of bounds function should take in x and y (according to how the keypress will change x and y if valid) if it is inbounds it should return true else it should return false. The moves function should only change x and y if the checkOutOfBoudns function returns true, else it should loop back for new input (like hitting an invisible wall)
