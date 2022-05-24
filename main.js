@@ -151,27 +151,31 @@ class Game {
                 }
                 //Moves the player, sets the possition, and checks for win or loss conditions
                 if(direction === "W"){
-                    if(isOutOfBounds(x, (y-1))===false){
+                    let newY = y-1;
+                    if(isOutOfBounds(x, newY)===false){
                         this.field.playField[y][x] = "*";
-                        y -= 1;
+                        y = newY;
                         checkMove(); 
                     }
                 }else if(direction === "A"){
-                    if(isOutOfBounds((x-1), y)===false){
+                    let newX = x-1;
+                    if(isOutOfBounds(newX, y)===false){
                         this.field.playField[y][x] = "*";
-                        x -= 1;
+                        x = newX;
                         checkMove();
                     }
                 }else if(direction === "S"){
-                    if(isOutOfBounds(x, (y+1))===false){
+                    let newY = y+1;
+                    if(isOutOfBounds(x, newY)===false){
                         this.field.playField[y][x] = "*";
-                        y += 1;
+                        y = newY;
                         checkMove();
                     }    
                 }else if(direction === "D"){
-                    if(isOutOfBounds((x+1), y)===false){
+                    let newX = x+1;
+                    if(isOutOfBounds(newX, y)===false){
                         this.field.playField[y][x] = "*";
-                        x += 1;
+                        x = newX;
                         checkMove();
                     }
                 }
