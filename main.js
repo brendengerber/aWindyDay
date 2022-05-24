@@ -125,6 +125,13 @@ class Game {
                 console.clear();
                 this.field.printPlayField();
                 let direction = prompts.directionPrompt();
+                //Resets the board if directionPrompt returns undefined (i.e. a key other than wasd was pressed)
+                if(direction === undefined){
+                    console.clear()
+                    this.field.printPlayField();
+                    direction = prompts.directionPrompt()
+                }
+                //Moves the player, sets the possition, and checks for win or loss conditions
                 if(direction === "W"){
                     this.field.playField[y][x] = "*";
                     y -= 1;
@@ -232,11 +239,9 @@ const prompts = {
             return "S";
         }else if(direction.toUpperCase()==="D"){
             return "D";
+        //Returns undefined if a key other than WASD is pressed
         }else{
-            console.clear();
-            this.field.printPlayField();
-            console.log("It really is important that you eneter either W, A, S, or D, otherwise I just can't help you!");
-            return this.directionPrompt();
+            return undefined
         }
     },
     //To be used after a user says they are not ready yet. Loops through itself until the user says they are ready. Then it will return Y.
