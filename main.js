@@ -218,25 +218,62 @@ class Field {
     //**This needs to be set somewhere outside of the field if the field is going to change like in the player object
     firstLoss = false;
 
-    //Creates a random field of size x by y
-    static generateField(x,y){
+    //Creates a random field of size x by y containing the provided number of holes with a random distribution accross the board
+    //***add percentage of holes? Can easily be done by adding a hole counter, though that will result in more holes at the beginning probably. Could randomize which array field is filled somehow? and fill those with holes, all the rest would be grass if not a hole (using a simple loop with if)
+    static generateField(x,y,holes){
+        //Creates a blank field filled with grass according to the given dimensions
         let newField = []
-        for(let i = 0; i<(y); i++){
-            let newRow=[]
-            for(let i =0; i<(x); i++){
-                let gameCharacter = undefined
-                let randomNumber = Math.floor(Math.random() * 2)
-                if(randomNumber === 0){
-                    gameCharacter = grass;
-                }else if(randomNumber === 1){
-                    gameCharacter = hole;
-                }
-                newRow.push(gameCharacter)
+        for(let i=0; i<y; i++){
+            let newRow = []
+            for(let i=0; i<x; i++){
+                newRow.push(grass)
             }
             newField.push(newRow)
-        } 
-        return newField
+        }
+
+        //Used to add holes, if there is already a hole in the random spot then the function runs again. 
+        //This allows adding holes randomly throughout the field rather than having them clustered at the beginning if a simple loop was used to add randomly grass or hole characters until the desired number of holes was reached.
+        let setHoles = function(){
+            let xHoleIndex = Math.floor(Math.random() * (x))
+            let yHoleIndex = Math.floor(Math.random() * (y))
+            if(newField[yHoleIndex][xHoleIndex] === grass){
+                newField[yHoleIndex][xHoleIndex] = hole
+            }else{
+                setHoles()
+            }
+        }
+        //Runs set holes until the desired number of holes is reached
+        for(let i=0; i<holes; i++){
+            setHoles()
+        }
+        
+        //Validates the field and returns it if valid, else it re runs generateField.
+        //*****Can I use a static method in here like this? do I need to use Field or this */
+        if(this.validateField(newField)){
+            return newField
+        }else{
+            this.generateField(x,y)
+        }
     }
+    
+
+    //Validates a field. Returns true if valid and false if it is not solveable.
+    static validateField(field){
+        return true
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     //Creates the play field that will be logged to the console with objective and holes hidden.
     static createPlayField(hiddenFieldArray){
@@ -404,9 +441,9 @@ let field = new Field([
     [grass, hole, hat],
   ]);
 
-let game1 = new Game(field)
-game1.startGame()
-
+// let game1 = new Game(field)
+// game1.startGame()
+console.log(Field.generateField(3,3,2))
 
 
 // let field = new Field([
