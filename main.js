@@ -1,3 +1,7 @@
+//add static method to create a new field, and a static method to check a field's solvability. Then set a field variable inside the game object as that static method and change it if a new field is requ3ested
+//problem is that I want to have game be it's own game with it's own stats object that can be added to the player stats and a new game is made. Maybe inside the player object their should be a new method newGame which makes a new board with new stats, which then makes a new field.
+//add a method that somehow exports the current stats from game and saves them to the player array
+
 //* create static method on Field to create a random field 
 //*Is there a way to remove the waiting prompt and display the "here we go text under the new board for example?"
 //make sure when adding new field that it somehow keeps the first loss status of the previous field. This is moved to player, once player is integrated change where it checks for the status to the correct player object
@@ -20,14 +24,15 @@
 
 
 //Need to move input functions to their own module
-//Imports necessary modules
+
+//Imports necessary modules.
 const prompt = require('prompt-sync')({sigint: true});
 const readline = require('readline');
 
-//Sets game characters
+//Sets game characters.
 const hat = '^';
 const hole = 'O';
-const grass = '░';
+const grass = "░";
 const path = '*';
 const avatar = "𓀠"
 
@@ -374,9 +379,9 @@ const prompts = {
 //**eventually add array made with generate field module rather than a predefined array
 //**Add logic for the end. Would you like to play again? Which then generates a new field and assigns it to field
 let field = new Field([
-    ['*', '░', '░'],
-    ['░', '░', '░'],
-    ['░', 'O', '^'],
+    [path, grass, grass],
+    [grass, grass, grass],
+    [grass, hole, hat],
   ]);
 
 let game1 = new Game(field)
