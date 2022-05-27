@@ -218,6 +218,26 @@ class Field {
     //**This needs to be set somewhere outside of the field if the field is going to change like in the player object
     firstLoss = false;
 
+    //Creates a random field of size x by y
+    static generateField(x,y){
+        let newField = []
+        for(let i = 0; i<(y); i++){
+            let newRow=[]
+            for(let i =0; i<(x); i++){
+                let gameCharacter = undefined
+                let randomNumber = Math.floor(Math.random() * 2)
+                if(randomNumber === 0){
+                    gameCharacter = grass;
+                }else if(randomNumber === 1){
+                    gameCharacter = hole;
+                }
+                newRow.push(gameCharacter)
+            }
+            newField.push(newRow)
+        } 
+        return newField
+    }
+
     //Creates the play field that will be logged to the console with objective and holes hidden.
     static createPlayField(hiddenFieldArray){
         let playField = [];
@@ -386,6 +406,14 @@ let field = new Field([
 
 let game1 = new Game(field)
 game1.startGame()
+
+
+
+// let field = new Field([
+//     ["*", "░", "░"],
+//     ["░", "░", "░"],
+//     ["░", "O", "^"],
+//   ]);
 
 
 
