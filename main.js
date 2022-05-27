@@ -9,6 +9,9 @@
 //add out of bounds logic
 //maybe dont need variable names for new objects like player, just add them to an array to be accessed by index, same for games in the game object within player
 //add logic to check starting position based on where the new field shows the person
+//move all dialog to dialog/prompt
+//add instant input
+
 
 // Variable names WIP
 // let games = [0];
@@ -24,8 +27,9 @@ const readline = require('readline');
 //Sets game characters
 const hat = '^';
 const hole = 'O';
-const fieldCharacter = '░';
-const pathCharacter = '*';
+const grass = '░';
+const path = '*';
+const avatar = "𓀠"
 
 //Used to create a new player and to track stats.
 class Player{
@@ -40,7 +44,10 @@ class Player{
         losses: 0,
         totalMoves: 0,
         averageMoves: 0,
-        winPercentage: this.wins/(this.wins + this.losses)
+        averageAttemptsToWin: 0,
+        fieldsLost: 0,
+        fieldsWon: 0,
+        winPercentage: this.fieldsWon/(this.fieldsWon + this.fieldsLost)
     };
     games = [];
     firstLoss = false;
@@ -74,14 +81,14 @@ class Game {
         //Checks the move for Win/Loss and update the playField appropriately.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let checkMove = function(){
-            if(this.field.hiddenField[y][x]!== "O" && this.field.hiddenField[y][x] !== "^"){
-                this.field.playField[y][x] = "𓀠";
-            }else if(this.field.hiddenField[y][x] === "O"){
-                this.field.playField[y][x] = "O";
+            if(this.field.hiddenField[y][x]!== hole && this.field.hiddenField[y][x] !== hat){
+                this.field.playField[y][x] = avatar;
+            }else if(this.field.hiddenField[y][x] === hole){
+                this.field.playField[y][x] = hole;
                 gameOver = true;
                 lose();
-            }else if(this.field.hiddenField[y][x] === "^"){
-                this.field.playField[y][x] = "^";
+            }else if(this.field.hiddenField[y][x] === hat){
+                this.field.playField[y][x] = hat;
                 gameOver = true;
                 win();
             }
@@ -108,7 +115,7 @@ class Game {
                 this.field.firstLoss = true;
                 console.log("Oops, you fell in a hole!\nDid I forget to mention that there were holes?\nAlright, that one's on me.")
             }else{
-                console.log("Oh you fell in a hole...again.");
+                console.log("Oh, you fell in a hole...again.");
             }
             resetGame();
         }.bind(this);
@@ -155,28 +162,28 @@ class Game {
                 if(direction === "W"){
                     let newY = y-1;
                     if(isOutOfBounds(x, newY)===false){
-                        this.field.playField[y][x] = "*";
+                        this.field.playField[y][x] = path;
                         y = newY;
                         checkMove(); 
                     }
                 }else if(direction === "A"){
                     let newX = x-1;
                     if(isOutOfBounds(newX, y)===false){
-                        this.field.playField[y][x] = "*";
+                        this.field.playField[y][x] = path;
                         x = newX;
                         checkMove();
                     }
                 }else if(direction === "S"){
                     let newY = y+1;
                     if(isOutOfBounds(x, newY)===false){
-                        this.field.playField[y][x] = "*";
+                        this.field.playField[y][x] = path;
                         y = newY;
                         checkMove();
                     }    
                 }else if(direction === "D"){
                     let newX = x+1;
                     if(isOutOfBounds(newX, y)===false){
-                        this.field.playField[y][x] = "*";
+                        this.field.playField[y][x] = path;
                         x = newX;
                         checkMove();
                     }
@@ -214,11 +221,11 @@ class Field {
         for(let i = 0; i < rows; i++){
             let row = [];
             for(let i = 0; i < columns; i++){
-                row.push('░');
+                row.push(grass);
             }
             playField.push(row);
         }
-        playField[0][0] = '𓀠';
+        playField[0][0] = avatar;
         return playField;
     };
 
@@ -283,7 +290,7 @@ const prompts = {
 
     //To be used after a user says they are not ready yet. Loops through itself until the user says they are ready. Then it will return Y.
     waitingPrompt(){
-        console.log("Oh, okay, I guess I'll wait. Just don't forget about me...Are you ready now?")
+        console.log("Okay, I guess I'll wait. Just don't forget about me...Are you ready now?")
         let answer = this.yesNoPrompt();
         if(answer === "Y"){
             return "Y";
