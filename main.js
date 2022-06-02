@@ -147,65 +147,61 @@ class Game {
                 y = 0;
                 //***********not working, think i just need to add play field and hidden field properties for game. field will be the input field that doesnt change unless it is set to have a new field */
                 this.field.playField = Field.createPlayField(this.field.hiddenField);
-                playLoop();
+                this.playGame();
             }else if(answer === "N"){
                 process.exit();
             }
         }.bind(this);
 
-        //Function that is called to allow the player to move around the board. Changes playField to show path. Includes win/loss and out of bounds logic. This is also called again during resetGame.
-        //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
-        let playLoop = function(){
-            while(!gameOver){
+        //Play loop logic that is called to allow the player to move around the board. Changes playField to show path. Includes win/loss and out of bounds logic.
+        while(!gameOver){
+            console.clear();
+            this.field.printPlayField();
+            let direction = prompts.directionPrompt();
+            //Resets the board if directionPrompt returns undefined (i.e. a key other than wasd was pressed).
+            if(direction === undefined){
                 console.clear();
                 this.field.printPlayField();
-                let direction = prompts.directionPrompt();
-                //Resets the board if directionPrompt returns undefined (i.e. a key other than wasd was pressed).
-                if(direction === undefined){
-                    console.clear();
-                    this.field.printPlayField();
-                    direction = prompts.directionPrompt();
-                }
-                //Moves the player avatar, sets the x,y possition, and checks for win or loss conditions.
-                let newY
-                let newX
-                switch(direction){
-                    case "W":
-                        newY = y-1;
-                        if(isOutOfBounds(x, newY)===false){
-                            this.field.playField[y][x] = path;
-                            y = newY;
-                            checkMove(); 
-                        };
-                        break;  
-                    case "A":
-                        newX = x-1;
-                        if(isOutOfBounds(newX, y)===false){
-                            this.field.playField[y][x] = path;
-                            x = newX;
-                            checkMove();
-                        };
-                        break;
-                    case "S":
-                        newY = y+1;
-                        if(isOutOfBounds(x, newY)===false){
-                            this.field.playField[y][x] = path;
-                            y = newY;
-                            checkMove(); 
-                        };
-                        break;
-                    case "D":
-                        newX = x+1;
-                        if(isOutOfBounds(newX, y)===false){
-                            this.field.playField[y][x] = path;
-                            x = newX;
-                            checkMove();
-                        };
-                        break;
-                }
+                direction = prompts.directionPrompt();
             }
-        }.bind(this); 
-        playLoop();   
+            //Moves the player avatar, sets the x,y possition, and checks for win or loss conditions.
+            let newY;
+            let newX;
+            switch(direction){
+                case "W":
+                    newY = y-1;
+                    if(isOutOfBounds(x, newY)===false){
+                        this.field.playField[y][x] = path;
+                        y = newY;
+                        checkMove(); 
+                    };
+                    break;  
+                case "A":
+                    newX = x-1;
+                    if(isOutOfBounds(newX, y)===false){
+                        this.field.playField[y][x] = path;
+                        x = newX;
+                        checkMove();
+                    };
+                    break;
+                case "S":
+                    newY = y+1;
+                    if(isOutOfBounds(x, newY)===false){
+                        this.field.playField[y][x] = path;
+                        y = newY;
+                        checkMove(); 
+                    };
+                    break;
+                case "D":
+                    newX = x+1;
+                    if(isOutOfBounds(newX, y)===false){
+                        this.field.playField[y][x] = path;
+                        x = newX;
+                        checkMove();
+                    };
+                    break;
+            };
+        };
     }; 
 };
 
