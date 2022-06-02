@@ -78,13 +78,15 @@ class Game {
     };
 
     //Contains game logic.
+    //**********Should all these functions be methods? I don't think it is necessary
     playGame(){
         let gameOver = false;
         let x = 0;
         let y = 0;
         
-        //Checks the move for Win/Loss and update the playField appropriately.
+        //Helper function that checks the move for Win/Loss and update the playField appropriately.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
+        //******add x and y arguments like is out of bounds? Would just have to update the calls with (x,y), might also want it to return win, lose, move rather than win() and lose() functions so it can be reused in field checker */
         let checkMove = function(){
             if(this.field.hiddenField[y][x]!== hole && this.field.hiddenField[y][x] !== hat){
                 this.field.playField[y][x] = avatar;
@@ -99,7 +101,7 @@ class Game {
             }
         }.bind(this);
 
-        //Checks if a move will move out of bounds and returns true if so.
+        //Helper function that checks if a move will move out of bounds and returns true if so.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let isOutOfBounds = function(x,y){
             if(y < 0 || y > (this.field.hiddenField.length-1)){
@@ -111,7 +113,7 @@ class Game {
             }
         }.bind(this);
 
-        //Initiates the loss dialog and displays the final field.
+        //Helper function initiates the loss dialog and displays the final field.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let lose = function(){
             console.clear();
@@ -125,7 +127,7 @@ class Game {
             resetGame();
         }.bind(this);
 
-        //Initiates the loss dialog and displays the final field.
+        //Helper function initiates the loss dialog and displays the final field.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let win = function(){
             console.clear();
@@ -134,7 +136,7 @@ class Game {
             resetGame();
         }.bind(this);
 
-        //Resets the game and begins again.
+        //Helper function resets the game and begins again.
         //**Add option for a new field here and make a new a new instance of Game
         let resetGame = function(){
             let answer = prompts.playAgainPrompt();
@@ -151,47 +153,55 @@ class Game {
             }
         }.bind(this);
 
-        //Allows player to move around the board. Changes playField to show path. Includes win/loss and out of bounds logic.
+        //Function that is called to allow the player to move around the board. Changes playField to show path. Includes win/loss and out of bounds logic. This is also called again during resetGame.
+        //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let playLoop = function(){
             while(!gameOver){
                 console.clear();
                 this.field.printPlayField();
                 let direction = prompts.directionPrompt();
-                //Resets the board if directionPrompt returns undefined (i.e. a key other than wasd was pressed)
+                //Resets the board if directionPrompt returns undefined (i.e. a key other than wasd was pressed).
                 if(direction === undefined){
                     console.clear();
                     this.field.printPlayField();
                     direction = prompts.directionPrompt();
                 }
-                //Moves the player, sets the possition, and checks for win or loss conditions
-                if(direction === "W"){
-                    let newY = y-1;
-                    if(isOutOfBounds(x, newY)===false){
-                        this.field.playField[y][x] = path;
-                        y = newY;
-                        checkMove(); 
-                    }
-                }else if(direction === "A"){
-                    let newX = x-1;
-                    if(isOutOfBounds(newX, y)===false){
-                        this.field.playField[y][x] = path;
-                        x = newX;
-                        checkMove();
-                    }
-                }else if(direction === "S"){
-                    let newY = y+1;
-                    if(isOutOfBounds(x, newY)===false){
-                        this.field.playField[y][x] = path;
-                        y = newY;
-                        checkMove();
-                    }    
-                }else if(direction === "D"){
-                    let newX = x+1;
-                    if(isOutOfBounds(newX, y)===false){
-                        this.field.playField[y][x] = path;
-                        x = newX;
-                        checkMove();
-                    }
+                //Moves the player avatar, sets the x,y possition, and checks for win or loss conditions.
+                let newY
+                let newX
+                switch(direction){
+                    case "W":
+                        newY = y-1;
+                        if(isOutOfBounds(x, newY)===false){
+                            this.field.playField[y][x] = path;
+                            y = newY;
+                            checkMove(); 
+                        };
+                        break;  
+                    case "A":
+                        newX = x-1;
+                        if(isOutOfBounds(newX, y)===false){
+                            this.field.playField[y][x] = path;
+                            x = newX;
+                            checkMove();
+                        };
+                        break;
+                    case "S":
+                        newY = y+1;
+                        if(isOutOfBounds(x, newY)===false){
+                            this.field.playField[y][x] = path;
+                            y = newY;
+                            checkMove(); 
+                        };
+                        break;
+                    case "D":
+                        newX = x+1;
+                        if(isOutOfBounds(newX, y)===false){
+                            this.field.playField[y][x] = path;
+                            x = newX;
+                            checkMove();
+                        };
+                        break;
                 }
             }
         }.bind(this); 
@@ -257,9 +267,32 @@ class Field {
     }
     
 
-    //Validates a field. Returns true if valid and false if it is not solveable.
-    static validateField(field){
-        return true
+    //Validates a field using a wall follower algorithm. Returns true if valid and false if it is not solveable.
+    //test field[0][0] first, if hole, then fail\
+
+    //else start by moving down, then right, then up, then left
+    //if the move is a fail, go the next direction (i.e. by updating the direction variable and re running the move/test function)
+    //if the move is a success (i.e. grass), change xy coordinates, and try the same direction again (i.e not resetting the direction variable)
+    //after a failed move add to the counter
+        //add difficulties
+
+
+    //absolutely no clue how to determine fail
+    //maybe check move and isoutof bounds can be static game methods
+    //check move must be updated to return win or lose or true
+    //how to make Game statics work on the input field, do they need a field input too?
+    //fuck this only works if the hat is along the edge, 
+    //cant solve with pledge either as it only works starting inside and going out, not going out to in
+    //Trémaux's algorithm?
+    
+    static validateField(testField){
+        let direction = "S";
+        let x = 0;
+        let y = 0;
+        let win = undefined;
+        while(win === undefined && !lose){
+
+        }
     }
 
 
@@ -441,15 +474,16 @@ let field = new Field([
     [grass, hole, hat],
   ]);
 
-// let game1 = new Game(field)
-// game1.startGame()
-console.log(Field.generateField(3,3,2))
+let game1 = new Game(field)
+game1.startGame()
 
 
 // let field = new Field([
-//     ["*", "░", "░"],
+//     ["*", "O", "░"],
+//     ["░", "O", "░"],
+//     ["░", "^", "░"],
 //     ["░", "░", "░"],
-//     ["░", "O", "^"],
+//     ["░", "O", "░"],
 //   ]);
 
 
@@ -460,3 +494,74 @@ console.log(Field.generateField(3,3,2))
 
 
 //out of bounds function should take in x and y (according to how the keypress will change x and y if valid) if it is inbounds it should return true else it should return false. The moves function should only change x and y if the checkOutOfBoudns function returns true, else it should loop back for new input (like hitting an invisible wall)
+
+// ONLY WORKS IF HOLES CONNECTED TO WALL
+// static validateField(field){
+//     let direction = "S";
+//     let x = 0;
+//     let y = 0;
+//     let win = undefined;
+//     while(win === undefined && !lose){
+//         let test = function(direction){
+//             if(direction==="S"){
+//                 if(!Game.isOutOfBounds(field,x,y+1)){
+//                     let move = Game.checkMove(field,x,y+1)
+//                     if(move==="win"){
+//                         win = true;
+//                     }else if(move===hole){
+//                         direction = "E";
+//                         test(direction)
+//                     }else if(move===grass){
+//                         y = y + 1;
+//                         test(direction)
+//                     }
+//                 }
+//             }else if(direction==="E"){
+//                 if(!Game.isOutOfBounds(field,x+1,y)){
+//                     let move = Game.checkMove(field,x+1,y)
+//                     if(move==="win"){
+//                         win = true;
+//                     }else if(move===hole){
+//                         direction = "N";
+//                         test(direction)
+//                     }else if(move===grass){
+//                         x = x + 1;
+//                         test(direction)
+//                     }
+//                 }
+//             }else if(direction==="N"){
+//                 if(!Game.isOutOfBounds(field,x,y-1)){
+//                     let move = Game.checkMove(field,x,y-1)
+//                     if(move==="win"){
+//                         win = true;
+//                     }else if(move===hole){
+//                         direction = "W";
+//                         test(direction)
+//                     }else if(move===grass){
+//                         y = y - 1;
+//                         test(direction)
+//                     }
+//                 }
+//             }else if(direction==="W"){
+//                 if(!Game.isOutOfBounds(field,x-1,y)){
+//                     let move = Game.checkMove(field,x-1,y)
+//                     if(move==="win"){
+//                         win = true;
+//                     }else if(move===hole){
+//                         direction = "S";
+//                         test(direction)
+//                     }else if(move===grass){
+//                         y = x - 1;
+//                         test(direction)
+//                     }
+//                 }
+//             }
+//         }
+//         test(direction)
+//         }
+//     if(win){
+//         return true
+//     }else if(!win){
+//         return false
+//     }
+// }
