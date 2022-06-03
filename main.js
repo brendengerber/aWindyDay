@@ -15,6 +15,9 @@
 //add logic to check starting position based on where the new field shows the person
 //move all dialog to dialog/prompt
 //add instant input
+//Maybe it's fun to leave the discovered holes there for the next try, then the fun thing is how many tries did it take you on average. So each time you fall the game will remember for you.
+//Wow you're good at finding these holes
+//Ouch that one looked like it hurt
 
 
 // Variable names WIP
@@ -120,9 +123,9 @@ class Game {
             this.field.printPlayField();
             if(this.field.firstLoss === false){
                 this.field.firstLoss = true;
-                console.log("Oops, you fell in a hole!\nDid I forget to mention that there were holes?\nAlright, that one's on me.")
+                dialog.loseFirst()
             }else{
-                console.log("Oh, you fell in a hole...again.");
+                dialog.lose()
             }
             resetGame();
         }.bind(this);
@@ -132,7 +135,7 @@ class Game {
         let win = function(){
             console.clear();
             this.field.printPlayField();
-            console.log("Woah, you did it! You found your hat! To be honest...I didn't see that coming.");
+            dialog.win();
             resetGame();
         }.bind(this);
 
@@ -155,6 +158,7 @@ class Game {
 
         //Play loop logic that is called to allow the player to move around the board. Changes playField to show path. Includes win/loss and out of bounds logic.
         while(!gameOver){
+            //Sets up board and prompts user for direction input.
             console.clear();
             this.field.printPlayField();
             let direction = prompts.directionPrompt();
@@ -224,7 +228,7 @@ class Field {
     //**This needs to be set somewhere outside of the field if the field is going to change like in the player object
     firstLoss = false;
 
-    //Creates a random field of size x by y containing the provided number of holes with a random distribution accross the board
+    //Creates a random field of size x by y containing the provided number of holes with a random distribution accross the board.
     //***add percentage of holes? Can easily be done by adding a hole counter, though that will result in more holes at the beginning probably. Could randomize which array field is filled somehow? and fill those with holes, all the rest would be grass if not a hole (using a simple loop with if)
     static generateField(x,y,holes){
         //Creates a blank field filled with grass according to the given dimensions
@@ -248,7 +252,7 @@ class Field {
                 setHoles()
             }
         }
-        //Runs set holes until the desired number of holes is reached
+        //Runs set holes until the desired number of holes is reached.
         for(let i=0; i<holes; i++){
             setHoles()
         }
@@ -343,7 +347,49 @@ class Field {
     };
 };
 
+//Dialog object used by prompt and game objects
+const dialog = {
+    wrongInputYN(){
+        console.log("Pardon me. I'm not very smart, and  I don't understand. Please enter Y for yes and N for no.");
+    },
+    playYN(){
+        console.log("Would you like to play a game?");
+    },
+    intro(){
+        console.log(
+`That's great to hear, I'm excited for your!\n
+Thankfully the tornado missed your home town, 
+but the winds were still strong, and you lost your hat!
+I'm sure it's somewhere in that field over there though! 
+You can use W, A, S, D to move around and look for it.  Good luck!
+\nAre you ready?`
+        );
+    },
+    readyYN(){
+        console.log("You just made me so happy! Are you ready?");
+    },
+    waitingYN(){
+        console.log("Okay, I guess I'll wait. Just don't forget about me...Are you ready now?");
+    },
+    win(){
+        console.log("Woah, you did it! You found your hat! To be honest...I didn't see that coming.");
+    },
+    loseFirst(){
+        console.log("Oops, you fell in a hole!\nDid I forget to mention that there were holes?\nAlright, that one's on me.");
+    },
+    lose(){
+        console.log("Oh, you fell in a hole...again.");
+    },
+    startOverYN(){
+        console.log("Would you like to start over?");
+    },
+    goodbye(){
+        console.log("I'm really sorry to hear that. I'm going to miss you. Goodbye.");
+    }
+};
+
 //Contains all the prompts used within the game logic.
+//*****remove prompt from method names to match dialog? or add it to dialog? */
 const prompts = {
     //Prompts the user for a Yes or No answer and return Y or N.
     //Clears the console after each answer preparing it for the next dialog.
@@ -357,12 +403,13 @@ const prompts = {
             return "Y";
         }else{
             console.clear();
-            console.log("Pardon me. I'm not very smart, and  I don't understand. Please enter Y for yes and N for no.");
+            dialog.wrongInputYN();
             return this.yesNoPrompt();
         }
     },
 
     //Prompts the user for direction input and returns it. If input is invalid it will ask again.
+    //*Can this also be a switch?
     directionPrompt(){
         let direction = prompt(">");
         if(direction.toUpperCase()==="W"){
@@ -375,13 +422,13 @@ const prompts = {
             return "D";
         //Returns undefined if a key other than WASD is pressed
         }else{
-            return undefined
+            return undefined;
         }
     },
 
     //To be used after a user says they are not ready yet. Loops through itself until the user says they are ready. Then it will return Y.
     waitingPrompt(){
-        console.log("Okay, I guess I'll wait. Just don't forget about me...Are you ready now?")
+        dialog.waitingYN();
         let answer = this.yesNoPrompt();
         if(answer === "Y"){
             return "Y";
@@ -392,10 +439,10 @@ const prompts = {
 
     //Asks the player if they would like to play again and if they are ready and returns Y or N.
     playAgainPrompt(){
-        console.log("Would you like to start over?")
+        dialog.startOverYN();
         let answer = this.yesNoPrompt();
         if(answer === "Y"){
-            console.log("You just made me so happy! Are you ready?");
+            dialog.readyYN();
             answer = this.yesNoPrompt();
             if(answer === "Y"){
                 return "Y";
@@ -403,7 +450,7 @@ const prompts = {
                 return this.waitingPrompt();
             }
         }else if(answer === "N"){
-            console.log("I'm really sorry to hear that. I'm going to miss you. Goodbye.");
+            dialog.goodbye();
             return "N";
         }
     },
@@ -411,20 +458,13 @@ const prompts = {
     //Asks user if they would like to play and returns Y or N.
     startGamePrompt(){
         console.clear();
-        console.log("Would you like to play a game?");
+        dialog.playYN();
         let answer = this.yesNoPrompt();
         if(answer === "N"){
-            console.log("I'm sorry to hear that. Goodbye.");
+            dialog.goodbye();
             return "N";
         }else if(answer === "Y"){
-            console.log(
-    `That's great to hear, I'm excited for your!
-    Thankfully the tornado missed your home town, 
-    but the winds were still strong, and you lost your hat!
-    I'm sure it's somewhere in that field over there though! 
-    You can use W, A, S, D to move around and look for it.  Good luck!
-    Are you ready?`
-            );
+            dialog.intro();
             answer = this.yesNoPrompt();
             if(answer === "N"){
                 return this.waitingPrompt();
