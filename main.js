@@ -90,31 +90,22 @@ class Game {
         //Helper function that checks the move for Win/Loss and update the playField appropriately.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         //******add x and y arguments like is out of bounds? Would just have to update the calls with (x,y), might also want it to return win, lose, move rather than win() and lose() functions so it can be reused in field checker */
-        let checkMove = function(){
-            if(this.field.hiddenField[y][x]!== hole && this.field.hiddenField[y][x] !== hat){
+        // move out of bounds to this function
+        let checkMove = function(x,y){
+            if(!this.field.isHole(x,y) && !this.field.isHat(x,y)){
                 this.field.playField[y][x] = avatar;
-            }else if(this.field.hiddenField[y][x] === hole){
+            }else if(this.field.isHole(x,y)){
                 this.field.playField[y][x] = hole;
                 gameOver = true;
                 lose();
-            }else if(this.field.hiddenField[y][x] === hat){
+            }else if(this.field.isHat(x,y)){
                 this.field.playField[y][x] = hat;
                 gameOver = true;
                 win();
             }
         }.bind(this);
 
-        //Helper function that checks if a move will move out of bounds and returns true if so.
-        //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
-        let isOutOfBounds = function(x,y){
-            if(y < 0 || y > (this.field.hiddenField.length-1)){
-                return true;
-            }else if(x < 0 || x > (this.field.hiddenField[0].length-1)){
-                return true;
-            }else{
-                return false;
-            }
-        }.bind(this);
+
 
         //Helper function initiates the loss dialog and displays the final field.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
@@ -174,34 +165,34 @@ class Game {
             switch(direction){
                 case "W":
                     newY = y-1;
-                    if(isOutOfBounds(x, newY)===false){
+                    if(this.field.isOutOfBounds(x, newY)===false){
                         this.field.playField[y][x] = path;
                         y = newY;
-                        checkMove(); 
+                        checkMove(x,y); 
                     };
                     break;  
                 case "A":
                     newX = x-1;
-                    if(isOutOfBounds(newX, y)===false){
+                    if(this.field.isOutOfBounds(newX, y)===false){
                         this.field.playField[y][x] = path;
                         x = newX;
-                        checkMove();
+                        checkMove(x,y);
                     };
                     break;
                 case "S":
                     newY = y+1;
-                    if(isOutOfBounds(x, newY)===false){
+                    if(this.field.isOutOfBounds(x, newY)===false){
                         this.field.playField[y][x] = path;
                         y = newY;
-                        checkMove(); 
+                        checkMove(x,y); 
                     };
                     break;
                 case "D":
                     newX = x+1;
-                    if(isOutOfBounds(newX, y)===false){
+                    if(this.field.isOutOfBounds(newX, y)===false){
                         this.field.playField[y][x] = path;
                         x = newX;
-                        checkMove();
+                        checkMove(x,y);
                     };
                     break;
             };
@@ -230,7 +221,7 @@ class Field {
 
     //Creates a random field of size x by y containing the provided number of holes with a random distribution accross the board.
     //***add percentage of holes? Can easily be done by adding a hole counter, though that will result in more holes at the beginning probably. Could randomize which array field is filled somehow? and fill those with holes, all the rest would be grass if not a hole (using a simple loop with if)
-    static generateField(x,y,holes){
+    static generateRandomField(x,y,holes){
         //Creates a blank field filled with grass according to the given dimensions
         let newField = []
         for(let i=0; i<y; i++){
@@ -308,9 +299,6 @@ class Field {
 
 
 
-
-
-
     //Creates the play field that will be logged to the console with objective and holes hidden.
     static createPlayField(hiddenFieldArray){
         let playField = [];
@@ -347,6 +335,33 @@ class Field {
             }
             console.log(string);
         }
+    };
+
+    //Helper method that checks if a move will move out of bounds and returns true if so.
+    isOutOfBounds(x,y){
+        if(y < 0 || y > (this.hiddenField.length-1)){
+            return true;
+        }else if(x < 0 || x > (this.hiddenField[0].length-1)){
+            return true;
+        }else{
+            return false;
+        }
+    };
+
+    //Returns true if coordinates are a hole, else returns false
+    isHole(x,y){
+        if(this.hiddenField[y][x] === hole){
+            return true
+        }
+        return false
+    }
+
+    //Returns true if coordinates are a hat, else returns false
+    isHat(x,y){
+        if(this.hiddenField[y][x] === hat){
+            return true
+        }
+        return false
     };
 };
 
