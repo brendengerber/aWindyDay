@@ -90,7 +90,7 @@ class Game {
         //Helper function that checks the move for Win/Loss and update the playField appropriately.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         //******add x and y arguments like is out of bounds? Would just have to update the calls with (x,y), might also want it to return win, lose, move rather than win() and lose() functions so it can be reused in field checker */
-        // move out of bounds to this function
+        // move out of bounds to this function?
         let checkMove = function(x,y){
             if(!this.field.isHole(x,y) && !this.field.isHat(x,y)){
                 this.field.playField[y][x] = avatar;
@@ -223,13 +223,13 @@ class Field {
     //***add percentage of holes? Can easily be done by adding a hole counter, though that will result in more holes at the beginning probably. Could randomize which array field is filled somehow? and fill those with holes, all the rest would be grass if not a hole (using a simple loop with if)
     static generateRandomField(x,y,holes){
         //Creates a blank field filled with grass according to the given dimensions
-        let newField = []
+        let newHiddenFieldArray = []
         for(let i=0; i<y; i++){
             let newRow = []
             for(let i=0; i<x; i++){
                 newRow.push(grass)
             }
-            newField.push(newRow)
+            newHiddenFieldArray.push(newRow)
         }
 
         //Used to add holes, if there is already a hole in the random spot then the function runs again. 
@@ -237,8 +237,8 @@ class Field {
         let setHoles = function(){
             let xHoleIndex = Math.floor(Math.random() * (x))
             let yHoleIndex = Math.floor(Math.random() * (y))
-            if(newField[yHoleIndex][xHoleIndex] === grass){
-                newField[yHoleIndex][xHoleIndex] = hole
+            if(newHiddenFieldArray[yHoleIndex][xHoleIndex] === grass){
+                newHiddenFieldArray[yHoleIndex][xHoleIndex] = hole
             }else{
                 setHoles()
             }
@@ -250,11 +250,12 @@ class Field {
         
         //Validates the field and returns it if valid, else it re runs generateField.
         //*****Can I use a static method in here like this? do I need to use Field or this */
-        if(this.validateField(newField)){
-            return newField
+        let newHiddenField = new Field(newHiddenFieldArray)
+        if(this.validateField(newHiddenField)){
+            return newHiddenField
         }else{
             this.generateField(x,y)
-        }
+        } 
     }
     
 
