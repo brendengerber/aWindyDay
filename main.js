@@ -289,15 +289,18 @@ class Field {
         let direction = "S";
         let x = 0;
         let y = 0;
-        let win = undefined;
-        while(win === undefined && !lose){
-
+        let valid = undefined;
+        while(valid === undefined){
+            //is not lose or win
+            //should this maybe be a field method? is hole? is win? is lose?
+            //***make everything like .win, .lose out of bounds, be field methods that return true or false that game can use and validate field. This makes sense becaseu it gives info about the field, then the game can decide what to do with that info*/
+            testField.hiddenField[y][x]!== hole && testField.hiddenField[y][x] !== hat
         }
     }
 
 
 
-
+//both should be static, the generate field static creates an array, then calls the validate static at the end with the new array as the argument. If valid, returns the field, else runs the generate field static again until it is valid.  validate static should return true or false
 
 
 
@@ -348,10 +351,17 @@ class Field {
 };
 
 //Dialog object used by prompt and game objects
+//****Add random dialog here
 const dialog = {
+    //Used to randomly select one of the options and log it to the console.
+    randomSelector(options){
+        console.log(options[Math.floor(Math.random() * (options.length))]);
+    },
+
     wrongInputYN(){
         console.log("Pardon me. I'm not very smart, and  I don't understand. Please enter Y for yes and N for no.");
     },
+
     playYN(){
         console.log("Would you like to play a game?");
     },
@@ -365,26 +375,39 @@ You can use W, A, S, D to move around and look for it.  Good luck!
 \nAre you ready?`
         );
     },
+
     readyYN(){
-        console.log("You just made me so happy! Are you ready?");
-    },
+        let options = ["You just made me so happy! Are you ready?"];
+        this.randomSelector(options);
+        },
+
     waitingYN(){
-        console.log("Okay, I guess I'll wait. Just don't forget about me...Are you ready now?");
+        let options = ["Okay, I guess I'll wait. Just don't forget about me...Are you ready now?"];
+        this.randomSelector(options);
     },
+
     win(){
-        console.log("Woah, you did it! You found your hat! To be honest...I didn't see that coming.");
+        let options = ["Woah, you did it! You found your hat! To be honest...I didn't see that coming."];
+        this.randomSelector(options);
     },
+
     loseFirst(){
         console.log("Oops, you fell in a hole!\nDid I forget to mention that there were holes?\nAlright, that one's on me.");
     },
+
     lose(){
-        console.log("Oh, you fell in a hole...again.");
+        let options = ["Oh, you fell in a hole...again."];
+        this.randomSelector(options);
     },
+
     startOverYN(){
-        console.log("Would you like to start over?");
+        let options = ["Would you like to start over?"];
+        this.randomSelector(options);
     },
+
     goodbye(){
-        console.log("I'm really sorry to hear that. I'm going to miss you. Goodbye.");
+        let options = ["I'm really sorry to hear that. I'm going to miss you. Goodbye."]
+        this.randomSelector(options);
     }
 };
 
