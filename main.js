@@ -1,33 +1,3 @@
-//add static method to create a new field, and a static method to check a field's solvability. Then set a field variable inside the game object as that static method and change it if a new field is requ3ested
-//problem is that I want to have game be it's own game with it's own stats object that can be added to the player stats and a new game is made. Maybe inside the player object their should be a new method newGame which makes a new board with new stats, which then makes a new field.
-//add a method that somehow exports the current stats from game and saves them to the player array
-
-//* create static method on Field to create a random field 
-//*Is there a way to remove the waiting prompt and display the "here we go text under the new board for example?"
-//make sure when adding new field that it somehow keeps the first loss status of the previous field. This is moved to player, once player is integrated change where it checks for the status to the correct player object
-//*change all instances of holes and path etc to the characters, maybe make them properites of Field objects too. That way it's easier to change if i want to in the future
-//*Add green and brown for path and grass
-// after a stats file is made the comp should say "You came back! Would you like to see your stats or play another round?"
-//add arrays for dialogs to pull from
-//add logic for accepting input without hitting enter
-//add out of bounds logic
-//maybe dont need variable names for new objects like player, just add them to an array to be accessed by index, same for games in the game object within player
-//add logic to check starting position based on where the new field shows the person
-//move all dialog to dialog/prompt
-//add instant input
-//Maybe it's fun to leave the discovered holes there for the next try, then the fun thing is how many tries did it take you on average. So each time you fall the game will remember for you.
-//Wow you're good at finding these holes
-//Ouch that one looked like it hurt
-
-
-// Variable names WIP
-// let games = [0];
-// games.push(games.length)
-// let game+game[games.length-1] = new Game(field)
-
-
-//Need to move input functions to their own module
-
 //Imports necessary modules.
 const prompt = require('prompt-sync')({sigint: true});
 const readline = require('readline');
@@ -89,19 +59,26 @@ class Game {
         
         //Helper function that checks the move for Win/Loss and update the playField appropriately.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
+       //***maybe change checkMove to updateMove */
         //******add x and y arguments like is out of bounds? Would just have to update the calls with (x,y), might also want it to return win, lose, move rather than win() and lose() functions so it can be reused in field checker */
-        // move out of bounds to this function?
-        let checkMove = function(x,y){
+        //***should updatemove be part of Field just like isoutofbounds? */
+        let updateMove = function(x,y){
+            // if (this.field.isOutOfBounds(x,y)){
+            //     return false
+            // }
             if(!this.field.isHole(x,y) && !this.field.isHat(x,y)){
                 this.field.playField[y][x] = avatar;
+                // return true
             }else if(this.field.isHole(x,y)){
                 this.field.playField[y][x] = hole;
                 gameOver = true;
                 lose();
+                // return true
             }else if(this.field.isHat(x,y)){
                 this.field.playField[y][x] = hat;
                 gameOver = true;
                 win();
+                // return true
             }
         }.bind(this);
 
@@ -159,40 +136,60 @@ class Game {
                 this.field.printPlayField();
                 direction = prompts.directionPrompt();
             }
-            //Moves the player avatar, sets the x,y possition, and checks for win or loss conditions.
+            //Moves the player avatar, sets the x,y possition, and checks for win or loss conditions
+            ///***can path be moved to check move? does it matter? checkmove deals with the new space, while path is the old space and could be handled by the while loop */
+            //*******can make checkMove(x,y,newx,newy) This would allw me to move the path shit to checkMove too, which could even be renamed into move */
+            //**can remove the newy/nex like in validate? maybe no since in validate we already know we are moving? I could here, but would have to check the move first. Then can just increment with ++ and --
+
             let newY;
             let newX;
             switch(direction){
                 case "W":
                     newY = y-1;
-                    if(this.field.isOutOfBounds(x, newY)===false){
+                    // if(checkMove(x, newY)){
+                    //     this.field.playField[y][x] = path;
+                    //     y = newY
+                    // }
+                    if(!this.field.isOutOfBounds(x, newY)){
                         this.field.playField[y][x] = path;
                         y = newY;
-                        checkMove(x,y); 
+                        updateMove(x,y); 
                     };
                     break;  
                 case "A":
                     newX = x-1;
-                    if(this.field.isOutOfBounds(newX, y)===false){
+                    // if(checkMove(newX, y)){
+                    //     this.field.playField[y][x] = path;
+                    //     x = newX
+                    // }
+                    if(!this.field.isOutOfBounds(newX, y)){
                         this.field.playField[y][x] = path;
                         x = newX;
-                        checkMove(x,y);
+                        updateMove(x,y);
                     };
                     break;
                 case "S":
-                    newY = y+1;
-                    if(this.field.isOutOfBounds(x, newY)===false){
+                    newY = y+1
+                    // if(checkMove(x, newY)){
+                    //     this.field.playField[y][x] = path;
+                    //     y = newY
+                    // }
+                    if(!this.field.isOutOfBounds(x, newY)){
                         this.field.playField[y][x] = path;
                         y = newY;
-                        checkMove(x,y); 
+                        updateMove(x,y); 
                     };
                     break;
                 case "D":
-                    newX = x+1;
-                    if(this.field.isOutOfBounds(newX, y)===false){
+                    newX = x+1
+                    // if(checkMove(newX, y)){
+                    //     this.field.playField[y][x] = path;
+                    //     x = newX
+                    // }
+                    if(!this.field.isOutOfBounds(newX, y)){
                         this.field.playField[y][x] = path;
                         x = newX;
-                        checkMove(x,y);
+                        updateMove(x,y);
                     };
                     break;
             };
@@ -220,85 +217,149 @@ class Field {
     firstLoss = false;
 
     //Creates a random field of size x by y containing the provided number of holes with a random distribution accross the board.
-    //***add percentage of holes? Can easily be done by adding a hole counter, though that will result in more holes at the beginning probably. Could randomize which array field is filled somehow? and fill those with holes, all the rest would be grass if not a hole (using a simple loop with if)
     static generateRandomField(x,y,holes){
+        
         //Creates a blank field filled with grass according to the given dimensions
-        let newHiddenFieldArray = []
+        let newHiddenFieldArray = [];
         for(let i=0; i<y; i++){
-            let newRow = []
+            let newRow = [];
             for(let i=0; i<x; i++){
-                newRow.push(grass)
+                newRow.push(grass);
             }
-            newHiddenFieldArray.push(newRow)
+            newHiddenFieldArray.push(newRow);
         }
-
         //Used to add holes, if there is already a hole in the random spot then the function runs again. 
-        //This allows adding holes randomly throughout the field rather than having them clustered at the beginning if a simple loop was used to add randomly grass or hole characters until the desired number of holes was reached.
-        let setHoles = function(){
+        let setHole = function(){
             let xHoleIndex = Math.floor(Math.random() * (x))
             let yHoleIndex = Math.floor(Math.random() * (y))
             if(newHiddenFieldArray[yHoleIndex][xHoleIndex] === grass){
                 newHiddenFieldArray[yHoleIndex][xHoleIndex] = hole
             }else{
-                setHoles()
+                setHole()
             }
         }
-        //Runs set holes until the desired number of holes is reached.
-        for(let i=0; i<holes; i++){
-            setHoles()
+
+        //Used to add the hat, if there is a hole in the randomly selected location then the function will run again with the location removed from possible locations.
+        let setHat = function(){
+            let xHoleIndex = Math.floor(Math.random() * (x))
+            let yHoleIndex = Math.floor(Math.random() * (y))
+            if(newHiddenFieldArray[yHoleIndex][xHoleIndex] === grass){
+                newHiddenFieldArray[yHoleIndex][xHoleIndex] = hat
+            }else{
+                setHat()
+            }
         }
-        
-        //Validates the field and returns it if valid, else it re runs generateField.
-        //*****Can I use a static method in here like this? do I need to use Field or this */
-        let newHiddenField = new Field(newHiddenFieldArray)
-        if(this.validateField(newHiddenField)){
-            return newHiddenField
-        }else{
-            this.generateField(x,y)
-        } 
+
+        //Runs setHole() until the desired number of holes is reached and then runs setHat()
+        let setHatAndHoles = function(holes){
+            for(let i=0; i<holes; i++){
+                setHole(Field.createPossibleCoordinatesArray(x,y));
+            }
+            setHat(Field.createPossibleCoordinatesArray(x,y))
+        }
+        setHatAndHoles(holes);
+        return new Field(newHiddenFieldArray);
     }
     
-
-    //Validates a field using a wall follower algorithm. Returns true if valid and false if it is not solveable.
-    //test field[0][0] first, if hole, then fail\
-
-    //else start by moving down, then right, then up, then left
-    //if the move is a fail, go the next direction (i.e. by updating the direction variable and re running the move/test function)
-    //if the move is a success (i.e. grass), change xy coordinates, and try the same direction again (i.e not resetting the direction variable)
-    //after a failed move add to the counter
-        //add difficulties
-
-
-    //absolutely no clue how to determine fail
-    //maybe check move and isoutof bounds can be static game methods
-    //check move must be updated to return win or lose or true
-    //how to make Game statics work on the input field, do they need a field input too?
-    //fuck this only works if the hat is along the edge, 
-    //cant solve with pledge either as it only works starting inside and going out, not going out to in
-    //Trémaux's algorithm?
     
+    //Validates a field object and returns true if it is winnable and false if it is not.
+    //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
     static validateField(testField){
-        let direction = "S";
         let x = 0;
         let y = 0;
         let valid = undefined;
-        while(valid === undefined){
-            //is not lose or win
-            //should this maybe be a field method? is hole? is win? is lose?
-            //***make everything like .win, .lose out of bounds, be field methods that return true or false that game can use and validate field. This makes sense becaseu it gives info about the field, then the game can decide what to do with that info*/
-            testField.hiddenField[y][x]!== hole && testField.hiddenField[y][x] !== hat
+        //Creates an array to test containing 0s in place of path characters
+        let testFieldArray = testField.hiddenField.map(row => row.map(column => (column === grass) ? 0 : column));
+
+        //First checks that the starting possition is not a hole.
+        //***can this be moved to the createRandomField() method? As in dont put a hole in 0, 0 */
+        if(testFieldArray[0][0] === hole || testFieldArray[0][0] === hat){
+            valid = false
         }
+        //Helper function that decides which direction to move based on the crumbs present at adjacent spaces.
+        //Sets valid to true or false if the hat is found or all adjacent paths have 2 crumbs/holes.
+        let decideDirection = function(){
+            
+            //Finds values for crumbs dropped on adjacent moves.
+            //Uses optional chaining operator to avoid out of bounds moves which would cause a runtime error.
+            let possibleMoves = {
+                W: testFieldArray?.[y-1]?.[x],
+                A: testFieldArray?.[y]?.[x-1],
+                S: testFieldArray?.[y+1]?.[x],
+                D: testFieldArray?.[y]?.[x+1]
+            };
+            //Loops through each direction and records the direction with the least crumbs. If multiple directions have the same number, it will select the first one. 
+            //If all moves have more than 3 crumbs, it will return false as the field is invalid.
+            //The number of crumbs to count should be one less than the total number of possible paths coming to an intersection. In the case of this simple field it is 4 paths (In a real life maze you would not need to place any crumbs at intersections).
+            //If a move encounters the hat, it will return true as the field is valid.
+            //There is no need to check for holes or out of bounds as they will resolve to false when compared within the conditional statements
+            //The maximum number of acceptible crumbs is 3 which allows to account for dead ends.
+            //**could add a checkSpot(x,y) method to check if its out of bounds, hole, or hat
+            let directionOfLeastCrumbs = undefined;
+            for(let direction in possibleMoves){
+                if(directionOfLeastCrumbs === undefined && possibleMoves[direction] < 3){
+                    directionOfLeastCrumbs = direction;
+                }else if(directionOfLeastCrumbs !== undefined && possibleMoves[direction] < possibleMoves[directionOfLeastCrumbs] && possibleMoves[direction] < 3){
+                    directionOfLeastCrumbs = direction;
+                //If the hat is encountered, sets valid to true and breaks the loop, the field is valid.
+                }else if(possibleMoves[direction] === hat){
+                    valid = true;
+                    directionOfLeastCrumbs = direction;
+                }
+            }
+            //In the case that there are no available moves and no hat, then the field is not valid.    
+            if(directionOfLeastCrumbs === undefined){
+                valid = false;
+            }
+            return directionOfLeastCrumbs;
+        }.bind(this);
+
+        //Helper function that will move the xy possition and set crumbs on the previous space.
+        //This can run into call stack problems?
+        let move = function(direction){
+            testFieldArray[y][x]++;
+            if(direction === "W"){
+                y--;
+            }else if(direction === "A"){
+                x--;
+            }else if(direction === "S"){
+                y++;
+            }else if(direction === "D"){
+                x++;
+            }
+        };
+        //Continues to move around the board until either a win condition is met, or the field is found invalid
+        //**change to recursion? if(valid === undefined){move(decideDirection())} ??*/
+        while(valid === undefined){
+            move(decideDirection());
+        }
+        return valid;
     }
 
+    //Generates a valid Field object and returns it.
+    static generateValidField(x, y, holes){
+        let validField;
+        let valid = false;
+        while(!valid){
+            validField = Field.generateRandomField(x,y,holes);
+            valid = Field.validateField(validField);
+        }
+        return validField;
+    }
 
-
-//both should be static, the generate field static creates an array, then calls the validate static at the end with the new array as the argument. If valid, returns the field, else runs the generate field static again until it is valid.  validate static should return true or false
-
-
-
-
-
-
+    //Creates an array of objects containing all possible x,y coordinates.
+    static createPossibleCoordinatesArray(x,y){
+        let possibleXCoordinates = Array.from(Array(x).keys());
+        let possibleYCoordinates = Array.from(Array(y).keys());
+        let possibleCoordinates = [];
+        
+        for(let xCoordinate of possibleXCoordinates){
+            for(let yCoordinate of possibleYCoordinates){
+                possibleCoordinates.push({x:xCoordinate, y:yCoordinate});
+            }
+        }
+        return possibleCoordinates;
+    }
 
     //Creates the play field that will be logged to the console with objective and holes hidden.
     static createPlayField(hiddenFieldArray){
@@ -318,10 +379,10 @@ class Field {
 
     //Prints the field that will be displayed with objective and holes hidden.
     printPlayField(){
-        for(let line of this.playField){
+        for(let row of this.playField){
             let string = '';
-            for(let space of line){
-                string += space;
+            for(let column of row){
+                string += column;
             }
             console.log(string);
         }
@@ -329,10 +390,10 @@ class Field {
 
     //Prints the actual field with holes and objective revealed (useful for debugging).
     printHiddenField(){
-        for(let line of this.hiddenField){
+        for(let row of this.hiddenField){
             let string = '';
-            for(let space of line){
-                string += space;
+            for(let column of row){
+                string += column;
             }
             console.log(string);
         }
@@ -393,12 +454,18 @@ You can use W, A, S, D to move around and look for it.  Good luck!
     },
 
     readyYN(){
-        let options = ["You just made me so happy! Are you ready?"];
+        let options = [
+            "You just made me so happy! Are you ready?", 
+            "That's really fantastic! Are you ready?", 
+            "Now that's what I like to hear! Are you ready?"
+        ];
         this.randomSelector(options);
         },
 
     waitingYN(){
-        let options = ["Okay, I guess I'll wait. Just don't forget about me...Are you ready now?"];
+        let options = [
+            "Okay, I guess I'll wait. Just don't forget about me...Are you ready now?"
+        ];
         this.randomSelector(options);
     },
 
@@ -412,7 +479,13 @@ You can use W, A, S, D to move around and look for it.  Good luck!
     },
 
     lose(){
-        let options = ["Oh, you fell in a hole...again."];
+        let options = [
+            "Oh, you fell in a hole...again.", 
+            "Oops, there's another hole.", 
+            "The main strategy is to NOT fall in the holes", 
+            "Soooo...that was a hole.", 
+            "You're good at...faling in holes."
+        ];
         this.randomSelector(options);
     },
 
@@ -518,39 +591,42 @@ const prompts = {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//**eventually add array made with generate field module rather than a predefined array
 //**Add logic for the end. Would you like to play again? Which then generates a new field and assigns it to field
-let field = new Field([
-    [path, grass, grass],
-    [grass, grass, grass],
-    [grass, hole, hat],
-  ]);
+// let field = new Field([
+//     [grass, grass, hole, grass, grass, grass],
+//     [hole, grass, grass, grass, hole, grass],
+//     [hole, hole, hole, hole, grass, grass],
+//     [hat, grass, grass, grass, grass, hole]
+//   ]);
 
-let game1 = new Game(field)
-game1.startGame()
+// console.log(Field.validateField(field))
+
+
+
+
+
+// console.log(Field.generateRandomField(3,3,7))
+console.log(Field.generateValidField(5,5,23))
+
+
+
+// let testField =  new Field([
+//     [ '░', '░', '░', '^', 'O' ],
+//     [ 'O', 'O', 'O', 'O', 'O' ],
+//     [ 'O', 'O', 'O', 'O', 'O' ],
+//     [ 'O', 'O', 'O', 'O', 'O' ],
+//     [ 'O', 'O', 'O', 'O', 'O' ]
+//   ])
+// console.log(Field.validateField(testField))
+// let field = Field.generateRandomField(5,5,23)
+// console.log(field)
+
+
+
+
+  ////Starts game!
+// let game1 = new Game(field)
+// game1.startGame()
 
 
 // let field = new Field([
@@ -561,14 +637,6 @@ game1.startGame()
 //     ["░", "O", "░"],
 //   ]);
 
-
-
-
-// readline.clearLine(process.stdout);
-// readline.cursorTo(process.stdout, 0);
-
-
-//out of bounds function should take in x and y (according to how the keypress will change x and y if valid) if it is inbounds it should return true else it should return false. The moves function should only change x and y if the checkOutOfBoudns function returns true, else it should loop back for new input (like hitting an invisible wall)
 
 // ONLY WORKS IF HOLES CONNECTED TO WALL
 // static validateField(field){
