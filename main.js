@@ -218,7 +218,6 @@ class Field {
 
     //Creates a random field of size x by y containing the provided number of holes with a random distribution accross the board.
     static generateRandomField(x,y,holes){
-        
         //Creates a blank field filled with grass according to the given dimensions
         let newHiddenFieldArray = [];
         for(let i=0; i<y; i++){
@@ -229,27 +228,51 @@ class Field {
             newHiddenFieldArray.push(newRow);
         }
         //Used to add holes, if there is already a hole in the random spot then the function runs again. 
-        let setHole = function(){
-            let xHoleIndex = Math.floor(Math.random() * (x))
-            let yHoleIndex = Math.floor(Math.random() * (y))
-            if(newHiddenFieldArray[yHoleIndex][xHoleIndex] === grass){
-                newHiddenFieldArray[yHoleIndex][xHoleIndex] = hole
-            }else{
-                setHole()
-            }
-        }
-
+        //This allows adding holes randomly throughout the field rather than having them clustered at the beginning if a simple loop was used to add randomly grass or hole characters until the desired number of holes was reached.
         //Used to add the hat, if there is a hole in the randomly selected location then the function will run again with the location removed from possible locations.
-        let setHat = function(){
-            let xHoleIndex = Math.floor(Math.random() * (x))
-            let yHoleIndex = Math.floor(Math.random() * (y))
-            if(newHiddenFieldArray[yHoleIndex][xHoleIndex] === grass){
-                newHiddenFieldArray[yHoleIndex][xHoleIndex] = hat
+        //A recursive function is used and unsuitable location are removed when encountered to avoid a callstack overflow error on edge case.
+        let setHole = function(possibleCoordinatesArray){
+            //Selects a random x and y coordinate from the array of available coordinates
+            let testCoordinates = possibleCoordinatesArray[Math.floor(Math.random() * (possibleCoordinatesArray.length))]
+            //Sets the coordinates for the location on the field.
+            let xCoordinate = testCoordinates.x;
+            let yCoordinate = testCoordinates.y;
+            //Sets the index where the test coordinates are in possibleCoordinatesArray.
+            //This will be used later in the event that the coordinates are not grass to remove them from the array passed to the next recursive call.
+            let coordinatesIndex = possibleCoordinatesArray.findIndex(coordinates =>  coordinates.x === testCoordinates.x && coordinates.y === testCoordinates.y)
+            //Runs setHat again() if the random possition is not available.
+            if(newHiddenFieldArray[yCoordinate][xCoordinate] !== grass){
+                //Removes x and y coordinates if they are not grass in order to prevent a callstack overflow error in edge cases.
+                possibleCoordinatesArray.splice(coordinatesIndex, 1)
+                setHole(possibleCoordinatesArray)
+            //Sets the hole possition.
             }else{
-                setHat()
+                newHiddenFieldArray[yCoordinate][xCoordinate] = hole;
             }
         }
-
+    
+        //Used to add the hat, if there is a hole in the randomly selected location then the function will run again with the location removed from possible locations.
+        //A recursive function is used and unsuitable location are removed when encountered to avoid a callstack overflow error on edge case.
+        let setHat = function(possibleCoordinatesArray){
+            //Selects a random x and y coordinate from the array of available coordinates
+            let testCoordinates = possibleCoordinatesArray[Math.floor(Math.random() * (possibleCoordinatesArray.length))]
+            //Sets the coordinates for the location on the field.
+            let xCoordinate = testCoordinates.x;
+            let yCoordinate = testCoordinates.y;
+            //Sets the index where the test coordinates are in possibleCoordinatesArray.
+            //This will be used later in the event that the coordinates are not grass to remove them from the array passed to the next recursive call.
+            let coordinatesIndex = possibleCoordinatesArray.findIndex(coordinates =>  coordinates.x === testCoordinates.x && coordinates.y === testCoordinates.y)
+            //Runs setHat again() if the random possition is not available.
+            if(newHiddenFieldArray[yCoordinate][xCoordinate] !== grass){
+                //Removes x and y coordinates if they are not grass in order to prevent a callstack overflow error in edge cases.
+                possibleCoordinatesArray.splice(coordinatesIndex, 1)
+                setHat(possibleCoordinatesArray)
+            //Sets the hat possition.
+            }else{
+                newHiddenFieldArray[yCoordinate][xCoordinate] = hat;
+            }
+        }
+    
         //Runs setHole() until the desired number of holes is reached and then runs setHat()
         let setHatAndHoles = function(holes){
             for(let i=0; i<holes; i++){
@@ -260,7 +283,6 @@ class Field {
         setHatAndHoles(holes);
         return new Field(newHiddenFieldArray);
     }
-    
     
     //Validates a field object and returns true if it is winnable and false if it is not.
     //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
