@@ -7,7 +7,7 @@ const hat = '^';
 const hole = 'O';
 const grass = "░";
 const path = '*';
-const avatar = "𓀠"
+const avatar = "𓀠";
 
 //Used to create a new player and to track stats.
 class Player{
@@ -42,7 +42,7 @@ class Game {
 
     //Used to start the game or exit.
     startGame(){
-        let answer = prompts.startGamePrompt()
+        let answer = prompts.startGamePrompt();
         if(answer === "Y"){
             this.playGame();
         }else if(answer === "N"){
@@ -91,9 +91,9 @@ class Game {
             this.field.printPlayField();
             if(this.field.firstLoss === false){
                 this.field.firstLoss = true;
-                dialog.loseFirst()
+                dialog.loseFirst();
             }else{
-                dialog.lose()
+                dialog.lose();
             }
             resetGame();
         }.bind(this);
@@ -239,12 +239,12 @@ class Field {
             let yCoordinate = testCoordinates.y;
             //Sets the index where the test coordinates are in possibleCoordinatesArray.
             //This will be used later in the event that the coordinates are not grass to remove them from the array passed to the next recursive call.
-            let coordinatesIndex = possibleCoordinatesArray.findIndex(coordinates =>  coordinates.x === testCoordinates.x && coordinates.y === testCoordinates.y)
+            let coordinatesIndex = possibleCoordinatesArray.findIndex(coordinates =>  coordinates.x === testCoordinates.x && coordinates.y === testCoordinates.y);
             //Runs setHat again() if the random possition is not available.
             if(newHiddenFieldArray[yCoordinate][xCoordinate] !== grass){
                 //Removes x and y coordinates if they are not grass in order to prevent a callstack overflow error in edge cases.
-                possibleCoordinatesArray.splice(coordinatesIndex, 1)
-                setHole(possibleCoordinatesArray)
+                possibleCoordinatesArray.splice(coordinatesIndex, 1);
+                setHole(possibleCoordinatesArray);
             //Sets the hole possition.
             }else{
                 newHiddenFieldArray[yCoordinate][xCoordinate] = hole;
@@ -261,12 +261,12 @@ class Field {
             let yCoordinate = testCoordinates.y;
             //Sets the index where the test coordinates are in possibleCoordinatesArray.
             //This will be used later in the event that the coordinates are not grass to remove them from the array passed to the next recursive call.
-            let coordinatesIndex = possibleCoordinatesArray.findIndex(coordinates =>  coordinates.x === testCoordinates.x && coordinates.y === testCoordinates.y)
+            let coordinatesIndex = possibleCoordinatesArray.findIndex(coordinates =>  coordinates.x === testCoordinates.x && coordinates.y === testCoordinates.y);
             //Runs setHat again() if the random possition is not available.
             if(newHiddenFieldArray[yCoordinate][xCoordinate] !== grass){
                 //Removes x and y coordinates if they are not grass in order to prevent a callstack overflow error in edge cases.
-                possibleCoordinatesArray.splice(coordinatesIndex, 1)
-                setHat(possibleCoordinatesArray)
+                possibleCoordinatesArray.splice(coordinatesIndex, 1);
+                setHat(possibleCoordinatesArray);
             //Sets the hat possition.
             }else{
                 newHiddenFieldArray[yCoordinate][xCoordinate] = hat;
@@ -278,7 +278,7 @@ class Field {
             for(let i=0; i<holes; i++){
                 setHole(Field.createPossibleCoordinatesArray(x,y));
             }
-            setHat(Field.createPossibleCoordinatesArray(x,y))
+            setHat(Field.createPossibleCoordinatesArray(x,y));
         }
         setHatAndHoles(holes);
         return new Field(newHiddenFieldArray);
@@ -296,7 +296,7 @@ class Field {
         //First checks that the starting possition is not a hole.
         //***can this be moved to the createRandomField() method? As in dont put a hole in 0, 0 */
         if(testFieldArray[0][0] === hole || testFieldArray[0][0] === hat){
-            valid = false
+            valid = false;
         }
         //Helper function that decides which direction to move based on the crumbs present at adjacent spaces.
         //Sets valid to true or false if the hat is found or all adjacent paths have 2 crumbs/holes.
@@ -435,17 +435,17 @@ class Field {
     //Returns true if coordinates are a hole, else returns false
     isHole(x,y){
         if(this.hiddenField[y][x] === hole){
-            return true
+            return true;
         }
-        return false
+        return false;
     }
 
     //Returns true if coordinates are a hat, else returns false
     isHat(x,y){
         if(this.hiddenField[y][x] === hat){
-            return true
+            return true;
         }
-        return false
+        return false;
     };
 };
 
