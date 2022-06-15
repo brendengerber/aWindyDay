@@ -82,8 +82,6 @@ class Game {
             }
         }.bind(this);
 
-
-
         //Helper function initiates the loss dialog and displays the final field.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let lose = function(){
@@ -504,7 +502,7 @@ You can use W, A, S, D to move around and look for it.  Good luck!
         let options = [
             "Oh, you fell in a hole...again.", 
             "Oops, there's another hole.", 
-            "The main strategy is to NOT fall in the holes", 
+            "The main strategy is to NOT fall in the holes.", 
             "Soooo...that was a hole.", 
             "You're good at...faling in holes."
         ];
@@ -610,54 +608,17 @@ const prompts = {
 };
 
 
+//Starts game with basic field
 
+let field = new Field([
+    [grass, grass, hole, grass, grass, grass],
+    [hole, grass, grass, grass, hole, grass],
+    [hole, hole, hole, hole, grass, grass],
+    [hat, grass, grass, grass, grass, hole]
+  ]);
 
-
-//**Add logic for the end. Would you like to play again? Which then generates a new field and assigns it to field
-// let field = new Field([
-//     [grass, grass, hole, grass, grass, grass],
-//     [hole, grass, grass, grass, hole, grass],
-//     [hole, hole, hole, hole, grass, grass],
-//     [hat, grass, grass, grass, grass, hole]
-//   ]);
-
-// console.log(Field.validateField(field))
-
-
-
-
-
-// console.log(Field.generateRandomField(3,3,7))
-console.log(Field.generateValidField(5,5,23))
-
-
-
-// let testField =  new Field([
-//     [ '░', '░', '░', '^', 'O' ],
-//     [ 'O', 'O', 'O', 'O', 'O' ],
-//     [ 'O', 'O', 'O', 'O', 'O' ],
-//     [ 'O', 'O', 'O', 'O', 'O' ],
-//     [ 'O', 'O', 'O', 'O', 'O' ]
-//   ])
-// console.log(Field.validateField(testField))
-// let field = Field.generateRandomField(5,5,23)
-// console.log(field)
-
-
-
-
-  ////Starts game!
-// let game1 = new Game(field)
-// game1.startGame()
-
-
-// let field = new Field([
-//     ["*", "O", "░"],
-//     ["░", "O", "░"],
-//     ["░", "^", "░"],
-//     ["░", "░", "░"],
-//     ["░", "O", "░"],
-//   ]);
+let game1 = new Game(field)
+game1.startGame()
 
 
 // ONLY WORKS IF HOLES CONNECTED TO WALL
