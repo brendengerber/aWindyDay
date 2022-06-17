@@ -51,7 +51,7 @@ class Game {
         return this._field;
     };
     get stats(){
-        return this._stats
+        return this._stats;
     }
     
 
@@ -409,8 +409,8 @@ class Field {
 
     //Resets the playField back to it's original state after being altered during gameplay.        
     resetPlayField(){
-        this.playField = Field.createPlayField(this.hiddenField)
-    }
+        this.playField = Field.createPlayField(this.hiddenField);
+    };
 
     //Helper method that checks if a move will move out of bounds and returns true if so.
     isOutOfBounds(x,y){
@@ -447,9 +447,9 @@ class Field {
 //**make prompt and dialog names match */
 let prompts = {    
     formattedPrompt(){
-        let answer = prompt(">")
-        console.clear()
-        return answer.toUpperCase()
+        let answer = prompt(">");
+        console.clear();
+        return answer.toUpperCase();
     },
 
     //Prompts the user for direction input and returns it. If input is invalid it will ask again.
@@ -479,9 +479,9 @@ let prompts = {
         }else if(answer === "2" || answer === "N"){
             this.waiting();
         }else{
-            console.clear()
-            dialogs.wrongInput()
-            return this.waiting() 
+            console.clear();
+            dialogs.wrongInput();
+            return this.waiting();
         }
     },
 
@@ -497,18 +497,18 @@ let prompts = {
             }else if(answer === "2" || answer === "N"){
                 return this.waiting();
             }else{
-                console.clear()
-                dialogs.wrongInput()
+                console.clear();
+                dialogs.wrongInput();
                 return this.waiting();
             }
         }else if(answer === "2" || answer === "N"){
             dialogs.goodbye();
             return "N";
         }else{
-            console.clear()
+            console.clear();
             
-            dialogs.wrongInput() 
-            return this.tryAgain()   
+            dialogs.wrongInput();
+            return this.tryAgain();  
         }
     },
 
@@ -523,8 +523,8 @@ let prompts = {
             }else if(answer === "2" || answer === "N"){
                 return this.waiting();
             }else{
-                console.clear()
-                dialogs.wrongInput()
+                console.clear();
+                dialogs.wrongInput();
                 return this.waiting();
             }
         }else if(answer === "2" || answer === "N"){
@@ -532,7 +532,7 @@ let prompts = {
             return "N";
         }else{
             console.clear();
-            dialogs.wrongInput() ;
+            dialogs.wrongInput();
             return this.playAgain();   
         }
     },
@@ -547,11 +547,11 @@ let prompts = {
             return "N";
         }else if(answer === "1" || answer === "Y"){
             dialogs.intro();
-            return "Y"
+            return "Y";
         }else{
-            console.clear()
-            dialogs.wrongInput()
-            return this.play()
+            console.clear();
+            dialogs.wrongInput();
+            return this.play();
         }
     },
 
@@ -568,8 +568,8 @@ let prompts = {
             console.clear();
             return "H";
         }else{
-            console.clear()
-            dialogs.wrongInput()
+            console.clear();
+            dialogs.wrongInput();
             return this.difficulty();
         }
     }
@@ -601,7 +601,7 @@ let prompts = {
     },
     
     opening(){
-        let options = ["Hello? Hello?! Who's there?!"]
+        let options = ["Hello? Hello?! Who's there?!"];
         this.randomSelector(options);
     },
 
@@ -611,17 +611,17 @@ let prompts = {
             `Oh ${name}, you gave me quite the fright!`, 
             `Yikes ${name}, you startled me!`, 
             `Ah ${name}, long time no see!`
-        ]
+        ];
         this.randomSelector(options);
     },
 
     newPlayer(){
-        let name = undefined
-        console.log(`Why ${name}, I don't believe I've had the pleasure.`)
+        let name = undefined;
+        console.log(`Why ${name}, I don't believe I've had the pleasure.`);
     },
     
     wrongInput(){
-        console.log("Pardon me. I'm not very smart and I didn't quite understand that.")
+        console.log("Pardon me. I'm not very smart and I didn't quite understand that.");
     },
 
     playGame(){
@@ -646,7 +646,7 @@ You can use W, A, S, D to move around and look for it.\n`
             "Now that's what I like to hear! Are you ready?"
         ];
         this.randomSelector(options);
-        this.yesNo()
+        this.yesNo();
         },
 
     waiting(){
@@ -684,7 +684,7 @@ You can use W, A, S, D to move around and look for it.\n`
     },
 
     playAgain(){
-        let options = ["\nWould you like to play again on a new field?"]
+        let options = ["\nWould you like to play again on a new field?"];
         this.randomSelector(options);
         this.yesNo();
     },
@@ -693,29 +693,29 @@ You can use W, A, S, D to move around and look for it.\n`
         let options = [
             "I'm really sorry to hear that. I'm going to miss you. Goodbye.",
             "It's so lonely without you. I hope you come back soon. Goodbye."
-        ]
+        ];
         this.randomSelector(options);
     },
 
     difficulty(){
-        let options = ["What difficulty would you like to play?"]
-        this.randomSelector(options)
+        let options = ["What difficulty would you like to play?"];
+        this.randomSelector(options);
         this.easyMediumHard();
     },
 
     easy(){
-        let options = ["Alright, this should be a cinch!"]
-        this.randomSelector(options)
+        let options = ["Alright, this should be a cinch!"];
+        this.randomSelector(options);
     },
 
     medium(){
-        let options = ["A noble selection."]
-        this.randomSelector(options)
+        let options = ["A noble selection."];
+        this.randomSelector(options);
     },
 
     hard(){
-        let options = ["Yikes, I really hope you make it out alive!"]
-        this.randomSelector(options)
+        let options = ["Yikes, I really hope you make it out alive!"];
+        this.randomSelector(options);
     }
 };
 
@@ -748,7 +748,7 @@ let interface = {
         //Contains logic in case of a win.
         if(outcome === "win"){
             dialogs.win();
-            this.setNewGame()
+            this.setNewGame();
         //Contains logic in case of a loss.
         }else if(outcome === "lose"){
             if(this.game.field.firstLoss === false){
@@ -780,14 +780,14 @@ let interface = {
         if(answer === "Y"){
             console.clear();
             this.setFieldAndGame();
-            this.startGame()
+            this.startGame();
         }
     },
 
     //Helper method that sets the current field and game objects.
     setFieldAndGame(){
         //Generates a valid field based on difficulty. Difficulty settings can be tweaked here.
-        let difficulty = prompts.difficulty()
+        let difficulty = prompts.difficulty();
         switch(difficulty){
             case "E":
                 this.field = Field.generateValidField(3,3,2);
@@ -799,13 +799,13 @@ let interface = {
                 this.field = Field.generateValidField(7,7,11);
         };
         //Creates the game according to difficulty.
-        this.game = new Game(difficulty, this.field)
+        this.game = new Game(difficulty, this.field);
     }
 }
 
 
 
-interface.intro()
+interface.intro();
 
 // let testField = Field.generateValidField(5,5,5)
 
