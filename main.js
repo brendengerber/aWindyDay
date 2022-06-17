@@ -1,13 +1,16 @@
 //Imports necessary modules.
 const prompt = require('prompt-sync')({sigint: true});
-const readline = require('readline');
+// const readline = require('readline');
+const fs = require('fs');
 
 //Sets game characters.
 const hat = '^';
 const hole = 'O';
-const grass = "░";
+const grass = '░';
 const path = '*';
-const avatar = "𓀠";
+const avatar = '\u03EE'
+// const avatar = "𓀠";
+// \uD80C\uDC20
 
 //***reset game can stay in game i suppose since it will reuse the same game object, what to do with the prompts in it though? but would probably be better as part of interface */
 //Interface used for greetings, starting games, transitions, and goodbyes
@@ -18,22 +21,41 @@ const avatar = "𓀠";
 //Used to create a new player and to track stats.
 class Player{
     constructor(name){
-        this._name = name;
+        this.name = name;
     };
-    get name(){
-        return this._name;
-    };
-    stats = {
+
+    statsEasy = {
         wins: 0,
-        losses: 0,
-        totalMoves: 0,
-        averageMoves: 0,
-        averageAttemptsToWin: 0,
-        fieldsLost: 0,
-        fieldsWon: 0,
+        unsolved: 0,
+        totalMovesToWin: 0,
+        averageMovesToWin: this.totalMovesToWin/this.wins,
+        totalAttemptsToWin: 0,
+        averageAttemptsToWin: this.totalAttemptsToWin/this.wins,
         winPercentage: this.fieldsWon/(this.fieldsWon + this.fieldsLost)
     };
+
+    statsMedium = {
+        wins: 0,
+        unsolved: 0,
+        totalMovesToWin: 0,
+        averageMovesToWin: this.totalMovesToWin/this.wins,
+        totalAttemptsToWin: 0,
+        averageAttemptsToWin: this.totalAttemptsToWin/this.wins,
+        winPercentage: this.fieldsWon/(this.fieldsWon + this.fieldsLost)
+    };
+
+    statsHard = {
+        wins: 0,
+        unsolved: 0,
+        totalMovesToWin: 0,
+        averageMovesToWin: this.totalMovesToWin/this.wins,
+        totalAttemptsToWin: 0,
+        averageAttemptsToWin: this.totalAttemptsToWin/this.wins,
+        winPercentage: this.fieldsWon/(this.fieldsWon + this.fieldsLost)
+    };
+
     games = [];
+
     firstLoss = false;
 };
 
@@ -198,8 +220,6 @@ class Field {
         this._playField = newPlayFieldArray;
         // this._playField = Field.createPlayField(hiddenFieldArray);
     };
-    //**This needs to be set somewhere outside of the field if the field is going to change like in the player object
-    firstLoss = false;
 
     //Creates a random field of size x by y containing the provided number of holes with a random distribution accross the board.
     static generateRandomField(x,y,holes){
@@ -445,10 +465,25 @@ class Field {
 //***I suppose I could make a formatedYesNo() to avoid having if(answer === "1" || answer === "Y") over and over) */
 //**make prompt and dialog names match */
 let prompts = {    
+    //Used for obtaining answers to multiple choice options.
     formattedPrompt(){
         let answer = prompt(">");
+        console.clear();        
+        if(/^[a-zA-Z0-9]{1}$/.test(answer)){
+            return answer.toUpperCase();
+        }else{
+            return false;
+        }
+    },
+    //Used for obtaining a username. Allows only alphanumeric characters up to 15 long.
+    formattedInputPrompt(){
+        let answer = prompt(">");
         console.clear();
-        return answer.toUpperCase();
+        if(/^[a-zA-Z0-9]{1,15}$/.test(answer)){
+            return answer;
+        }else{
+            return false;
+        }     
     },
 
     //Prompts the user for direction input and returns it. If input is invalid it will ask again.
@@ -466,6 +501,18 @@ let prompts = {
         //Returns undefined if a key other than WASD is pressed
         }else{
             return undefined;
+        }
+    },
+    //Prompts User to enter their username.
+    playerName(){
+        dialogs.playerName();
+        let name = prompts.formattedInputPrompt();
+        if(name){
+            return name;
+        }else{
+            console.clear();
+            dialogs.unspportedString();
+            return this.playerName();
         }
     },
 
@@ -600,13 +647,13 @@ let prompts = {
         );
     },
     
-    opening(){
+    playerName(){
         let options = ["Hello? Hello?! Who's there?!"];
         this.randomSelector(options);
     },
 
     returningPlayer(){
-        let name = undefined
+        let name = interface.player.name;
         let options = [
             `Oh ${name}, you gave me quite the fright!`, 
             `Yikes ${name}, you startled me!`, 
@@ -616,12 +663,15 @@ let prompts = {
     },
 
     newPlayer(){
-        let name = undefined;
+        let name = interface.player.name;
         console.log(`Why ${name}, I don't believe I've had the pleasure.`);
     },
     
     wrongInput(){
         console.log("Pardon me. I'm not very smart and I didn't quite understand that.");
+    },
+    unspportedString(){
+        console.log("I'm sorry please only use up to 15 numbers and letters...It's just easier for me to remember that way.")
     },
 
     play(){
@@ -725,13 +775,37 @@ You can use W, A, S, D to move around and look for it.\n`
 //**let win = game.playGame */
 //**win should return win and interface should run the logic */
 //***The game should be entered onto player object and recorded immediately so that even if they force close the program, they will still be credited with a loss or at least an incomplete */
+//*Is it okay if i have dialog in here? Should it all go into prompts? Should it all go into interface?
 let interface = {
+    player: undefined,
+    //Contains a list of all local players.
+    players: undefined,
+    //Used to quickly access the player to update stats.
+    playerIndex: undefined,
     field: undefined,
     game: undefined,
 
     //Begins dialog with the user.
-    intro(){
+    begin(){
         console.clear();
+        
+        //Checks if a local player log exists and creates one if not.
+        if(!fs.existsSync("./players.json")){
+            fs.writeFileSync("./players.json", JSON.stringify([]));
+        };
+        
+        //Loads the player list
+        this.players = require("./players.json")
+
+        //Prompts player to enter their name.
+        let name = prompts.playerName();
+
+        // Loads the player and sets playerIndex. Logs the appropriate welcome message.
+        this.loadPlayer(name);
+
+        //Sets the playerIndex
+        this.playerIndex = this.players.findIndex(player =>  player.name === this.player.name);
+
         //Prompts the user if they would like to play. Begins the game if yes. Exits if no.
         let start = prompts.play();
         if(start === "Y"){
@@ -740,6 +814,28 @@ let interface = {
         }else if(start === "N"){
             process.exit();
         }
+    },
+    
+    // Loads player object and creates one if the player is new.
+    loadPlayer(name){
+        // Checks if the player already exists, and loads the player info if so.
+        for(let player of this.players){
+            if(name === player.name){
+                this.player = player;
+                dialogs.returningPlayer();
+                return;
+            }
+        }
+
+        //Creates the new player, adds it to the list of players, and updates the JSON file.
+        this.player = new Player(name);
+        this.players.push(this.player);
+        dialogs.newPlayer();
+    },
+
+    updatePlayersJSON(){
+        this.players[this.playerIndex] = this.player
+        fs.writeFileSync("./players.json", JSON.stringify(this.players));
     },
 
     //Begins the game and handles wins and losses.
@@ -751,8 +847,8 @@ let interface = {
             this.setNewGame();
         //Contains logic in case of a loss.
         }else if(outcome === "lose"){
-            if(this.game.field.firstLoss === false){
-                this.game.field.firstLoss = true;
+            if(this.player.firstLoss === false){
+                this.player.firstLoss = true;
                 dialogs.loseFirst();
                 this.resetGame();
             }else{
@@ -805,7 +901,12 @@ let interface = {
 
 
 
-interface.intro();
+interface.begin();
+
+// let test = new Player("brenden")
+// let testArray = []
+// testArray.push(test)
+// console.log(testArray)
 
 // let testField = Field.generateValidField(5,5,5)
 
