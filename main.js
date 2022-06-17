@@ -9,6 +9,12 @@ const grass = "░";
 const path = '*';
 const avatar = "𓀠";
 
+//***reset game can stay in game i suppose since it will reuse the same game object, what to do with the prompts in it though? but would probably be better as part of interface */
+//Interface used for greetings, starting games, transitions, and goodbyes
+
+//**need to change this etc */
+
+
 //Used to create a new player and to track stats.
 class Player{
     constructor(name){
@@ -33,35 +39,35 @@ class Player{
 
 //Used to play the game.
 class Game {
-    constructor(field){
+    constructor(difficulty, field){
         this._field = field;
+        this._stats = {
+            attempts: 0,
+            win: false,
+            difficulty: difficulty
+        };
     };
     get field(){
         return this._field;
     };
-
-    //Used to start the game or exit.
-    startGame(){
-        let answer = prompts.startGamePrompt();
-        if(answer === "Y"){
-            this.playGame();
-        }else if(answer === "N"){
-            process.exit();
-        }
-    };
+    get stats(){
+        return this._stats
+    }
+    
 
     //Contains game logic.
-    //**********Should all these functions be methods? I don't think it is necessary
     playGame(){
         let gameOver = false;
         let x = 0;
         let y = 0;
+        let outcome;
         
         //Helper function that checks the move for Win/Loss and update the playField appropriately.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
        //***maybe change checkMove to updateMove */
         //******add x and y arguments like is out of bounds? Would just have to update the calls with (x,y), might also want it to return win, lose, move rather than win() and lose() functions so it can be reused in field checker */
         //***should updatemove be part of Field just like isoutofbounds? */
+        ///**should while loop be its own function? */
         let updateMove = function(x,y){
             // if (this.field.isOutOfBounds(x,y)){
             //     return false
@@ -87,13 +93,9 @@ class Game {
         let lose = function(){
             console.clear();
             this.field.printPlayField();
-            if(this.field.firstLoss === false){
-                this.field.firstLoss = true;
-                dialog.loseFirst();
-            }else{
-                dialog.lose();
-            }
-            resetGame();
+            this.stats.attempts ++;
+            this.stats.win = false;
+            outcome = "lose";
         }.bind(this);
 
         //Helper function initiates the loss dialog and displays the final field.
@@ -101,25 +103,9 @@ class Game {
         let win = function(){
             console.clear();
             this.field.printPlayField();
-            dialog.win();
-            resetGame();
-        }.bind(this);
-
-        //Helper function resets the game and begins again.
-        //**Add option for a new field here and make a new a new instance of Game
-        let resetGame = function(){
-            let answer = prompts.playAgainPrompt();
-            if(answer === "Y"){
-                console.clear();
-                gameOver = false;
-                x = 0;
-                y = 0;
-                //***********not working, think i just need to add play field and hidden field properties for game. field will be the input field that doesnt change unless it is set to have a new field */
-                this.field.playField = Field.createPlayField(this.field.hiddenField);
-                this.playGame();
-            }else if(answer === "N"){
-                process.exit();
-            }
+            this.stats.win = true;
+            this.stats.attempts ++;
+            outcome = "win";
         }.bind(this);
 
         //Play loop logic that is called to allow the player to move around the board. Changes playField to show path. Includes win/loss and out of bounds logic.
@@ -127,12 +113,12 @@ class Game {
             //Sets up board and prompts user for direction input.
             console.clear();
             this.field.printPlayField();
-            let direction = prompts.directionPrompt();
-            //Resets the board if directionPrompt returns undefined (i.e. a key other than wasd was pressed).
+            let direction = prompts.direction();
+            //Resets the board if prompt.direction() returns undefined (i.e. a key other than wasd was pressed).
             if(direction === undefined){
                 console.clear();
                 this.field.printPlayField();
-                direction = prompts.directionPrompt();
+                direction = prompts.direction();
             }
             //Moves the player avatar, sets the x,y possition, and checks for win or loss conditions
             ///***can path be moved to check move? does it matter? checkmove deals with the new space, while path is the old space and could be handled by the while loop */
@@ -192,6 +178,7 @@ class Game {
                     break;
             };
         };
+        return outcome
     }; 
 };
 
@@ -447,46 +434,221 @@ class Field {
     };
 };
 
-//Dialog object used by prompt and game objects
-//****Add random dialog here
-const dialog = {
+//******remove invalid inputs opening a new dialog, in that case just run clear console, and run whole prompt again from the beginning */
+//Contains all the prompts used within the game logic.
+//****perhaps change dialog names to match the prompt names */
+//***I suppose I could make a formatedYesNo() to avoid having if(answer === "1" || answer === "Y") over and over) */
+//**make prompt and dialog names match */
+let prompts = {    
+    formattedPrompt(){
+        let answer = prompt(">")
+        console.clear()
+        return answer.toUpperCase()
+    },
+
+    //Prompts the user for direction input and returns it. If input is invalid it will ask again.
+    //*Can this also be a switch?
+    direction(){
+        let direction = this.formattedPrompt();
+        if(direction==="W"){
+            return "W";
+        }else if(direction==="A"){
+            return "A";
+        }else if(direction==="S"){
+            return "S";
+        }else if(direction==="D"){
+            return "D";
+        //Returns undefined if a key other than WASD is pressed
+        }else{
+            return undefined;
+        }
+    },
+
+    //To be used after a user says they are not ready yet. Loops through itself until the user says they are ready. Then it will return Y.
+    waiting(){
+        dialogs.waiting();
+        let answer = this.formattedPrompt();
+        if(answer === "1" || answer === "Y"){
+            return "Y";
+        }else if(answer === "2" || answer === "N"){
+            this.waiting();
+        }else{
+            console.clear()
+            dialogs.wrongInput()
+            return this.waiting() 
+        }
+    },
+
+    //Asks the player if they would like to play again and if they are ready and returns Y or N.
+    tryAgain(){
+        dialogs.tryAgain();
+        let answer = this.formattedPrompt();
+        if(answer === "1" || answer === "Y"){
+            dialogs.ready();
+            answer = this.formattedPrompt();
+            if(answer === "1" || answer === "Y"){
+                return "Y";
+            }else if(answer === "2" || answer === "N"){
+                return this.waiting();
+            }else{
+                console.clear()
+                dialogs.wrongInput()
+                return this.waiting();
+            }
+        }else if(answer === "2" || answer === "N"){
+            dialogs.goodbye();
+            return "N";
+        }else{
+            console.clear()
+            
+            dialogs.wrongInput() 
+            return this.tryAgain()   
+        }
+    },
+
+    playAgain(){
+        dialogs.playAgain();
+        let answer = this.formattedPrompt();
+        if(answer === "1" || answer === "Y"){
+            dialogs.ready();
+            answer = this.formattedPrompt();
+            if(answer === "1" || answer === "Y"){
+                return "Y";
+            }else if(answer === "2" || answer === "N"){
+                return this.waiting();
+            }else{
+                console.clear()
+                dialogs.wrongInput()
+                return this.waiting();
+            }
+        }else if(answer === "2" || answer === "N"){
+            dialogs.goodbye();
+            return "N";
+        }else{
+            console.clear();
+            dialogs.wrongInput() ;
+            return this.playAgain();   
+        }
+    },
+
+    //Asks user if they would like to play and returns Y or N.
+    //**why does no come first here? */
+    startGame(){
+        dialogs.play();
+        let answer = this.formattedPrompt();
+        if(answer === "2" || answer === "N"){
+            dialogs.goodbye();
+            return "N";
+        }else if(answer === "1" || answer === "Y"){
+            dialogs.intro();
+            return "Y"
+        }else{
+            console.clear()
+            dialogs.wrongInput()
+            return this.startGame()
+        }
+    },
+
+    difficulty(){
+        dialogs.difficulty()
+        let answer = this.formattedPrompt()
+        if(answer === "1" || answer === "E"){
+            console.clear();
+            return "E";
+        }else if(answer === "2" || answer === "M"){
+            console.clear();
+            return "M";
+        }else if(answer === "3" || answer === "H"){
+            console.clear();
+            return "H";
+        }else{
+            console.clear()
+            dialogs.wrongInput()
+            return this.difficulty();
+        }
+    }
+};
+
+ //Dialog object used by prompt and game objects
+ //*** is the YN better removed? what about EMH */
+ let dialogs = {
     //Used to randomly select one of the options and log it to the console.
     randomSelector(options){
         console.log(options[Math.floor(Math.random() * (options.length))]);
     },
 
-    wrongInputYN(){
-        console.log("Pardon me. I'm not very smart, and  I don't understand. Please enter Y for yes and N for no.");
+    yesNo(){
+        console.log(
+`-----------------
+    1. Yes
+    2. No`             
+        );
     },
 
-    playYN(){
-        console.log("Would you like to play a game?");
+    easyMediumHard(){
+        console.log(
+`-----------------
+    1. Easy
+    2. Medium
+    3. Hard`             
+        );
     },
+    
+    opening(){
+        let options = ["Hello? Hello?! Who's there?!"]
+        this.randomSelector(options);
+    },
+
+    returningPlayer(){
+        let name = undefined
+        let options = [
+            `Oh ${name}, you gave me quite the fright!`, 
+            `Yikes ${name}, you startled me!`, 
+            `Ah ${name}, long time no see!`
+        ]
+        this.randomSelector(options);
+    },
+
+    newPlayer(){
+        let name = undefined
+        console.log(`Why ${name}, I don't believe I've had the pleasure.`)
+    },
+    
+    wrongInput(){
+        console.log("Pardon me. I'm not very smart and I didn't quite understand that.")
+    },
+
+    play(){
+        console.log("Would you like to play a game?");
+        this.yesNo();
+    },
+
     intro(){
         console.log(
 `That's great to hear, I'm excited for your!\n
 Thankfully the tornado missed your home town, 
 but the winds were still strong, and you lost your hat!
 I'm sure it's somewhere in that field over there though! 
-You can use W, A, S, D to move around and look for it.  Good luck!
-\nAre you ready?`
+You can use W, A, S, D to move around and look for it.\n`
         );
     },
 
-    readyYN(){
+    ready(){
         let options = [
             "You just made me so happy! Are you ready?", 
             "That's really fantastic! Are you ready?", 
             "Now that's what I like to hear! Are you ready?"
         ];
         this.randomSelector(options);
+        this.yesNo()
         },
 
-    waitingYN(){
+    waiting(){
         let options = [
             "Okay, I guess I'll wait. Just don't forget about me...Are you ready now?"
         ];
         this.randomSelector(options);
+        this.yesNo();
     },
 
     win(){
@@ -495,7 +657,7 @@ You can use W, A, S, D to move around and look for it.  Good luck!
     },
 
     loseFirst(){
-        console.log("Oops, you fell in a hole!\nDid I forget to mention that there were holes?\nAlright, that one's on me.");
+        console.log("Oops, you fell in a hole!\n\nDid I forget to mention that there were holes?\nAlright, that one's on me.");
     },
 
     lose(){
@@ -509,116 +671,152 @@ You can use W, A, S, D to move around and look for it.  Good luck!
         this.randomSelector(options);
     },
 
-    startOverYN(){
-        let options = ["Would you like to start over?"];
+    tryAgain(){
+        let options = ["\nWould you like to try again?"];
         this.randomSelector(options);
+        this.yesNo();
+    },
+
+    playAgain(){
+        let options = ["\nWould you like to play again on a new field?"]
+        this.randomSelector(options);
+        this.yesNo();
     },
 
     goodbye(){
-        let options = ["I'm really sorry to hear that. I'm going to miss you. Goodbye."]
+        let options = [
+            "I'm really sorry to hear that. I'm going to miss you. Goodbye.",
+            "It's so lonely without you. I hope you come back soon. Goodbye."
+        ]
         this.randomSelector(options);
+    },
+
+    difficulty(){
+        let options = ["What difficulty would you like to play?"]
+        this.randomSelector(options)
+        this.easyMediumHard();
+    },
+
+    easy(){
+        let options = ["Alright, this should be a cinch!"]
+        this.randomSelector(options)
+    },
+
+    medium(){
+        let options = ["A noble selection."]
+        this.randomSelector(options)
+    },
+
+    hard(){
+        let options = ["Yikes, I really hope you make it out alive!"]
+        this.randomSelector(options)
     }
 };
 
-//Contains all the prompts used within the game logic.
-//*****remove prompt from method names to match dialog? or add it to dialog? */
-const prompts = {
-    //Prompts the user for a Yes or No answer and return Y or N.
-    //Clears the console after each answer preparing it for the next dialog.
-    yesNoPrompt(){
-        let answer = prompt(">");
-        if(answer.toUpperCase()==="N"){
-            console.clear();
-            return "N";
-        }else if(answer.toUpperCase()==="Y"){
-            console.clear();
-            return "Y";
-        }else{
-            console.clear();
-            dialog.wrongInputYN();
-            return this.yesNoPrompt();
-        }
-    },
+//**add logic to start the game again or try a new field */
+//**move dialogs from game into here */
+//**Move reset game to here */
+//**let win = game.playGame */
+//**win should return win and interface should run the logic */
+//***The game should be entered onto player object and recorded immediately so that even if they force close the program, they will still be credited with a loss or at least an incomplete */
+let interface = {
+    field: undefined,
+    game: undefined,
 
-    //Prompts the user for direction input and returns it. If input is invalid it will ask again.
-    //*Can this also be a switch?
-    directionPrompt(){
-        let direction = prompt(">");
-        if(direction.toUpperCase()==="W"){
-            return "W";
-        }else if(direction.toUpperCase()==="A"){
-            return "A";
-        }else if(direction.toUpperCase()==="S"){
-            return "S";
-        }else if(direction.toUpperCase()==="D"){
-            return "D";
-        //Returns undefined if a key other than WASD is pressed
-        }else{
-            return undefined;
-        }
-    },
-
-    //To be used after a user says they are not ready yet. Loops through itself until the user says they are ready. Then it will return Y.
-    waitingPrompt(){
-        dialog.waitingYN();
-        let answer = this.yesNoPrompt();
-        if(answer === "Y"){
-            return "Y";
-        }else if(answer === "N"){
-            this.waitingPrompt();
-        }
-    },
-
-    //Asks the player if they would like to play again and if they are ready and returns Y or N.
-    playAgainPrompt(){
-        dialog.startOverYN();
-        let answer = this.yesNoPrompt();
-        if(answer === "Y"){
-            dialog.readyYN();
-            answer = this.yesNoPrompt();
-            if(answer === "Y"){
-                return "Y";
-            }else if(answer === "N"){
-                return this.waitingPrompt();
-            }
-        }else if(answer === "N"){
-            dialog.goodbye();
-            return "N";
-        }
-    },
-
-    //Asks user if they would like to play and returns Y or N.
-    startGamePrompt(){
+    //Begins dialog with the user.
+    intro(){
         console.clear();
-        dialog.playYN();
-        let answer = this.yesNoPrompt();
-        if(answer === "N"){
-            dialog.goodbye();
-            return "N";
-        }else if(answer === "Y"){
-            dialog.intro();
-            answer = this.yesNoPrompt();
-            if(answer === "N"){
-                return this.waitingPrompt();
-            }else if(answer === "Y"){
-                return "Y";
+        //Prompts the user if they would like to play. Begins the game if yes. Exits if no.
+        let start = prompts.startGame();
+        if(start === "Y"){
+            this.setFieldAndGame();
+            this.startGame(); 
+        }else if(start === "N"){
+            process.exit();
+        }
+    },
+
+    //Begins the game and handles wins and losses.
+    startGame(){
+        let outcome = this.game.playGame();
+        //Contains logic in case of a win.
+        if(outcome === "win"){
+            dialogs.win();
+            this.setNewGame()
+        //Contains logic in case of a loss.
+        }else if(outcome === "lose"){
+            if(this.game.field.firstLoss === false){
+                this.game.field.firstLoss = true;
+                dialogs.loseFirst();
+                this.resetGame();
+            }else{
+                dialogs.lose();
+                this.resetGame();
             }
         }
-    }
-};
+    },
 
+    //Helper method resets the game and begins again.
+    //**Add option for a new field here and make a new a new instance of Game
+    resetGame(){
+        let answer = prompts.tryAgain();
+        if(answer === "Y"){
+            console.clear();
+            //***  make this a reset playfield method for field  */            
+            this.game.field.playField = Field.createPlayField(this.game.field.hiddenField);
+            this.startGame();
+        }else if(answer === "N"){
+            process.exit();
+        }
+    },
+
+    setNewGame(){
+        let answer = prompts.playAgain();
+        if(answer === "Y"){
+            console.clear();
+            this.setFieldAndGame();
+            this.startGame()
+        }
+    },
+
+    //Helper method that sets the current field and game objects.
+    setFieldAndGame(){
+        //Generates a valid field based on difficulty. Difficulty settings can be tweaked here.
+        let difficulty = prompts.difficulty()
+        switch(difficulty){
+            case "E":
+                this.field = Field.generateValidField(3,3,2);
+                break;
+            case "M":
+                this.field = Field.generateValidField(5,5,6);
+                break;
+            case "H":                 
+                this.field = Field.generateValidField(7,7,11);
+        };
+        //Creates the game according to difficulty.
+        this.game = new Game(difficulty, this.field)
+    }
+}
+
+
+
+interface.intro()
+
+// let testField = Field.generateValidField(5,5,5)
+
+// console.log(testField.hiddenField)
 
 //Starts game with basic field
 
-let field = new Field([
-    [grass, grass, hole, grass, grass, grass],
-    [hole, grass, grass, grass, hole, grass],
-    [hole, hole, hole, hole, grass, grass],
-    [hat, grass, grass, grass, grass, hole]
-  ]);
+// field = new Field([
+//     [grass, grass, hole, grass, grass, grass],
+//     [hole, grass, grass, grass, hole, grass],
+//     [hole, hole, hole, hole, grass, grass],
+//     [hat, grass, grass, grass, grass, hole]
+//   ]);
 
-let game1 = new Game(field)
-game1.startGame()
+// let game1 = new Game(field)
+// game1.startGame()
 
 
 // ONLY WORKS IF HOLES CONNECTED TO WALL
