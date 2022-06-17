@@ -195,8 +195,9 @@ class Field {
         return this._playField;
     };
     //Primarily used to update the playField property after each move and reset it to its original state after a game is over.
-    set playField(hiddenFieldArray){
-        this._playField = Field.createPlayField(hiddenFieldArray);
+    set playField(newPlayFieldArray){
+        this._playField = newPlayFieldArray;
+        // this._playField = Field.createPlayField(hiddenFieldArray);
     };
     //**This needs to be set somewhere outside of the field if the field is going to change like in the player object
     firstLoss = false;
@@ -406,6 +407,11 @@ class Field {
         }
     };
 
+    //Resets the playField back to it's original state after being altered during gameplay.        
+    resetPlayField(){
+        this.playField = Field.createPlayField(this.hiddenField)
+    }
+
     //Helper method that checks if a move will move out of bounds and returns true if so.
     isOutOfBounds(x,y){
         if(y < 0 || y > (this.hiddenField.length-1)){
@@ -533,8 +539,8 @@ let prompts = {
 
     //Asks user if they would like to play and returns Y or N.
     //**why does no come first here? */
-    startGame(){
-        dialogs.play();
+    play(){
+        dialogs.playGame();
         let answer = this.formattedPrompt();
         if(answer === "2" || answer === "N"){
             dialogs.goodbye();
@@ -545,7 +551,7 @@ let prompts = {
         }else{
             console.clear()
             dialogs.wrongInput()
-            return this.startGame()
+            return this.play()
         }
     },
 
@@ -618,7 +624,7 @@ let prompts = {
         console.log("Pardon me. I'm not very smart and I didn't quite understand that.")
     },
 
-    play(){
+    playGame(){
         console.log("Would you like to play a game?");
         this.yesNo();
     },
@@ -727,7 +733,7 @@ let interface = {
     intro(){
         console.clear();
         //Prompts the user if they would like to play. Begins the game if yes. Exits if no.
-        let start = prompts.startGame();
+        let start = prompts.play();
         if(start === "Y"){
             this.setFieldAndGame();
             this.startGame(); 
@@ -762,8 +768,7 @@ let interface = {
         let answer = prompts.tryAgain();
         if(answer === "Y"){
             console.clear();
-            //***  make this a reset playfield method for field  */            
-            this.game.field.playField = Field.createPlayField(this.game.field.hiddenField);
+            this.game.field.resetPlayField();
             this.startGame();
         }else if(answer === "N"){
             process.exit();
