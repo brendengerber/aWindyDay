@@ -52,8 +52,7 @@ class Game {
     };
     get stats(){
         return this._stats;
-    }
-    
+    };
 
     //Contains game logic.
     playGame(){
@@ -178,7 +177,7 @@ class Game {
                     break;
             };
         };
-        return outcome
+        return outcome;
     }; 
 };
 
@@ -485,7 +484,25 @@ let prompts = {
         }
     },
 
-    //Asks the player if they would like to play again and if they are ready and returns Y or N.
+    //Asks user if they would like to play. Returns Y or N. If yes gives an intro.
+    //**why does no come first here? */
+    play(){
+        dialogs.play();
+        let answer = this.formattedPrompt();
+        if(answer === "2" || answer === "N"){
+            dialogs.goodbye();
+            return "N";
+        }else if(answer === "1" || answer === "Y"){
+            dialogs.intro();
+            return "Y";
+        }else{
+            console.clear();
+            dialogs.wrongInput();
+            return this.play();
+        }
+    },
+
+    //Asks the user if they would like to play again on the same field. Then asks if they are ready. Returns Y or N.
     tryAgain(){
         dialogs.tryAgain();
         let answer = this.formattedPrompt();
@@ -512,6 +529,7 @@ let prompts = {
         }
     },
 
+    //Asks user if they would like to play again on a new Field. Then asks if they are ready. Returns Y or N..
     playAgain(){
         dialogs.playAgain();
         let answer = this.formattedPrompt();
@@ -534,24 +552,6 @@ let prompts = {
             console.clear();
             dialogs.wrongInput();
             return this.playAgain();   
-        }
-    },
-
-    //Asks user if they would like to play and returns Y or N.
-    //**why does no come first here? */
-    play(){
-        dialogs.playGame();
-        let answer = this.formattedPrompt();
-        if(answer === "2" || answer === "N"){
-            dialogs.goodbye();
-            return "N";
-        }else if(answer === "1" || answer === "Y"){
-            dialogs.intro();
-            return "Y";
-        }else{
-            console.clear();
-            dialogs.wrongInput();
-            return this.play();
         }
     },
 
@@ -624,7 +624,7 @@ let prompts = {
         console.log("Pardon me. I'm not very smart and I didn't quite understand that.");
     },
 
-    playGame(){
+    play(){
         console.log("Would you like to play a game?");
         this.yesNo();
     },
