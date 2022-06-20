@@ -27,31 +27,19 @@ class Player{
     statsEasy = {
         wins: 0,
         unsolved: 0,
-        totalMovesToWin: 0,
-        averageMovesToWin: this.totalMovesToWin/this.wins,
-        totalAttemptsToWin: 0,
-        averageAttemptsToWin: this.totalAttemptsToWin/this.wins,
-        winPercentage: this.fieldsWon/(this.fieldsWon + this.fieldsLost)
+        totalAttemptsToWin: 0 
     };
 
     statsMedium = {
         wins: 0,
         unsolved: 0,
-        totalMovesToWin: 0,
-        averageMovesToWin: this.totalMovesToWin/this.wins,
-        totalAttemptsToWin: 0,
-        averageAttemptsToWin: this.totalAttemptsToWin/this.wins,
-        winPercentage: this.fieldsWon/(this.fieldsWon + this.fieldsLost)
+        totalAttemptsToWin: 0
     };
 
     statsHard = {
         wins: 0,
         unsolved: 0,
-        totalMovesToWin: 0,
-        averageMovesToWin: this.totalMovesToWin/this.wins,
-        totalAttemptsToWin: 0,
-        averageAttemptsToWin: this.totalAttemptsToWin/this.wins,
-        winPercentage: this.fieldsWon/(this.fieldsWon + this.fieldsLost)
+        totalAttemptsToWin: 0
     };
 
     games = [];
@@ -64,7 +52,7 @@ class Game {
     constructor(difficulty, field){
         this._field = field;
         this._stats = {
-            attempts: 0,
+            attemptsToWin: 0,
             win: false,
             difficulty: difficulty
         };
@@ -72,7 +60,7 @@ class Game {
     get field(){
         return this._field;
     };
-    get stats(){
+    get gameStats(){
         return this._stats;
     };
 
@@ -769,13 +757,32 @@ You can use W, A, S, D to move around and look for it.\n`
     }
 };
 
-//**add logic to start the game again or try a new field */
-//**move dialogs from game into here */
-//**Move reset game to here */
+//NEXT*** Add a prompt for newPlayerGreeting and returningPlayerGreeting. The dialog will be Oh it's been a while. How are you?  Or  Oh we've never met. How are you.  loadPlayer will decide which one to call.  Each one will end with some options and some dialog depending on those options. Also (Im fine too, thanks for asking. Not that anyone cares, but I'm doing pretty well too etc.)
+//Then it moves on to the next section where it runs start game
+//change interface player to be currentPlayer to avoid confusion, might also want to change to current field, and game? or just leave them all?
+//add logic to reset all of the current interface items to undefined to avoid issues with something hanging around after a game
+
+//if stats for moves and attempts are kept on current game object (rename to current game and current player), then it is cleaner, less needed in interface, and doesnt need to be reset as it will be a new object each time (less prone to errors)
+
+//animation object that has method that takes an array and a time
+
+//make prompt dialogs ONLY about the prompt, move other dialog into interface, but how can i build it such that interface will work despite the game? Maybe it should be find your hat interface or something
+
+//json just has null instead of the equation to compute the averages, yo wtf, definitely looks like an issue that happens when creating a new Player, How can i have object properties that are based on other properties. Maybe player needs updateStats method that would increment and calculate the new averages all at once. Interface could have some current properties like moves, attempts, etc, and a static player method could accept Player.updateStats(player, difficulty, moves, attampts)
+//maybe just easier to have player record simple stats, and have an interface object which analyzes/calculates them before display
+
+//is it okay there is direction prompt in game? i guess so, how else could you do it, pretty lazy to do moves stats then, a lot of work and not much payback
+
+//why does game need to be a class instead of an object? Somehow it should save stats?
+
+//need logic to update stats for moves
+
+//**how to package the script and node and mysql into an exe */
 //**let win = game.playGame */
 //**win should return win and interface should run the logic */
 //***The game should be entered onto player object and recorded immediately so that even if they force close the program, they will still be credited with a loss or at least an incomplete */
-//*Is it okay if i have dialog in here? Should it all go into prompts? Should it all go into interface?
+//**Another option is to move all dialog and logic redarding waiting etc into interface, then interface really is the glue that holds it all togehter, easier to see the series then too. Only have the possible answers in the prompt, and write them directly not as a dialog option */
+
 let interface = {
     player: undefined,
     //Contains a list of all local players.
@@ -784,6 +791,7 @@ let interface = {
     playerIndex: undefined,
     field: undefined,
     game: undefined,
+    difficulty: undefined,
 
     //Begins dialog with the user.
     begin(){
@@ -810,7 +818,12 @@ let interface = {
         let start = prompts.play();
         if(start === "Y"){
             this.setFieldAndGame();
-            this.startGame(); 
+
+            //Records the game as unfinished while it is being played. Prevents player from force quitting to avoid an unfinished stat.
+            this.player["stats"+this.difficulty].unfinished ++;
+            this.updatePlayersJSON();
+           
+            this.startGame();
         }else if(start === "N"){
             process.exit();
         }
@@ -844,14 +857,28 @@ let interface = {
         //Contains logic in case of a win.
         if(outcome === "win"){
             dialogs.win();
+
+            //Marks the game as finished, adds an attempt, and records the stats.
+            this.player["stats"+this.difficulty].unfinished --;
+            this.player["stats"+this.difficulty].wins ++;
+            this.player["stats"+this.difficulty].totalAttemptsToWin ++;
+            this.updatePlayersJSON()
+
             this.setNewGame();
         //Contains logic in case of a loss.
         }else if(outcome === "lose"){
             if(this.player.firstLoss === false){
                 this.player.firstLoss = true;
                 dialogs.loseFirst();
+
+                //Updates the stats
+                this.player["stats"+this.difficulty].totalAttemptsToWin ++;
+
                 this.resetGame();
             }else{
+                //Updates the stats
+                this.player["stats"+this.difficulty].totalAttemptsToWin ++;
+
                 dialogs.lose();
                 this.resetGame();
             }
@@ -887,18 +914,21 @@ let interface = {
         switch(difficulty){
             case "E":
                 this.field = Field.generateValidField(3,3,2);
+                this.difficulty = "Easy";
                 break;
             case "M":
                 this.field = Field.generateValidField(5,5,6);
+                this.difficulty = "Medium";
                 break;
             case "H":                 
                 this.field = Field.generateValidField(7,7,11);
+                this.difficulty = "Hard";
+                break;
         };
         //Creates the game according to difficulty.
         this.game = new Game(difficulty, this.field);
     }
 }
-
 
 
 interface.begin();
