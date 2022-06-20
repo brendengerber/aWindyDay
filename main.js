@@ -45,23 +45,34 @@ class Player{
     games = [];
 
     firstLoss = false;
+
+    static calculateStats(player){
+        let calculatedStats = {};
+
+
+
+
+        
+        return calculatedStats;
+    };
 };
 
 //Used to play the game.
 class Game {
     constructor(difficulty, field){
+        this._difficulty = difficulty;
         this._field = field;
-        this._stats = {
-            attemptsToWin: 0,
-            win: false,
-            difficulty: difficulty
-        };
     };
     get field(){
         return this._field;
     };
-    get gameStats(){
-        return this._stats;
+    get difficulty(){
+        return this._difficulty;
+    }
+
+    gameStats = {
+        attempts: 0,
+        win: false,
     };
 
     //Contains game logic.
@@ -102,8 +113,8 @@ class Game {
         let lose = function(){
             console.clear();
             this.field.printPlayField();
-            this.stats.attempts ++;
-            this.stats.win = false;
+            this.gameStats.attempts ++;
+            this.gameStats.win = false;
             outcome = "lose";
         }.bind(this);
 
@@ -112,8 +123,8 @@ class Game {
         let win = function(){
             console.clear();
             this.field.printPlayField();
-            this.stats.win = true;
-            this.stats.attempts ++;
+            this.gameStats.win = true;
+            this.gameStats.attempts ++;
             outcome = "win";
         }.bind(this);
 
@@ -791,7 +802,6 @@ let interface = {
     playerIndex: undefined,
     field: undefined,
     game: undefined,
-    difficulty: undefined,
 
     //Begins dialog with the user.
     begin(){
@@ -819,10 +829,13 @@ let interface = {
         if(start === "Y"){
             this.setFieldAndGame();
 
-            //Records the game as unfinished while it is being played. Prevents player from force quitting to avoid an unfinished stat.
-            this.player["stats"+this.difficulty].unfinished ++;
+            //Records the unsolved game and increments the unsolved stat while it is being played. Prevents player from force quitting to avoid an unsolved stat.
+            this.player["stats"+this.game.difficulty].unsolved ++;
+
+            //Records the game.
+            this.player.games.push(this.game);
+
             this.updatePlayersJSON();
-           
             this.startGame();
         }else if(start === "N"){
             process.exit();
@@ -846,8 +859,9 @@ let interface = {
         dialogs.newPlayer();
     },
 
+    //Update the players JSON with the most recent player stats.
     updatePlayersJSON(){
-        this.players[this.playerIndex] = this.player
+        this.players[this.playerIndex] = this.player;
         fs.writeFileSync("./players.json", JSON.stringify(this.players));
     },
 
@@ -858,12 +872,15 @@ let interface = {
         if(outcome === "win"){
             dialogs.win();
 
-            //Marks the game as finished, adds an attempt, and records the stats.
-            this.player["stats"+this.difficulty].unfinished --;
-            this.player["stats"+this.difficulty].wins ++;
-            this.player["stats"+this.difficulty].totalAttemptsToWin ++;
-            this.updatePlayersJSON()
+            //Marks the game as solved, increments the wins, and updates the attempts from the game object.
+            this.player["stats"+this.game.difficulty].unsolved --;
+            this.player["stats"+this.game.difficulty].wins ++;
+            this.player["stats"+this.game.difficulty].totalAttemptsToWin = this.game.gameStats.attempts;
 
+            //Replaces the game in the player array with the solved game.
+            this.player.games.splice(-1, 1, this.game);
+            
+            this.updatePlayersJSON();
             this.setNewGame();
         //Contains logic in case of a loss.
         }else if(outcome === "lose"){
@@ -871,17 +888,19 @@ let interface = {
                 this.player.firstLoss = true;
                 dialogs.loseFirst();
 
-                //Updates the stats
-                this.player["stats"+this.difficulty].totalAttemptsToWin ++;
+                //Updates the logged game
+                this.player.games.splice(-1, 1, this.game);
 
+                this.updatePlayersJSON();
                 this.resetGame();
             }else{
-                //Updates the stats
-                this.player["stats"+this.difficulty].totalAttemptsToWin ++;
-
                 dialogs.lose();
-                this.resetGame();
-            }
+
+                //Updates the logged game
+                this.player.games.splice(-1, 1, this.game);
+                                
+                this.updatePlayersJSON();
+                this.resetGame();            }
         }
     },
 
@@ -909,24 +928,22 @@ let interface = {
 
     //Helper method that sets the current field and game objects.
     setFieldAndGame(){
-        //Generates a valid field based on difficulty. Difficulty settings can be tweaked here.
+        //Generates a valid field and game based on difficulty. Difficulty settings can be tweaked here.
         let difficulty = prompts.difficulty();
         switch(difficulty){
             case "E":
                 this.field = Field.generateValidField(3,3,2);
-                this.difficulty = "Easy";
+                this.game = new Game("Easy", this.field)
                 break;
             case "M":
                 this.field = Field.generateValidField(5,5,6);
-                this.difficulty = "Medium";
+                this.game = new Game("Medium", this.field);
                 break;
             case "H":                 
                 this.field = Field.generateValidField(7,7,11);
-                this.difficulty = "Hard";
+                this.game = new Game("Hard", this.field);
                 break;
         };
-        //Creates the game according to difficulty.
-        this.game = new Game(difficulty, this.field);
     }
 }
 
