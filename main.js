@@ -514,6 +514,21 @@ let prompts = {
             return this.playerName();
         }
     },
+    // newPlayerGreeting(){
+    //     dialogs.returningPlayer();
+    //     dialogs.howAreYou();
+    //     dialogs.badOkayGood()
+    //     let answer = this.formattedPrompt()
+
+    // },  
+
+    // returningPlayerGreeting(){
+    //     dialogs.newPlayer();
+    //     dialogs.howAreYou();
+    //     dialogs.badOkayGood()
+    //     let answer = this.formattedPrompt()
+    // },
+
 
     //To be used after a user says they are not ready yet. Loops through itself until the user says they are ready. Then it will return Y.
     waiting(){
@@ -530,7 +545,7 @@ let prompts = {
         }
     },
 
-    //Asks user if they would like to play. Returns Y or N. If yes gives an intro.
+    //Asks user if they would like to play. Returns Y or N.
     //**why does no come first here? */
     play(){
         dialogs.play();
@@ -539,7 +554,6 @@ let prompts = {
             dialogs.goodbye();
             return "N";
         }else if(answer === "1" || answer === "Y"){
-            dialogs.intro();
             return "Y";
         }else{
             console.clear();
@@ -645,6 +659,13 @@ let prompts = {
     3. Hard`             
         );
     },
+
+    badOkayGood(){
+        `-----------------
+        1. Bad
+        2. Okay
+        3. Good` 
+    },
     
     playerName(){
         let options = ["Hello? Hello?! Who's there?!"];
@@ -664,6 +685,10 @@ let prompts = {
     newPlayer(){
         let name = interface.player.name;
         console.log(`Why ${name}, I don't believe I've had the pleasure.`);
+    },
+
+    howAreYou(){
+        console.log("How are you?")
     },
     
     wrongInput(){
@@ -827,6 +852,7 @@ let interface = {
         //Prompts the user if they would like to play. Begins the game if yes. Exits if no.
         let start = prompts.play();
         if(start === "Y"){
+            dialogs.intro();
             this.setFieldAndGame();
 
             //Records the unsolved game and increments the unsolved stat while it is being played. Prevents player from force quitting to avoid an unsolved stat.
