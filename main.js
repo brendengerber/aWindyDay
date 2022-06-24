@@ -2,6 +2,8 @@
 const prompt = require('prompt-sync')({sigint: true});
 const readline = require('readline');
 const fs = require('fs');
+const events  = require('events')
+const eventEmitter = new events.EventEmitter()
 
 //Sets game characters.
 const hat = '^';
@@ -11,6 +13,8 @@ const path = '*';
 const avatar = '\u03EE'
 // const avatar = "𓀠";
 // \uD80C\uDC20
+
+
 
 
 //Used to create a new player and to track stats.
@@ -74,7 +78,7 @@ class Game {
 
     gameStats = {
         attempts: 0,
-        moves:0,
+        moves: 0,
         win: false,
     };
 
@@ -84,12 +88,6 @@ class Game {
         let x = 0;
         let y = 0;
         let outcome;
-        
-        //Increments the attempt, updates the current game, and writes to JSON
-        this.gameStats.attempts ++;
-        mainInterface.player.games.splice(-1, 1, mainInterface.game);
-        mainInterface.updatePlayersJSON()
-        
 
         //Helper function that checks the move for Win/Loss and update the playField appropriately.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
@@ -121,9 +119,8 @@ class Game {
             console.clear();
             this.field.printPlayField();
             this.gameStats.win = false;
-//*****update game stats here rather than interface? */
-
-            outcome = "lose";
+            eventEmitter.emit("loss")
+            outcome = "loss";
         }.bind(this);
 
         //Helper function initiates the loss dialog and displays the final field.
@@ -132,8 +129,7 @@ class Game {
             console.clear();
             this.field.printPlayField();
             this.gameStats.win = true;
-//*****update game stats here rather than interface? */
-
+            eventEmitter.emit("win")
             outcome = "win";
         }.bind(this);
 
@@ -156,9 +152,6 @@ class Game {
             
             //Increments totalMoves, updates the current game, and writes to playersJSON
             //*********should both mainInterface.player.games.splice(-1, 1, mainInterface.game) instances be their own method?*/
-            this.gameStats.moves ++
-            mainInterface.player.games.splice(-1, 1, mainInterface.game);
-            mainInterface.updatePlayersJSON()
 
             let newY;
             let newX;
@@ -170,6 +163,7 @@ class Game {
                     //     y = newY
                     // }
                     if(!this.field.isOutOfBounds(x, newY)){
+                        eventEmitter.emit("move")
                         this.field.playField[y][x] = path;
                         y = newY;
                         updateMove(x,y); 
@@ -182,6 +176,7 @@ class Game {
                     //     x = newX
                     // }
                     if(!this.field.isOutOfBounds(newX, y)){
+                        eventEmitter.emit("move") 
                         this.field.playField[y][x] = path;
                         x = newX;
                         updateMove(x,y);
@@ -194,9 +189,10 @@ class Game {
                     //     y = newY
                     // }
                     if(!this.field.isOutOfBounds(x, newY)){
+                        eventEmitter.emit("move")  
                         this.field.playField[y][x] = path;
                         y = newY;
-                        updateMove(x,y); 
+                        updateMove(x,y);
                     };
                     break;
                 case "D":
@@ -206,6 +202,7 @@ class Game {
                     //     x = newX
                     // }
                     if(!this.field.isOutOfBounds(newX, y)){
+                        eventEmitter.emit("move") 
                         this.field.playField[y][x] = path;
                         x = newX;
                         updateMove(x,y);
@@ -647,6 +644,7 @@ let prompts = {
  //Dialog object used by prompt and game objects
  //If updating dialogs to contain more or less lines, make sure to change the next that follows in interface is updated to save the correct number of lines
  //**Is it possible to have the dialogs return a number that is used in next so that it only has to be changed in one place? then use next(dialogs.someDialog) */
+ //********if dialogs start with console.clear, can I leave it out of interface almost completely? */
  let dialogs = {
     //Used to randomly select one of the options and log it to the console.
     randomSelector(options){
@@ -781,7 +779,58 @@ let mainInterface = {
 
         //Loads the player list
         this.players = require("./players.json")
-        
+
+        //Creates a handler for moves and adds it to the eventEmitter.
+        //.bind(this) is used to reference the mainInterface object's "this" rather than the function's "this".
+        let moveHandler = function(){
+            //Increment stats and updates the playerJSON.
+            this.game.gameStats.moves ++;
+            this.player.games.splice(-1, 1, this.game);
+            this.updatePlayersJSON();
+        }.bind(this)
+        eventEmitter.on("move", moveHandler);
+
+        //Creates a handler for wins and adds it to the eventEmitter.
+        //.bind(this) is used to reference the mainInterface object's "this" rather than the function's "this".
+        let winHandler = function(){            
+            //Updates player object's total stats and writes to JSON. Marks the game as solved, increments the wins, and updates the attempts/moves from the game object.
+            this.player.stats["stats"+this.game.difficulty].unsolved --;
+            this.player.stats["stats"+this.game.difficulty].wins ++;
+            this.player.stats["stats"+this.game.difficulty].totalAttemptsToWin += this.game.gameStats.attempts;
+            this.player.stats["stats"+this.game.difficulty].totalMovesToWin += this.game.gameStats.moves;
+            this.updatePlayersJSON();
+            
+            //Begins dialog and options.
+            dialogs.win();
+            this.next(1 + this.field.dimensions.y);
+
+            //Resets the current field and game.
+            //****After changing the prompts to not need field dimensions, move these to before the dialogs above it, or into win handler
+            this.field = undefined;
+            this.game = undefined;
+
+            this.mainMenu();
+        }.bind(this)
+        eventEmitter.on("win", winHandler);
+
+        //Creates a handler for losses and adds it to the eventEmitter.
+        //.bind(this) is used to reference the mainInterface object's "this" rather than the function's "this".
+        let lossHandler = function(){
+            //Initiates dialog, options, and logic for the first ever loss by the player.
+            if(this.player.firstLoss === false){
+                dialogs.loseFirst();
+                this.player.firstLoss = true;
+                this.updatePlayersJSON();
+                this.next(3 + this.field.dimensions.y);
+            //Initiates dialog, options, and logic for the all subsequent losses by the player.
+            }else{
+                dialogs.lose();
+                this.next(1 + this.field.dimensions.y);
+            }
+        }.bind(this)
+        eventEmitter.on("loss", lossHandler);
+
+        //Begins Dialog and options.
         console.clear();
         dialogs.hello();
         this.setPlayer();
@@ -794,14 +843,16 @@ let mainInterface = {
         dialogs.mainMenu()
         let action = prompts.mainMenu()
         console.clear()
-        if(action === "Play"){
+        if(action === "Play"){  
             dialogs.excitedConfirmation()
             this.next(1)
-            this.setFieldAndGame();
+            console.clear()
             dialogs.intro();
-            this.next(4)
+            this.next(4);
+            this.setFieldAndGame();
 
-            //Increments the unsolved stat while it is being played. Records the unsolved game, and writes to JSON.  Prevents player from force quitting to avoid an unsolved stat.
+            //Increments the unsolved player stat while the game is being played, records the unsolved game, and writes to playersJSON.
+            //Prevents player from force quitting to avoid an unsolved stat.
             this.player.stats["stats"+this.game.difficulty].unsolved ++;
             this.player.games.push(this.game);
             this.updatePlayersJSON();
@@ -885,36 +936,26 @@ let mainInterface = {
     },
 
     //Begins the game and handles wins and losses.
-    startGame(){
-        let outcome = this.game.playGame();
-        //Contains logic in case of a win.
-        if(outcome === "win"){
-            dialogs.win();
+    startGame(){ 
+        //Increments the game attempts stat and writes to playersJSON.
+        //Prevents player from force quitting to avoid an attempt stat.
+        this.game.gameStats.attempts ++;
+        this.player.games.splice(-1, 1, this.game);
+        this.updatePlayersJSON();
 
-            //Updates player object's total stats and writes to JSON. Marks the game as solved, increments the wins, and updates the attempts/moves from the game object.
-            this.player.stats["stats"+this.game.difficulty].unsolved --;
-            this.player.stats["stats"+this.game.difficulty].wins ++;
-            this.player.stats["stats"+this.game.difficulty].totalAttemptsToWin += this.game.gameStats.attempts;
-            this.player.stats["stats"+this.game.difficulty].totalMovesToWin += this.game.gameStats.moves;
+        let outcome
+        //Calls the game logic.
+        //While loop prevents possible call stack error after many attempts.
+        while(outcome!=="win"){
+            outcome = this.game.playGame();
+
+            //Increments the game attempts stat and writes to playersJSON.
+            //Prevents player from force quitting to avoid an attempt stat.
+            this.game.gameStats.attempts ++;
+            this.player.games.splice(-1, 1, this.game);
             this.updatePlayersJSON();
 
-            this.next(1 + this.field.dimensions.y)
-            this.field = undefined;
-            this.game = undefined
-            this.mainMenu();
-        //Contains logic in case of a loss.
-        }else if(outcome === "lose"){
-            if(this.player.firstLoss === false){
-                dialogs.loseFirst();
-                this.player.firstLoss = true;
-                this.updatePlayersJSON();
-                this.next(3 + this.field.dimensions.y)
-                this.resetGame();
-            }else{
-                dialogs.lose();
-                this.next(1 + this.field.dimensions.y)
-                this.resetGame();            
-            }
+            this.resetGame()
         }
     },
 
@@ -929,7 +970,6 @@ let mainInterface = {
             dialogs.excitedConfirmation()
             this.next(1)
             this.game.field.resetPlayField();
-            this.startGame();
         }else if(answer === "Exit"){
             this.exit()        
         }
@@ -968,6 +1008,7 @@ let mainInterface = {
         process.exit();
     }
 }
+
 
 
 mainInterface.begin();
