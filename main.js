@@ -1,3 +1,7 @@
+//Next add while loops for the inputs
+//maybe use events to update the play field, then an animation can print the play field each frame, and the play field will be updated asychrnously throughout
+
+
 //Imports necessary modules.
 const prompt = require('prompt-sync')({sigint: true});
 const readline = require('readline');
@@ -13,9 +17,6 @@ const path = '*';
 const avatar = '\u03EE'
 // const avatar = "𓀠";
 // \uD80C\uDC20
-
-
-
 
 //Used to create a new player and to track stats.
 class Player{
@@ -88,6 +89,7 @@ class Game {
         let x = 0;
         let y = 0;
         let outcome;
+        eventEmitter.emit("attempt")
 
         //Helper function that checks the move for Win/Loss and update the playField appropriately.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
@@ -790,6 +792,16 @@ let mainInterface = {
         }.bind(this)
         eventEmitter.on("move", moveHandler);
 
+        //Increments the game attempts stat and writes to playersJSON.
+        //Prevents player from force quitting to avoid an attempt stat.
+        //.bind(this) is used to reference the mainInterface object's "this" rather than the function's "this".
+        let attemptHandler = function(){
+            this.game.gameStats.attempts ++;
+            this.player.games.splice(-1, 1, this.game);
+            this.updatePlayersJSON();
+        }.bind(this)
+        eventEmitter.on("attempt", attemptHandler)
+
         //Creates a handler for wins and adds it to the eventEmitter.
         //.bind(this) is used to reference the mainInterface object's "this" rather than the function's "this".
         let winHandler = function(){            
@@ -850,13 +862,6 @@ let mainInterface = {
             dialogs.intro();
             this.next(4);
             this.setFieldAndGame();
-
-            //Increments the unsolved player stat while the game is being played, records the unsolved game, and writes to playersJSON.
-            //Prevents player from force quitting to avoid an unsolved stat.
-            this.player.stats["stats"+this.game.difficulty].unsolved ++;
-            this.player.games.push(this.game);
-            this.updatePlayersJSON();
-
             this.startGame();
         }else if(action === "Stats"){
 //**********add logic here to show stats */
@@ -937,30 +942,26 @@ let mainInterface = {
 
     //Begins the game and handles wins and losses.
     startGame(){ 
-        //Increments the game attempts stat and writes to playersJSON.
-        //Prevents player from force quitting to avoid an attempt stat.
-        this.game.gameStats.attempts ++;
-        this.player.games.splice(-1, 1, this.game);
+        //Increments the unsolved player stat while the game is being played, records the unsolved game, and writes to playersJSON.
+        //Prevents player from force quitting to avoid an unsolved stat. Will be removed on win.
+        this.player.stats["stats"+this.game.difficulty].unsolved ++;
+        this.player.games.push(this.game);
         this.updatePlayersJSON();
-
-        let outcome
+        
         //Calls the game logic.
         //While loop prevents possible call stack error after many attempts.
+        //**Could this be avoided by just puting resetGame and this.game.playGame() as a part of the loss handler? */
+        //**resetGame could almost be named lossMenu */
+        let outcome
         while(outcome!=="win"){
             outcome = this.game.playGame();
-
-            //Increments the game attempts stat and writes to playersJSON.
-            //Prevents player from force quitting to avoid an attempt stat.
-            this.game.gameStats.attempts ++;
-            this.player.games.splice(-1, 1, this.game);
-            this.updatePlayersJSON();
-
             this.resetGame()
         }
     },
 
     //Helper method resets the game and begins again.
     //**Add option for a new field here and make a new a new instance of Game
+    //**Add option for stats */
     resetGame(){
         console.clear()
         dialogs.tryAgain();
