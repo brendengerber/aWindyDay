@@ -1,20 +1,21 @@
 //Next add while loops for the inputs
 //maybe use events to update the play field, then an animation can print the play field each frame, and the play field will be updated asychrnously throughout
+//could be fun to have a biger field, and a snake thats chasing you or a bird 
 
 
 //Imports necessary modules.
 const prompt = require('prompt-sync')({sigint: true});
 const readline = require('readline');
 const fs = require('fs');
-const events  = require('events')
-const eventEmitter = new events.EventEmitter()
+const events  = require('events');
+const eventEmitter = new events.EventEmitter();
 
 //Sets game characters.
 const hat = '^';
 const hole = 'O';
 const grass = '░';
 const path = '*';
-const avatar = '\u03EE'
+const avatar = '\u03EE';
 // const avatar = "𓀠";
 // \uD80C\uDC20
 
@@ -89,7 +90,7 @@ class Game {
         let x = 0;
         let y = 0;
         let outcome;
-        eventEmitter.emit("attempt")
+        eventEmitter.emit("attempt");
 
         //Helper function that checks the move for Win/Loss and update the playField appropriately.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
@@ -121,7 +122,7 @@ class Game {
             console.clear();
             this.field.printPlayField();
             this.gameStats.win = false;
-            eventEmitter.emit("loss")
+            eventEmitter.emit("loss");
             outcome = "loss";
         }.bind(this);
 
@@ -131,7 +132,7 @@ class Game {
             console.clear();
             this.field.printPlayField();
             this.gameStats.win = true;
-            eventEmitter.emit("win")
+            eventEmitter.emit("win");
             outcome = "win";
         }.bind(this);
 
@@ -165,7 +166,7 @@ class Game {
                     //     y = newY
                     // }
                     if(!this.field.isOutOfBounds(x, newY)){
-                        eventEmitter.emit("move")
+                        eventEmitter.emit("move");
                         this.field.playField[y][x] = path;
                         y = newY;
                         updateMove(x,y); 
@@ -178,33 +179,33 @@ class Game {
                     //     x = newX
                     // }
                     if(!this.field.isOutOfBounds(newX, y)){
-                        eventEmitter.emit("move") 
+                        eventEmitter.emit("move");
                         this.field.playField[y][x] = path;
                         x = newX;
                         updateMove(x,y);
                     };
                     break;
                 case "S":
-                    newY = y+1
+                    newY = y+1;
                     // if(checkMove(x, newY)){
                     //     this.field.playField[y][x] = path;
                     //     y = newY
                     // }
                     if(!this.field.isOutOfBounds(x, newY)){
-                        eventEmitter.emit("move")  
+                        eventEmitter.emit("move");
                         this.field.playField[y][x] = path;
                         y = newY;
                         updateMove(x,y);
                     };
                     break;
                 case "D":
-                    newX = x+1
+                    newX = x+1;
                     // if(checkMove(newX, y)){
                     //     this.field.playField[y][x] = path;
                     //     x = newX
                     // }
                     if(!this.field.isOutOfBounds(newX, y)){
-                        eventEmitter.emit("move") 
+                        eventEmitter.emit("move"); 
                         this.field.playField[y][x] = path;
                         x = newX;
                         updateMove(x,y);
@@ -381,6 +382,7 @@ class Field {
     };
 
     //Generates a valid Field object and returns it.
+    //While loop is used to avoid a recursive function that could reach a callstack overflow error.
     static generateValidField(x, y, holes){
         let validField;
         let valid = false;
@@ -502,8 +504,8 @@ let prompts = {
     //This can be used to clear the options in order to reprint them when looping back in a prompt as a result to invalid input.
     //The argument linesToKeep controls how many lines will NOT be cleared.
     clearOptions(linesToKeep){
-        readline.cursorTo(process.stdout, 0, linesToKeep)
-        readline.clearScreenDown(process.stdout)
+        readline.cursorTo(process.stdout, 0, linesToKeep);
+        readline.clearScreenDown(process.stdout);
     },
 
     //The argument linesToKeep controls how many lines will NOT be cleared.  This is necessary as this prompt may at times be used with multi-line dialogs.
@@ -512,15 +514,16 @@ let prompts = {
 `-----------------
     1. Next
     2. Exit`
-        )
-        let answer = this.formattedPrompt()
+        );
+        let answer = this.formattedPrompt();
         if(answer === "1"){
-            return "Next"
+            return "Next";
         }else if(answer === "2"){
-            return "Exit"
+            return "Exit";
         }else{
-            this.clearOptions(linesToKeep)
-            return this.next(linesToKeep)        }
+            this.clearOptions(linesToKeep);
+            return this.next(linesToKeep);       
+        }
     },
 
     yesNo(){
@@ -528,15 +531,16 @@ let prompts = {
 `-----------------
     1. Yes
     2. No`
-        )
-        let answer = this.formattedPrompt()
+        );
+        let answer = this.formattedPrompt();
         if(answer === "1" || answer === "Y"){
-            return "Yes"
+            return "Yes";
         }else if(answer === "2" || answer === "N"){
-            return "No"
+            return "No";
         }else{
-            this.clearOptions(1)
-            return this.mainMenu()        }
+            this.clearOptions(1);
+            return this.mainMenu()        
+        }
     },
 
     mainMenu(){
@@ -545,8 +549,8 @@ let prompts = {
     1. Play a game
     2. Check your stats
     3. Exit`
-        )
-        let answer = this.formattedPrompt()
+        );
+        let answer = this.formattedPrompt();
         if(answer === "1"){
             return "Play"
         }else if(answer === "2"){
@@ -554,8 +558,8 @@ let prompts = {
         }else if(answer === "3"){
             return "Exit"
         }else{
-            this.clearOptions(1)
-            return this.mainMenu()
+            this.clearOptions(1);
+            return this.mainMenu();
         }
     },
     
@@ -566,19 +570,19 @@ let prompts = {
     2. Okay
     3. Good
     4. Exit`
-        ) 
+        ); 
     let answer = this.formattedPrompt()
     if(answer === "1"){
-        return "Bad"
+        return "Bad";
     }else if(answer === "2"){
-        return "Okay"
+        return "Okay";
     }else if(answer === "3"){
-        return "Good"
+        return "Good";
     }else if(answer === "4"){
-        return "Exit"
+        return "Exit";
     }else{
-        this.clearOptions(1)
-        return this.mainMenu()    
+        this.clearOptions(1);
+        return this.mainMenu();    
     }
 },
 
@@ -606,15 +610,15 @@ let prompts = {
 `-----------------
     1. Try again
     2. Exit` 
-        )
+        );
         let answer = this.formattedPrompt();
         if(answer === "1"){
             return "Again";
         }else if(answer === "2"){
             return "Exit";
         }else{
-            this.clearOptions(1)
-            return this.tryAgain()  
+            this.clearOptions(1);
+            return this.tryAgain();  
         }
     },
 
@@ -626,7 +630,7 @@ let prompts = {
     2. Medium
     3. Hard`
         )     
-        let answer = this.formattedPrompt()
+        let answer = this.formattedPrompt();
         if(answer === "1" || answer === "E"){
             console.clear();
             return "E";
@@ -637,8 +641,8 @@ let prompts = {
             console.clear();
             return "H";
         }else{
-            this.clearOptions(1)
-            return this.difficulty() 
+            this.clearOptions(1);
+            return this.difficulty(); 
         }
     }
 };
@@ -658,7 +662,7 @@ let prompts = {
         this.randomSelector(options);
     },
     name(){
-        console.log("So, what did you say your name was?")
+        console.log("So, what did you say your name was?");
     },
 
     returningPlayer(){
@@ -677,11 +681,11 @@ let prompts = {
     },
 
     howAreYou(){
-        console.log("How are you?")
+        console.log("How are you?");
     },
     
     unspportedString(){
-        console.log("I'm sorry please only use up to 15 numbers and letters...It's just easier for me to remember that way.")
+        console.log("I'm sorry please only use up to 15 numbers and letters...It's just easier for me to remember that way.");
     },
 
     mainMenu(){
@@ -744,7 +748,7 @@ You can use W, A, S, D to move around and look for it.`
     },
 
     difficulty(){
-        console.log("What difficulty would you like to play?")
+        console.log("What difficulty would you like to play?");
     },
 
     easy(){
@@ -780,7 +784,7 @@ let mainInterface = {
         };
 
         //Loads the player list
-        this.players = require("./players.json")
+        this.players = require("./players.json");
 
         //Creates a handler for moves and adds it to the eventEmitter.
         //.bind(this) is used to reference the mainInterface object's "this" rather than the function's "this".
@@ -789,7 +793,7 @@ let mainInterface = {
             this.game.gameStats.moves ++;
             this.player.games.splice(-1, 1, this.game);
             this.updatePlayersJSON();
-        }.bind(this)
+        }.bind(this);
         eventEmitter.on("move", moveHandler);
 
         //Increments the game attempts stat and writes to playersJSON.
@@ -799,8 +803,8 @@ let mainInterface = {
             this.game.gameStats.attempts ++;
             this.player.games.splice(-1, 1, this.game);
             this.updatePlayersJSON();
-        }.bind(this)
-        eventEmitter.on("attempt", attemptHandler)
+        }.bind(this);
+        eventEmitter.on("attempt", attemptHandler);
 
         //Creates a handler for wins and adds it to the eventEmitter.
         //.bind(this) is used to reference the mainInterface object's "this" rather than the function's "this".
@@ -822,7 +826,7 @@ let mainInterface = {
             this.game = undefined;
 
             this.mainMenu();
-        }.bind(this)
+        }.bind(this);
         eventEmitter.on("win", winHandler);
 
         //Creates a handler for losses and adds it to the eventEmitter.
@@ -834,12 +838,15 @@ let mainInterface = {
                 this.player.firstLoss = true;
                 this.updatePlayersJSON();
                 this.next(3 + this.field.dimensions.y);
+                this.lossMenu();
+
             //Initiates dialog, options, and logic for the all subsequent losses by the player.
             }else{
                 dialogs.lose();
                 this.next(1 + this.field.dimensions.y);
+                this.lossMenu();
             }
-        }.bind(this)
+        }.bind(this);
         eventEmitter.on("loss", lossHandler);
 
         //Begins Dialog and options.
@@ -851,14 +858,14 @@ let mainInterface = {
     },
     //Presents the main menu and handles the player's response.
     mainMenu(){
-        console.clear()
-        dialogs.mainMenu()
-        let action = prompts.mainMenu()
-        console.clear()
+        console.clear();
+        dialogs.mainMenu();
+        let action = prompts.mainMenu();
+        console.clear();
         if(action === "Play"){  
-            dialogs.excitedConfirmation()
-            this.next(1)
-            console.clear()
+            dialogs.excitedConfirmation();
+            this.next(1);
+            console.clear();
             dialogs.intro();
             this.next(4);
             this.setFieldAndGame();
@@ -867,26 +874,43 @@ let mainInterface = {
 //**********add logic here to show stats */
 
         }else if(action === "Exit"){
-            this.exit()
+            this.exit();
+        }
+    },
+
+    //Presents the loss menu and handles the player's response.
+    //**Add option for a new field here and make a new a new instance of Game
+    //**Add option for stats */
+    lossMenu(){
+        console.clear();
+        dialogs.tryAgain();
+        let answer = prompts.tryAgain();
+        if(answer === "Again"){
+            console.clear();
+            dialogs.excitedConfirmation();
+            this.next(1);
+            this.restartGame();
+        }else if(answer === "Exit"){
+            this.exit(); 
         }
     },
     
     setPlayer(){
         //Prompts player to enter their name.
         let name = prompts.formatteNamePrompt();
-        console.clear()
+        console.clear();
         if(name){
             if(this.loadPlayer(name)){
-                dialogs.returningPlayer()
+                dialogs.returningPlayer();
             }else{
                 dialogs.newPlayer();
             }
             //Sets the playerIndex.
             this.playerIndex = this.players.findIndex(player =>  player.name === this.player.name);
         }else{
-            dialogs.unspportedString()
-            dialogs.name()
-            this.setPlayer()
+            dialogs.unspportedString();
+            dialogs.name();
+            this.setPlayer();
         }
 
     },
@@ -904,7 +928,7 @@ let mainInterface = {
         this.player = new Player(name);
         this.players.push(this.player);
         this.updatePlayersJSON();
-        return false
+        return false;
     },
 
     //Update the players JSON with the most recent player stats.
@@ -919,14 +943,14 @@ let mainInterface = {
         //*****should generateValidField take in fieldDimensions.x and .y instead, makes changing difficulty in the future easier. Or is there a way to define difficulty somewhere outside of this as an interface property? */
         //*like this.difficulty: {easy{x:3, y:3, holes: 2}}  Field.generateValidField(this[this.game.difficulty].x, this[this.game.difficulty].y, this[this.game.difficulty].y)
         //*If changing difficulty, also need to change the next prompt in startGame, so it removes the proper amount of lines
-        console.clear()
-        dialogs.difficulty()
+        console.clear();
+        dialogs.difficulty();
         let difficulty = prompts.difficulty();
         if(difficulty){
             switch(difficulty){
                 case "E":
                     this.field = Field.generateValidField(3,3,2);
-                    this.game = new Game("Easy", this.field)
+                    this.game = new Game("Easy", this.field);
                     break;
                 case "M":
                     this.field = Field.generateValidField(5,5,6);
@@ -940,7 +964,7 @@ let mainInterface = {
         }
     },
 
-    //Begins the game and handles wins and losses.
+    //Starts the game.
     startGame(){ 
         //Increments the unsolved player stat while the game is being played, records the unsolved game, and writes to playersJSON.
         //Prevents player from force quitting to avoid an unsolved stat. Will be removed on win.
@@ -949,63 +973,32 @@ let mainInterface = {
         this.updatePlayersJSON();
         
         //Calls the game logic.
-        //While loop prevents possible call stack error after many attempts.
-        //**Could this be avoided by just puting resetGame and this.game.playGame() as a part of the loss handler? */
-        //**resetGame could almost be named lossMenu */
-        let outcome
-        while(outcome!=="win"){
-            outcome = this.game.playGame();
-            this.resetGame()
-        }
+        this.game.playGame();
     },
 
-    //Helper method resets the game and begins again.
-    //**Add option for a new field here and make a new a new instance of Game
-    //**Add option for stats */
-    resetGame(){
-        console.clear()
-        dialogs.tryAgain();
-        let answer = prompts.tryAgain();
-        if(answer === "Again"){
-            console.clear();
-            dialogs.excitedConfirmation()
-            this.next(1)
-            this.game.field.resetPlayField();
-        }else if(answer === "Exit"){
-            this.exit()        
-        }
-    },
+    //Restarts the game.
+    restartGame(){
+        //Resets the play field to blank.
+        this.game.field.resetPlayField();
 
-    // setNewGame(){
-    //     console.clear()
-    //     dialogs.playAgain();
-    //     let answer = prompts.playAgain();
-    //     if(answer === "Again"){
-    //         console.clear();
-    //         dialogs.excitedConfirmation()
-    //         this.next(1)
-    //         this.setFieldAndGame();
-    //         this.startGame();
-    //     }else if(answer === "Stats"){
-    //         //********* add method to check stats h ere
-    //     }else if(answer === "Exit"){
-    //         this.exit()
-    //     }
-    // },
+        //Calls the game logic.
+        this.game.playGame();
+    },
 
     //The argument linesToKeep controls how many lines will NOT be cleared.  This is necessary as this prompt may at times be used with multi-line dialogs.
     next(linesToKeep){
-        let answer = prompts.next(linesToKeep)
+        let answer = prompts.next(linesToKeep);
         if(answer === "Next"){
-            return
+            return;
         }else if(answer === "Exit"){
-            this.exit()
+            this.exit();
         }
     },
+    
     //Used to say goodbye and close the application.
     exit(){
-        console.clear()
-        dialogs.goodbye()
+        console.clear();
+        dialogs.goodbye();
         process.exit();
     }
 }
