@@ -1,6 +1,8 @@
 //Next add while loops for the inputs
 //maybe use events to update the play field, then an animation can print the play field each frame, and the play field will be updated asychrnously throughout
+//*****weird behavior on loss menu */
 //could be fun to have a biger field, and a snake thats chasing you or a bird 
+//****Let's use readline with enter and limits for options and names and then use the stdin listening for movement eventually. (readline.keyin causes a weird flashing that the other doesnt) */
 
 
 //Imports necessary modules.
@@ -9,6 +11,15 @@ const readline = require('readline');
 const fs = require('fs');
 const events  = require('events');
 const eventEmitter = new events.EventEmitter();
+
+//**Experimental */
+//for instant input
+// require("readline").emitKeypressEvents(process.stdin);
+// process.stdin.setRawMode(true);
+const readlineSync = require('readline-sync')
+
+//for eliminating prompt sync
+// const readlineInterface = readline.createInterface({input: process.stdin, output: process.stdout});
 
 //Sets game characters.
 const hat = '^';
@@ -481,19 +492,11 @@ class Field {
 //Contains all the prompts used within the game logic.
 //****perhaps change dialog names to match the prompt names */
 let prompts = {    
-    //Used for obtaining answers to multiple choice options.
-    formattedPrompt(){
-        let answer = prompt(">");
-        if(/^[a-zA-Z0-9]{1}$/.test(answer)){
-            return answer.toUpperCase();
-        }else{
-            return false;
-        }
-    },
 
     //Used for obtaining a username. Allows only alphanumeric characters up to 15 long.
-    formatteNamePrompt(){
-        let answer = prompt(">");
+    //****need to test */
+    formattedNamePrompt(){
+        let answer = readlineSync.prompt()
         if(/^[a-zA-Z0-9]{1,15}$/.test(answer)){
             return answer;
         }else{
@@ -501,95 +504,51 @@ let prompts = {
         }     
     },
 
-    //This can be used to clear the options in order to reprint them when looping back in a prompt as a result to invalid input.
-    //The argument linesToKeep controls how many lines will NOT be cleared.
-    clearOptions(linesToKeep){
-        readline.cursorTo(process.stdout, 0, linesToKeep);
-        readline.clearScreenDown(process.stdout);
+    formattedPrompt(options){
+        let answer = readlineSync.keyInSelect(options, "", {guide: false, cancel: false, hideEchoBack: true, mask: ""})
+            return options[answer];
+    },
+
+    // Works for instant input, not great for movement as it flashes
+    formattedDirectionPrompt(){
+        let answer = readlineSync.keyIn('', {hideEchoBack: true, mask: ''})
+        if(/^[a-zA-Z0-9]{1}$/.test(answer)){
+            return answer.toUpperCase();
+        }else{
+            return false;
+        }
     },
 
     //The argument linesToKeep controls how many lines will NOT be cleared.  This is necessary as this prompt may at times be used with multi-line dialogs.
-    next(linesToKeep){
-        console.log(
-`-----------------
-    1. Next
-    2. Exit`
-        );
-        let answer = this.formattedPrompt();
-        if(answer === "1"){
-            return "Next";
-        }else if(answer === "2"){
-            return "Exit";
-        }else{
-            this.clearOptions(linesToKeep);
-            return this.next(linesToKeep);       
-        }
-    },
-
-    yesNo(){
-        console.log(
-`-----------------
-    1. Yes
-    2. No`
-        );
-        let answer = this.formattedPrompt();
-        if(answer === "1" || answer === "Y"){
-            return "Yes";
-        }else if(answer === "2" || answer === "N"){
-            return "No";
-        }else{
-            this.clearOptions(1);
-            return this.mainMenu()        
-        }
+    //*This is better as it isnt regressive, neither works for long wrong inputs though. This could also still use the clearoptions method too
+    //*Make sure to use while loops to remove recursiveness
+    //***invalids not working now */
+    next(){
+        return this.formattedPrompt(["Next", "Exit"]);   
     },
 
     mainMenu(){
-        console.log(
-`-----------------
-    1. Play a game
-    2. Check your stats
-    3. Exit`
-        );
-        let answer = this.formattedPrompt();
-        if(answer === "1"){
-            return "Play"
-        }else if(answer === "2"){
-            return "Stats"
-        }else if(answer === "3"){
-            return "Exit"
-        }else{
-            this.clearOptions(1);
-            return this.mainMenu();
-        }
+        return this.formattedPrompt(["Play a game", "Check your Stats", "Exit"])
     },
-    
-    mood(){
-        console.log(
-`-----------------
-    1. Bad
-    2. Okay
-    3. Good
-    4. Exit`
-        ); 
-    let answer = this.formattedPrompt()
-    if(answer === "1"){
-        return "Bad";
-    }else if(answer === "2"){
-        return "Okay";
-    }else if(answer === "3"){
-        return "Good";
-    }else if(answer === "4"){
-        return "Exit";
-    }else{
-        this.clearOptions(1);
-        return this.mainMenu();    
-    }
-},
 
-    //Prompts the user for direction input and returns it. If input is invalid it will ask again.
+    mood(){
+        return this.formattedPrompt(["Bad", "Okay", "Good", "Exit"])
+    },
+
+    //Asks the user if they would like to play again on the same field. Then asks if they are ready. Returns Y or N.
+    tryAgain(){
+        return this.formattedPrompt(["Try again", "Exit"])
+    },
+
+    //*****for symetry add logic for exit here!
+    difficulty(){
+        return this.formattedPrompt(["Easy", "Medium", "Hard"]) 
+    },
+
+        //Prompts the user for direction input and returns it. If input is invalid it will ask again.
     //*Can this also be a switch?
     direction(){
-        let direction = this.formattedPrompt();
+        let direction = this.formattedDirectionPrompt();
         if(direction==="W"){
             return "W";
         }else if(direction==="A"){
@@ -604,47 +563,6 @@ let prompts = {
         }
     },
 
-    //Asks the user if they would like to play again on the same field. Then asks if they are ready. Returns Y or N.
-    tryAgain(){
-        console.log(
-`-----------------
-    1. Try again
-    2. Exit` 
-        );
-        let answer = this.formattedPrompt();
-        if(answer === "1"){
-            return "Again";
-        }else if(answer === "2"){
-            return "Exit";
-        }else{
-            this.clearOptions(1);
-            return this.tryAgain();  
-        }
-    },
-
-    //*****for symetry add logic for exit here!
-    difficulty(){
-        console.log(
-`-----------------
-    1. Easy
-    2. Medium
-    3. Hard`
-        )     
-        let answer = this.formattedPrompt();
-        if(answer === "1" || answer === "E"){
-            console.clear();
-            return "E";
-        }else if(answer === "2" || answer === "M"){
-            console.clear();
-            return "M";
-        }else if(answer === "3" || answer === "H"){
-            console.clear();
-            return "H";
-        }else{
-            this.clearOptions(1);
-            return this.difficulty(); 
-        }
-    }
 };
 
  //Dialog object used by prompt and game objects
@@ -767,6 +685,8 @@ You can use W, A, S, D to move around and look for it.`
     }
 };
 
+//****Maybe I should call functions prompt handlers? */
+//**Rename to application? */
 let mainInterface = {
     player: undefined,
     //Contains a list of all local players.
@@ -818,7 +738,7 @@ let mainInterface = {
             
             //Begins dialog and options.
             dialogs.win();
-            this.next(1 + this.field.dimensions.y);
+            this.next();
 
             //Resets the current field and game.
             //****After changing the prompts to not need field dimensions, move these to before the dialogs above it, or into win handler
@@ -837,13 +757,13 @@ let mainInterface = {
                 dialogs.loseFirst();
                 this.player.firstLoss = true;
                 this.updatePlayersJSON();
-                this.next(3 + this.field.dimensions.y);
+                this.next();
                 this.lossMenu();
 
             //Initiates dialog, options, and logic for the all subsequent losses by the player.
             }else{
                 dialogs.lose();
-                this.next(1 + this.field.dimensions.y);
+                this.next();
                 this.lossMenu();
             }
         }.bind(this);
@@ -851,29 +771,29 @@ let mainInterface = {
 
         //Begins Dialog and options.
         console.clear();
-        dialogs.hello();
         this.setPlayer();
-        this.next(1);
+        this.next();
         this.mainMenu();
     },
+
     //Presents the main menu and handles the player's response.
     mainMenu(){
         console.clear();
         dialogs.mainMenu();
-        let action = prompts.mainMenu();
+        let answer = prompts.mainMenu();
         console.clear();
-        if(action === "Play"){  
+        if(answer === "Play a game"){  
             dialogs.excitedConfirmation();
-            this.next(1);
+            this.next();
             console.clear();
             dialogs.intro();
-            this.next(4);
+            this.next();
             this.setFieldAndGame();
             this.startGame();
-        }else if(action === "Stats"){
+        }else if(answer === "View your stats"){
 //**********add logic here to show stats */
 
-        }else if(action === "Exit"){
+        }else if(answer === "Exit"){
             this.exit();
         }
     },
@@ -885,10 +805,10 @@ let mainInterface = {
         console.clear();
         dialogs.tryAgain();
         let answer = prompts.tryAgain();
-        if(answer === "Again"){
+        if(answer === "Try again"){
             console.clear();
             dialogs.excitedConfirmation();
-            this.next(1);
+            this.next();
             this.restartGame();
         }else if(answer === "Exit"){
             this.exit(); 
@@ -896,8 +816,16 @@ let mainInterface = {
     },
     
     setPlayer(){
+        dialogs.hello();
         //Prompts player to enter their name.
-        let name = prompts.formatteNamePrompt();
+        let name = prompts.formattedNamePrompt();;
+        //Runs until a valid name is entered.
+        while(!name){
+            console.clear();
+            dialogs.unspportedString();
+            dialogs.name();
+            name = prompts.formattedNamePrompt();
+        }
         console.clear();
         if(name){
             if(this.loadPlayer(name)){
@@ -907,12 +835,7 @@ let mainInterface = {
             }
             //Sets the playerIndex.
             this.playerIndex = this.players.findIndex(player =>  player.name === this.player.name);
-        }else{
-            dialogs.unspportedString();
-            dialogs.name();
-            this.setPlayer();
         }
-
     },
     
     // Loads player object and creates one if the player is new.
@@ -948,15 +871,15 @@ let mainInterface = {
         let difficulty = prompts.difficulty();
         if(difficulty){
             switch(difficulty){
-                case "E":
+                case "Easy":
                     this.field = Field.generateValidField(3,3,2);
                     this.game = new Game("Easy", this.field);
                     break;
-                case "M":
+                case "Medium":
                     this.field = Field.generateValidField(5,5,6);
                     this.game = new Game("Medium", this.field);
                     break;
-                case "H": 
+                case "Hard": 
                     this.field = Field.generateValidField(7,7,11);
                     this.game = new Game("Hard", this.field);
                     break;
@@ -985,9 +908,9 @@ let mainInterface = {
         this.game.playGame();
     },
 
-    //The argument linesToKeep controls how many lines will NOT be cleared.  This is necessary as this prompt may at times be used with multi-line dialogs.
-    next(linesToKeep){
-        let answer = prompts.next(linesToKeep);
+    //Standard next options to advance to the next dialog or exit.
+    next(){
+        let answer = prompts.next();
         if(answer === "Next"){
             return;
         }else if(answer === "Exit"){
@@ -1004,8 +927,9 @@ let mainInterface = {
 }
 
 
-
 mainInterface.begin();
+
+
 
 // let test = new Player("brenden")
 // let testArray = []
