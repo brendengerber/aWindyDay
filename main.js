@@ -1,3 +1,5 @@
+//Inspired by maze craze
+
 //Next add while loops for the inputs
 //maybe use events to update the play field, then an animation can print the play field each frame, and the play field will be updated asychrnously throughout
 //*****weird behavior on loss menu */
@@ -6,20 +8,14 @@
 
 
 //Imports necessary modules.
-const prompt = require('prompt-sync')({sigint: true});
 const readline = require('readline');
 const fs = require('fs');
 const events  = require('events');
-const eventEmitter = new events.EventEmitter();
-
-//**Experimental */
-//for instant input
-// require("readline").emitKeypressEvents(process.stdin);
-// process.stdin.setRawMode(true);
 const readlineSync = require('readline-sync')
+const hideCursor = require("hide-terminal-cursor");
 
-//for eliminating prompt sync
-// const readlineInterface = readline.createInterface({input: process.stdin, output: process.stdout});
+//Adds eventEmitter used for gameplay.
+const eventEmitter = new events.EventEmitter();
 
 //Sets game characters.
 const hat = '^';
@@ -97,6 +93,9 @@ class Game {
 
     //Contains game logic.
     playGame(){
+        console.clear();
+        // this.field.printPlayField();
+        
         let gameOver = false;
         let x = 0;
         let y = 0;
@@ -146,29 +145,22 @@ class Game {
             eventEmitter.emit("win");
             outcome = "win";
         }.bind(this);
-
+        
+        
         //Play loop logic that is called to allow the player to move around the board. Changes playField to show path. Includes win/loss and out of bounds logic.
-        while(!gameOver){
             //Sets up board and prompts user for direction input.
-            console.clear();
-            this.field.printPlayField();
-            let direction = prompts.direction();
-            //Resets the board if prompt.direction() returns undefined (i.e. a key other than wasd was pressed).
-            if(direction === undefined){
-                console.clear();
-                this.field.printPlayField();
-                direction = prompts.direction();
-            }
-            //Moves the player avatar, sets the x,y possition, and checks for win or loss conditions
+        let move = function(key){
+            //Moves the player avatar, sets the x,y possition, and checks for win or loss conditions.
             ///***can path be moved to check move? does it matter? checkmove deals with the new space, while path is the old space and could be handled by the while loop */
             //*******can make checkMove(x,y,newx,newy) This would allw me to move the path shit to checkMove too, which could even be renamed into move */
             //**can remove the newy/nex like in validate? maybe no since in validate we already know we are moving? I could here, but would have to check the move first. Then can just increment with ++ and --
             
-            //Increments totalMoves, updates the current game, and writes to playersJSON
+            
             //*********should both mainInterface.player.games.splice(-1, 1, mainInterface.game) instances be their own method?*/
-
+            let direction = key.toUpperCase();
             let newY;
             let newX;
+            
             switch(direction){
                 case "W":
                     newY = y-1;
@@ -180,7 +172,7 @@ class Game {
                         eventEmitter.emit("move");
                         this.field.playField[y][x] = path;
                         y = newY;
-                        updateMove(x,y); 
+                        updateMove(x,y);
                     };
                     break;  
                 case "A":
@@ -222,9 +214,37 @@ class Game {
                         updateMove(x,y);
                     };
                     break;
-            };
-        };
-        return outcome;
+                };
+        }.bind(this);
+        
+        //Resumes stdin since readlineSync pauses it when run.
+        process.stdin.resume();
+        //Sets raw mode to read keystrokes without pressing enter.
+        process.stdin.setRawMode(true);
+        //Sets encoding.
+        process.stdin.setEncoding( 'utf8' );
+        //Turns on the move listener
+        process.stdin.on( 'data', move);
+        
+        //Draws the frames and checks game status.
+        //.bind(this) is used to reference the mainInterface object's "this" rather than the function's "this".
+        //**This portion or part of it will likely move to animate, update, etc */ or use animate here, since it is still part of the game logic really
+        //**can the ending logic somehow be moved to update rather than draw?maybe the whole function updates() the frame, draws() and then checks, it could have a different name too, maybe mainLoop. look at 2nd game link for ideas*/
+        let mainLoop = function(){
+            console.clear();
+            this.field.printPlayField();
+            if(gameOver){
+                //Stops rendering the frames.
+                clearInterval(mainLoopInterval);
+                //Turns off the move listener
+                process.stdin.removeListener('data', move);
+                //Returns outcome of the game
+                return outcome;
+            }
+        }.bind(this);
+
+        //Sets the framerate and draws the frame
+        let mainLoopInterval = setInterval(mainLoop, 1000/60);
     }; 
 };
 
@@ -684,7 +704,11 @@ You can use W, A, S, D to move around and look for it.`
         this.randomSelector(options);
     }
 };
-
+//***NEXT print play field can be a helper method in the create frame method. Print play field can take an x and y argument to position it from top left to bottom right, it can be done using " " */
+//**NEXT make a method to draw the frame, this will incorporate a modified version of the printPlayField which before printing adds spaces for margin unless there is a character other than space, then it adds that character to the final array */
+//***NEXT but should keep print playField method as it could be good for testing functionality and debugging */
+//***change name to application
+//Should be a game loop consisting of update and draw (draw playing the frames, update preparing the frame if there was user input and changing animations etc). draw could be reused for the tornado intro */
 //****Maybe I should call functions prompt handlers? */
 //**Rename to application? */
 let mainInterface = {
@@ -706,6 +730,7 @@ let mainInterface = {
         //Loads the player list
         this.players = require("./players.json");
 
+        //Increments totalMoves, updates the current game, and writes to playersJSON
         //Creates a handler for moves and adds it to the eventEmitter.
         //.bind(this) is used to reference the mainInterface object's "this" rather than the function's "this".
         let moveHandler = function(){
@@ -718,6 +743,7 @@ let mainInterface = {
 
         //Increments the game attempts stat and writes to playersJSON.
         //Prevents player from force quitting to avoid an attempt stat.
+        //Creates a handler for attempts and adds it to the eventEmitter.
         //.bind(this) is used to reference the mainInterface object's "this" rather than the function's "this".
         let attemptHandler = function(){
             this.game.gameStats.attempts ++;
@@ -772,6 +798,7 @@ let mainInterface = {
         //Begins Dialog and options.
         console.clear();
         this.setPlayer();
+        hideCursor();
         this.next();
         this.mainMenu();
     },
