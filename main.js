@@ -1,3 +1,18 @@
+//flicker only occurs on very large draws, can things be broken up more in draw method so the whole thing doesnt get process at once?
+//can I make a composit frame of all the updated items, and then just console.log that frame all at once?
+
+
+//move field to assets?
+
+//Make draw a function out of objects
+//use draw with defaults xy to zero
+//use a state object containing xy counter instead of separate variables
+//use draw in draw fields
+//make an assets object. House has two states and a counter
+//make a state object that contains coordinates and counters and states for everything, when should this be set? when difficulty is set? Is it possible to have a difficulty object defined at the beginning where all of these tweaks can be made? Then when selecting a 
+
+//difficulty object that contains an object for each difficulty. those objects will have field size and holes, and another object for states.  The game object will have a constructor that uses the difficulty argument to access the different difficulties 
+
 //Inspired by maze craze
 
 //Next add while loops for the inputs
@@ -12,7 +27,10 @@ const readline = require('readline');
 const fs = require('fs');
 const events  = require('events');
 const readlineSync = require('readline-sync')
-const hideCursor = require("hide-terminal-cursor");
+const hideCursor = require('hide-terminal-cursor');
+const showCursor = require("show-terminal-cursor");
+const _ = require('lodash');
+
 
 //Adds eventEmitter used for gameplay.
 const eventEmitter = new events.EventEmitter();
@@ -26,27 +44,86 @@ const avatar = '\u03EE';
 // const avatar = "𓀠";
 // \uD80C\uDC20
 
+//Make balance adjustments here.
+//Used to set the number of holes and field dimensions for each difficulty level.
+//Used to set the default state of each object.
+
+//Default settings and difficulty settings for initial states of objects.
+//Balancing and tweaks can be done here.
+let settings = {
+    easy: {
+        fieldSettings:{
+            holes: 4, 
+            dimensions:{x:6, y:3}
+        }, 
+        states:{
+            field:{
+                offset: {x:3, y:6},
+            },
+            house:{
+                offset: {x:2, y:0}
+            }    
+        }
+    },
+    medium: {
+        fieldSettings:{
+            holes: 6, 
+            dimensions:{x:5, y:5}
+        }, 
+        states:{
+            field: {
+                offset: {x:2, y:5}
+            },
+            house: {
+                offset: {x:7, y:0}
+            }
+        }
+    },
+    hard: {
+        fieldSettings:{
+            holes: 11, 
+            dimensions:{x:7, y:7}
+        }, 
+        states:{
+            field:{
+                offset: {x:2, y:5}
+            },
+            house:{
+                offset: {x:7, y:0}
+            }
+        }
+    },
+    //Used for state settings not dependent on difficulty
+    initialStates: {
+        house:{
+            counter: 1,
+            frame: 1
+        }
+
+    }
+}
+
 //Used to create a new player and to track stats.
 class Player{
     constructor(name){
         this.name = name;
     };
     stats = {
-        statsEasy: {
+        easy: {
             wins: 0,
             unsolved: 0,
             totalAttemptsToWin: 0,
             totalMovesToWin: 0 
         },
 
-        statsMedium: {
+        medium: {
             wins: 0,
             unsolved: 0,
             totalAttemptsToWin: 0,
             totalMovesToWin: 0 
         },
 
-        statsHard: {
+        hard: {
             wins: 0,
             unsolved: 0,
             totalAttemptsToWin: 0,
@@ -77,12 +154,18 @@ class Game {
     constructor(difficulty, field){
         this._difficulty = difficulty;
         this._field = field;
+        
+        //Sets the state from settings object based on difficulty level.
+        this._state =  _.merge(settings[difficulty].states, settings.initialStates)
     };
     get field(){
         return this._field;
     };
     get difficulty(){
         return this._difficulty;
+    }
+    get state(){
+        return this._state
     }
 
     gameStats = {
@@ -91,10 +174,37 @@ class Game {
         win: false,
     };
 
+    assets = {
+        house:{
+            frame1: [[" "," "," "," "," "," "," "," "," ","~"],[" "," "," "," "," "," "," "," "," "," "],[" "," "," "," "," ","~"," "," "," "," "],[" "," ","_","_","|","|"," "," "," "," "],[" ","/","/","/","\\","\\","\\"],[" ","|","_","[","]","_","|"," "," "," "," "]],
+            frame2: [[" "," "," "," "," "," "," "," "," "," "],[" "," "," "," "," "," "," ","~"," "," "],[" "," "," "," "," "," "," "," "," "," "],[" "," ","_","_","|","|"," "," "," "," "],[" ","/","/","/","\\","\\","\\"],[" ","|","_","[","]","_","|"," "," "," "," "]],
+            updateHouse: function(){
+                if(this.state.house.frame === 1 && this.state.house.counter === 30){
+                    this.state.house.frame = 2
+                    this.state.house.counter = 0
+                }else if(this.state.house.frame === 2 && this.state.house.counter === 30){
+                    this.state.house.frame = 1
+                    this.state.house.counter = 0
+                }else{
+                    this.state.house.counter ++
+                }
+            }.bind(this),
+            drawHouse: function(){
+                draw(this.assets.house["frame"+this.state.house.frame], this.state.house.offset)
+                //***for testing flicker
+                // draw(this.assets.house.frame1, this.state.house.offset)
+            }.bind(this)
+        },
+        field:{
+            drawField: function(){
+                // console.log(this.field.playField)
+                draw(this.field.playField, this.state.field.offset)
+            }.bind(this)
+        }
+    }
     //Contains game logic.
     playGame(){
         console.clear();
-        // this.field.printPlayField();
         
         let gameOver = false;
         let x = 0;
@@ -130,7 +240,8 @@ class Game {
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let lose = function(){
             console.clear();
-            this.field.printPlayField();
+            this.assets.field.drawField()
+            console.log("\n")
             this.gameStats.win = false;
             eventEmitter.emit("loss");
             outcome = "loss";
@@ -140,7 +251,8 @@ class Game {
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let win = function(){
             console.clear();
-            this.field.printPlayField();
+            this.assets.field.drawField()
+            console.log("\n")
             this.gameStats.win = true;
             eventEmitter.emit("win");
             outcome = "win";
@@ -230,9 +342,15 @@ class Game {
         //.bind(this) is used to reference the mainInterface object's "this" rather than the function's "this".
         //**This portion or part of it will likely move to animate, update, etc */ or use animate here, since it is still part of the game logic really
         //**can the ending logic somehow be moved to update rather than draw?maybe the whole function updates() the frame, draws() and then checks, it could have a different name too, maybe mainLoop. look at 2nd game link for ideas*/
+        //**have a state object that contains the location to draw each object, draw then draws each object at that location. Objects can be field and house for this game */
+        //**Could be possible to write a while loop, starts logging the time, then at the end subtracts the amount of time that has passed for processing from the total time you want for each frame (1000/60) and waits for that time to elapse before continuing the loop again. */
+        //**NEXT make a draw object method that takes an x and y coordinate for where to place the upper left corner of the object, this can be used to print the field array and the house array  
+        //**each grass could be an object with a hole property, drawn at it's coordinates, when the player moves there, the property is checked for hole, the gras is printed, but the player is printed over the grass kinda */
         let mainLoop = function(){
             console.clear();
-            this.field.printPlayField();
+            this.assets.house.updateHouse()
+            this.assets.field.drawField()
+            this.assets.house.drawHouse()
             if(gameOver){
                 //Stops rendering the frames.
                 clearInterval(mainLoopInterval);
@@ -244,7 +362,7 @@ class Game {
         }.bind(this);
 
         //Sets the framerate and draws the frame
-        let mainLoopInterval = setInterval(mainLoop, 1000/60);
+        let mainLoopInterval = setInterval(mainLoop, 1000/30);
     }; 
 };
 
@@ -264,7 +382,7 @@ class Field {
     };
     get dimensions(){
         return this._dimensions;
-    }
+    };
     //Primarily used to update the playField property after each move and reset it to its original state after a game is over.
     set playField(newPlayFieldArray){
         this._playField = newPlayFieldArray;
@@ -454,26 +572,14 @@ class Field {
         return playField;
     };
 
-    //Prints the field that will be displayed with objective and holes hidden.
-    printPlayField(){
-        for(let row of this.playField){
-            let string = '';
-            for(let column of row){
-                string += column;
-            }
-            console.log(string);
-        }
+    //Prints the field that will be displayed with objective and holes hidden (useful for debugging).
+    drawPlayField(){
+        draw(this.playField)
     };
 
     //Prints the actual field with holes and objective revealed (useful for debugging).
-    printHiddenField(){
-        for(let row of this.hiddenField){
-            let string = '';
-            for(let column of row){
-                string += column;
-            }
-            console.log(string);
-        }
+    drawHiddenField(){
+        draw(this.hiddenField)
     };
 
     //Resets the playField back to it's original state after being altered during gameplay.        
@@ -509,6 +615,7 @@ class Field {
     };
 };
 
+
 //Contains all the prompts used within the game logic.
 //****perhaps change dialog names to match the prompt names */
 let prompts = {    
@@ -526,18 +633,18 @@ let prompts = {
 
     formattedPrompt(options){
         let answer = readlineSync.keyInSelect(options, "", {guide: false, cancel: false, hideEchoBack: true, mask: ""})
-            return options[answer];
+            return options[answer].toLowerCase();
     },
 
     // Works for instant input, not great for movement as it flashes
-    formattedDirectionPrompt(){
-        let answer = readlineSync.keyIn('', {hideEchoBack: true, mask: ''})
-        if(/^[a-zA-Z0-9]{1}$/.test(answer)){
-            return answer.toUpperCase();
-        }else{
-            return false;
-        }
-    },
+    // formattedDirectionPrompt(){
+    //     let answer = readlineSync.keyIn('', {hideEchoBack: true, mask: ''})
+    //     if(/^[a-zA-Z0-9]{1}$/.test(answer)){
+    //         return answer.toUpperCase();
+    //     }else{
+    //         return false;
+    //     }
+    // },
 
     //The argument linesToKeep controls how many lines will NOT be cleared.  This is necessary as this prompt may at times be used with multi-line dialogs.
     //*This is better as it isnt regressive, neither works for long wrong inputs though. This could also still use the clearoptions method too
@@ -705,9 +812,10 @@ You can use W, A, S, D to move around and look for it.`
     }
 };
 //***NEXT print play field can be a helper method in the create frame method. Print play field can take an x and y argument to position it from top left to bottom right, it can be done using " " */
-//**NEXT make a method to draw the frame, this will incorporate a modified version of the printPlayField which before printing adds spaces for margin unless there is a character other than space, then it adds that character to the final array */
+//**NEXT make a method to draw the frame, this will incorporate a modified version of the drawPlayField which before printing adds spaces for margin unless there is a character other than space, then it adds that character to the final array */
 //***NEXT but should keep print playField method as it could be good for testing functionality and debugging */
 //***change name to application
+//***Should reset terminal to normal state, stdin resume, cursor on, what else? is there a way to just reset to total noralm? clear the entire cache? */
 //Should be a game loop consisting of update and draw (draw playing the frames, update preparing the frame if there was user input and changing animations etc). draw could be reused for the tornado intro */
 //****Maybe I should call functions prompt handlers? */
 //**Rename to application? */
@@ -756,10 +864,10 @@ let mainInterface = {
         //.bind(this) is used to reference the mainInterface object's "this" rather than the function's "this".
         let winHandler = function(){            
             //Updates player object's total stats and writes to JSON. Marks the game as solved, increments the wins, and updates the attempts/moves from the game object.
-            this.player.stats["stats"+this.game.difficulty].unsolved --;
-            this.player.stats["stats"+this.game.difficulty].wins ++;
-            this.player.stats["stats"+this.game.difficulty].totalAttemptsToWin += this.game.gameStats.attempts;
-            this.player.stats["stats"+this.game.difficulty].totalMovesToWin += this.game.gameStats.moves;
+            this.player.stats[this.game.difficulty].unsolved --;
+            this.player.stats[this.game.difficulty].wins ++;
+            this.player.stats[this.game.difficulty].totalAttemptsToWin += this.game.gameStats.attempts;
+            this.player.stats[this.game.difficulty].totalMovesToWin += this.game.gameStats.moves;
             this.updatePlayersJSON();
             
             //Begins dialog and options.
@@ -809,7 +917,7 @@ let mainInterface = {
         dialogs.mainMenu();
         let answer = prompts.mainMenu();
         console.clear();
-        if(answer === "Play a game"){  
+        if(answer === "play a game"){  
             dialogs.excitedConfirmation();
             this.next();
             console.clear();
@@ -817,10 +925,10 @@ let mainInterface = {
             this.next();
             this.setFieldAndGame();
             this.startGame();
-        }else if(answer === "View your stats"){
+        }else if(answer === "view your stats"){
 //**********add logic here to show stats */
 
-        }else if(answer === "Exit"){
+        }else if(answer === "exit"){
             this.exit();
         }
     },
@@ -832,12 +940,12 @@ let mainInterface = {
         console.clear();
         dialogs.tryAgain();
         let answer = prompts.tryAgain();
-        if(answer === "Try again"){
+        if(answer === "try again"){
             console.clear();
             dialogs.excitedConfirmation();
             this.next();
             this.restartGame();
-        }else if(answer === "Exit"){
+        }else if(answer === "exit"){
             this.exit(); 
         }
     },
@@ -896,29 +1004,31 @@ let mainInterface = {
         console.clear();
         dialogs.difficulty();
         let difficulty = prompts.difficulty();
-        if(difficulty){
-            switch(difficulty){
-                case "Easy":
-                    this.field = Field.generateValidField(3,3,2);
-                    this.game = new Game("Easy", this.field);
-                    break;
-                case "Medium":
-                    this.field = Field.generateValidField(5,5,6);
-                    this.game = new Game("Medium", this.field);
-                    break;
-                case "Hard": 
-                    this.field = Field.generateValidField(7,7,11);
-                    this.game = new Game("Hard", this.field);
-                    break;
-            };
-        }
+        this.field = Field.generateValidField(settings[difficulty].fieldSettings.dimensions.x, settings[difficulty].fieldSettings.dimensions.y,settings[difficulty].fieldSettings.holes)
+        this.game = new Game (difficulty, this.field)
+        // if(difficulty){
+        //     switch(difficulty){
+        //         case "Easy":
+        //             this.field = Field.generateValidField(3,3,2);
+        //             this.game = new Game("Easy", this.field);
+        //             break;
+        //         case "Medium":
+        //             this.field = Field.generateValidField(5,5,6);
+        //             this.game = new Game("Medium", this.field);
+        //             break;
+        //         case "Hard": 
+        //             this.field = Field.generateValidField(7,7,11);
+        //             this.game = new Game("Hard", this.field);
+        //             break;
+        //     };
+        // }
     },
 
     //Starts the game.
     startGame(){ 
         //Increments the unsolved player stat while the game is being played, records the unsolved game, and writes to playersJSON.
         //Prevents player from force quitting to avoid an unsolved stat. Will be removed on win.
-        this.player.stats["stats"+this.game.difficulty].unsolved ++;
+        this.player.stats[this.game.difficulty].unsolved ++;
         this.player.games.push(this.game);
         this.updatePlayersJSON();
         
@@ -938,9 +1048,9 @@ let mainInterface = {
     //Standard next options to advance to the next dialog or exit.
     next(){
         let answer = prompts.next();
-        if(answer === "Next"){
+        if(answer === "next"){
             return;
-        }else if(answer === "Exit"){
+        }else if(answer === "exit"){
             this.exit();
         }
     },
@@ -949,12 +1059,132 @@ let mainInterface = {
     exit(){
         console.clear();
         dialogs.goodbye();
+        
+        //Resets terminal settings and exits.
+        process.stdin.resume();
+        showCursor();
         process.exit();
     }
 }
 
+//Can be used to convert string art to an array for drawing. 
+//Create a multi line string with ` and begin on the next line.
+//Remeber to escape backslashes with an extra backslash
+let convertToArray = function(string){
+    let array = []
+    for(let row of string.split('\n')){
+        let rowArray = []
+        for(let character of row){
+            rowArray.push(character)
+        }
+        array.push(rowArray)
+    }
+    array.shift()
+    console.log(JSON.stringify(array))
+}
 
-mainInterface.begin();
+
+//Draws an array in the console.  Offsets the top left corner of the array from the top left corner of the terminal.
+//Offset entered as an object containing x and y keys and their respective offsets.
+let draw = function(array, offset={x:0, y:0}){
+    let x = offset.x
+    let y = offset.y
+    for(let row of array){
+        readline.cursorTo(process.stdout, x, y)
+        y++
+        for(let column of row){
+            process.stdout.write(column)
+        }
+    }  
+};
+
+//With this method, might want to roll back and find the offset being made with spaces code to speed things up
+let testArray1 = [
+    [1],
+    [2,2,2,2],
+    ['blank']
+]
+
+let testArray2 = [
+    [' '],
+    [' ', ' '],
+    [3,3,3],
+    ['4']
+]
+
+let arrayToString = function(array){
+    let string = ``    
+    for(let row of array){
+        for(let character of row){
+            string+=character
+        }
+        string += '\n'
+    }
+    return string
+}
+
+//**Margins and empty space in the arrays should be 'blank' as this will essentially create sprites with transparent backgrounds that can be layered */
+//**change asset arrays to have 'blank' instead of ' ' for empty space (i.e. not the walls) */
+//Takes an array of array assets to combine.
+//The first array will be the top layer, while the final array will be the bottom layer.
+//just need to replace blanks with spaces and it should work
+//then need to create assets based on their offsets (adding spaces for margins)
+let createFrame = function(arrays, offset){
+    let frame = []
+    let xDimension = 0
+    let yDimension = 0
+    
+    //Finds the array with the most columns and sets the dimension.
+    for(let array of arrays){
+        for(let row of array){
+            if(row.length > xDimension){
+                xDimension = row.length
+            }
+        }
+    }
+    //Finds the array with the most rows and sets the dimension.
+    for(let array of arrays){
+        if(array.length > yDimension){
+            yDimension = array.length
+        }
+    }
+    //Uses the dimensions to build a blank frame filled with spaces.
+    for(let y = yDimension; y > 0; y--){
+        let row = []
+        for(let x = xDimension; x >0; x--){
+            row.push('blank')
+        }
+        frame.push(row)
+    }
+    //Populate the frame with assets while skipping the margins
+    for(let array of arrays){
+        let yIndex = 0
+        let xIndex = 0
+        //Loops through the arrays
+        for(let row of array){
+            for(let character of row){
+                if(frame[yIndex][xIndex] === 'blank'){
+                    frame[yIndex][xIndex] = character
+                }
+                //Increments xIndex
+                xIndex++
+            }
+            //Resets xIndex for the next row and increments yIndex
+            xIndex = 0
+            yIndex++
+        }
+    }
+    return frame
+}
+
+// console.log(createFrame([testArray1, testArray2]))
+
+
+
+mainInterface.begin()
+
+
+
 
 
 
@@ -969,84 +1199,14 @@ mainInterface.begin();
 
 //Starts game with basic field
 
-// field = new Field([
+// let field1 = new Field([
 //     [grass, grass, hole, grass, grass, grass],
 //     [hole, grass, grass, grass, hole, grass],
 //     [hole, hole, hole, hole, grass, grass],
 //     [hat, grass, grass, grass, grass, hole]
 //   ]);
 
-// let game1 = new Game(field)
-// game1.startGame()
+// let game1 = new Game(field1)
+// game1.draw(field1.playField, 2, 2)
 
 
-// ONLY WORKS IF HOLES CONNECTED TO WALL
-// static validateField(field){
-//     let direction = "S";
-//     let x = 0;
-//     let y = 0;
-//     let win = undefined;
-//     while(win === undefined && !lose){
-//         let test = function(direction){
-//             if(direction==="S"){
-//                 if(!Game.isOutOfBounds(field,x,y+1)){
-//                     let move = Game.checkMove(field,x,y+1)
-//                     if(move==="win"){
-//                         win = true;
-//                     }else if(move===hole){
-//                         direction = "E";
-//                         test(direction)
-//                     }else if(move===grass){
-//                         y = y + 1;
-//                         test(direction)
-//                     }
-//                 }
-//             }else if(direction==="E"){
-//                 if(!Game.isOutOfBounds(field,x+1,y)){
-//                     let move = Game.checkMove(field,x+1,y)
-//                     if(move==="win"){
-//                         win = true;
-//                     }else if(move===hole){
-//                         direction = "N";
-//                         test(direction)
-//                     }else if(move===grass){
-//                         x = x + 1;
-//                         test(direction)
-//                     }
-//                 }
-//             }else if(direction==="N"){
-//                 if(!Game.isOutOfBounds(field,x,y-1)){
-//                     let move = Game.checkMove(field,x,y-1)
-//                     if(move==="win"){
-//                         win = true;
-//                     }else if(move===hole){
-//                         direction = "W";
-//                         test(direction)
-//                     }else if(move===grass){
-//                         y = y - 1;
-//                         test(direction)
-//                     }
-//                 }
-//             }else if(direction==="W"){
-//                 if(!Game.isOutOfBounds(field,x-1,y)){
-//                     let move = Game.checkMove(field,x-1,y)
-//                     if(move==="win"){
-//                         win = true;
-//                     }else if(move===hole){
-//                         direction = "S";
-//                         test(direction)
-//                     }else if(move===grass){
-//                         y = x - 1;
-//                         test(direction)
-//                     }
-//                 }
-//             }
-//         }
-//         test(direction)
-//         }
-//     if(win){
-//         return true
-//     }else if(!win){
-//         return false
-//     }
-// }
