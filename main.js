@@ -1,5 +1,4 @@
 
-
 //If adding a new asset the following are required.
 //State setting offset. 
 //State setting frame. Even if there is only one frame, as it is needed for the loop to recognize and draw.
@@ -88,7 +87,7 @@ let settings = {
             counter: 1,
             frame: 1,
             draw: true,
-            color: undefined
+            color: '\x1b[1;31m'
         },
         field: {
             draw: true,
@@ -221,8 +220,14 @@ class Game {
         for(let asset in this.assets){
             //Checks if current asset should be drawn.
             if(this.state[asset].draw){
-                //Adds the sprite to the array to composite.    
-                frameAssets.push(draw.possitionSprite(this.assets[asset]["frame"+this.state[asset].frame], this.state[asset].offset))
+                //Adds the sprite to the array to composite.
+                let possitionedColoredArray = draw.possitionSprite(this.assets[asset]["frame"+this.state[asset].frame], this.state[asset].offset)
+                if(this.state[asset].color){
+                    possitionedColoredArray = draw.colorSprite(possitionedColoredArray, this.state[asset].color)
+                }
+                   
+                frameAssets.push(possitionedColoredArray) 
+                
             }
         }
         let frameArray = draw.createFrame(frameAssets);
@@ -1208,7 +1213,7 @@ let draw = {
     //Adds 'blank' margins to possition a sprite correctly in the frame.
     //Offset argument is an object such as {x:0, y:0}.
     //Moves the top left corner of the sprite from the top left of the frame according to the offset.
-    possitionSprite: function(array, offset){
+    possitionSprite(array, offset){
         //Creates a copy of the array to add margins to while leaving the original asset intact.
         let possitionedSprite = []
         for(let row of array){
@@ -1230,6 +1235,37 @@ let draw = {
         }
         return possitionedSprite
     },
+
+    //Colors a sprite. Color should be supplied as a string escape sequence such as "\x1b[31m"
+    //A helpful list of colors can be found here. https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
+    //Simply replace 31 with the number in the FG column. 
+    //Adding a 1 will make the color a lighter shade, 2 will make the color a dimmer shade. (\x1b[1;31m)
+    colorSprite(array,color){
+        //Creates a copy of the array to color while leaving the original asset intact.
+        let coloredSprite = [];
+        // for(let row of array){
+        //     let rowCopy = [];
+        //     for(let character of row){
+        //         rowCopy.push(character)  ; 
+        //     }
+        //     coloredSprite.push(rowCopy);
+        // }
+        for(let row of array){
+            let coloredRow = []
+            for(let character of row){
+                if(character !== 'blank'){
+                    coloredRow.push(color + character + '\x1b[0m');
+                }else{
+                    coloredRow.push(character);
+                }
+                
+            }
+            coloredSprite.push(coloredRow)
+        }
+        // coloredSprite.push('\x1b[0m')
+        return coloredSprite
+    },
+
     //Animates an array of multiline strings.
     //Use arrayToString() to convert an array asset to a multi line string.
     //Callback is the function that will run when the animation is complete.
