@@ -1,29 +1,16 @@
-//flicker only occurs on very large draws, can things be broken up more in draw method so the whole thing doesnt get process at once?
-//can I make a composit frame of all the updated items, and then just console.log that frame all at once?
 
 
-//move field to assets?
-
-//Make draw a function out of objects
-//use draw with defaults xy to zero
-//use a state object containing xy counter instead of separate variables
-//use draw in draw fields
-//make an assets object. House has two states and a counter
-//make a state object that contains coordinates and counters and states for everything, when should this be set? when difficulty is set? Is it possible to have a difficulty object defined at the beginning where all of these tweaks can be made? Then when selecting a 
-
-//difficulty object that contains an object for each difficulty. those objects will have field size and holes, and another object for states.  The game object will have a constructor that uses the difficulty argument to access the different difficulties 
-
-//Inspired by maze craze
-
-//Next add while loops for the inputs
-//maybe use events to update the play field, then an animation can print the play field each frame, and the play field will be updated asychrnously throughout
-//*****weird behavior on loss menu */
-//could be fun to have a biger field, and a snake thats chasing you or a bird 
-//****Let's use readline with enter and limits for options and names and then use the stdin listening for movement eventually. (readline.keyin causes a weird flashing that the other doesnt) */
+//If adding a new asset the following are required.
+//State setting offset. 
+//State setting frame. Even if there is only one frame, as it is needed for the loop to recognize and draw.
+//State setting draw. Set either to true or false.
+//Asset property asset.frame1 = [] with an array consisting of what will be drawn. Further frames can be numbered frame2, frame3, etc.
+//The draw.stringToArray() method can be used to make the array for asset objects.
+//Update methods are optional.
+//Color state is optional, default is white.
 
 
 //Imports necessary modules.
-const readline = require('readline');
 const fs = require('fs');
 const events  = require('events');
 const readlineSync = require('readline-sync')
@@ -39,21 +26,23 @@ const eventEmitter = new events.EventEmitter();
 const hat = '^';
 const hole = 'O';
 const grass = '░';
-const path = '*';
-const avatar = '\u03EE';
+const path = ' ';
+// const grass = chalk.green('░');
+// const path = chalk.hex('#B87333').visible('░');
+const avatar = '8';
+// const avatar = '\u03EE';
 // const avatar = "𓀠";
-// \uD80C\uDC20
 
-//Make balance adjustments here.
-//Used to set the number of holes and field dimensions for each difficulty level.
-//Used to set the default state of each object.
 
-//Default settings and difficulty settings for initial states of objects.
+
+
+//Sets ifficulty settings and default settings.
 //Balancing and tweaks can be done here.
 let settings = {
+    //Used to set the number of holes and field dimensions for each difficulty level as well as states dependent on difficulty.
     easy: {
         fieldSettings:{
-            holes: 4, 
+            holes: 3, 
             dimensions:{x:6, y:3}
         }, 
         states:{
@@ -67,41 +56,47 @@ let settings = {
     },
     medium: {
         fieldSettings:{
-            holes: 6, 
-            dimensions:{x:5, y:5}
+            holes: 7, 
+            dimensions:{x:8, y:4}
         }, 
         states:{
             field: {
-                offset: {x:2, y:5}
+                offset: {x:3, y:6}
             },
             house: {
-                offset: {x:7, y:0}
+                offset: {x:3, y:0}
             }
         }
     },
     hard: {
         fieldSettings:{
-            holes: 11, 
-            dimensions:{x:7, y:7}
+            holes: 15, 
+            dimensions:{x:12, y:5}
         }, 
         states:{
             field:{
-                offset: {x:2, y:5}
+                offset: {x:3, y:6}
             },
             house:{
-                offset: {x:7, y:0}
+                offset: {x:5, y:0}
             }
         }
     },
-    //Used for state settings not dependent on difficulty
+    //Sets the default states not dependent on difficulty
     initialStates: {
         house:{
             counter: 1,
-            frame: 1
+            frame: 1,
+            draw: true,
+            color: undefined
+        },
+        field: {
+            draw: true,
+            frame: 1,
+            color: undefined
         }
-
     }
-}
+};
 
 //Used to create a new player and to track stats.
 class Player{
@@ -165,7 +160,7 @@ class Game {
         return this._difficulty;
     }
     get state(){
-        return this._state
+        return this._state;
     }
 
     gameStats = {
@@ -173,35 +168,68 @@ class Game {
         moves: 0,
         win: false,
     };
-
+    //Contains all of the visual assets for the game.
+    //Assets should be an array of arrays. Use stringToArrray to convert multi line string art into an asset.
+    //Transparent characters should be 'blank' while ' ' is used for solid space. This allows for the layering of sprites.
     assets = {
         house:{
-            frame1: [[" "," "," "," "," "," "," "," "," ","~"],[" "," "," "," "," "," "," "," "," "," "],[" "," "," "," "," ","~"," "," "," "," "],[" "," ","_","_","|","|"," "," "," "," "],[" ","/","/","/","\\","\\","\\"],[" ","|","_","[","]","_","|"," "," "," "," "]],
-            frame2: [[" "," "," "," "," "," "," "," "," "," "],[" "," "," "," "," "," "," ","~"," "," "],[" "," "," "," "," "," "," "," "," "," "],[" "," ","_","_","|","|"," "," "," "," "],[" ","/","/","/","\\","\\","\\"],[" ","|","_","[","]","_","|"," "," "," "," "]],
-            updateHouse: function(){
+            frame1: [
+                ["blank","blank","blank","blank","blank","blank","blank","blank","blank","~"],
+                ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
+                ["blank","blank","blank","blank","blank","~","blank","blank","blank","blank"],
+                ["blank","blank","_","_","|","|","blank","blank","blank","blank"],
+                ["blank","/","/","/","\\","\\","\\"],
+                ["blank","|","_","[","]","_","|","blank","blank","blank","blank"]
+            ],
+            frame2: [                
+                ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
+                ["blank","blank","blank","blank","blank","blank","blank","~","blank","blank"],
+                ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
+                ["blank","blank","_","_","|","|","blank","blank","blank","blank"],
+                ["blank","/","/","/","\\","\\","\\"],
+                ["blank","|","_","[","]","_","|","blank","blank","blank","blank"]
+            ],
+            //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
+            update: function(){
+                //Updates counter and current frame in the state object, in charge of changing frames.
                 if(this.state.house.frame === 1 && this.state.house.counter === 30){
-                    this.state.house.frame = 2
-                    this.state.house.counter = 0
+                    this.state.house.frame = 2;
+                    this.state.house.counter = 0;
                 }else if(this.state.house.frame === 2 && this.state.house.counter === 30){
-                    this.state.house.frame = 1
-                    this.state.house.counter = 0
+                    this.state.house.frame = 1;
+                    this.state.house.counter = 0;
                 }else{
-                    this.state.house.counter ++
+                    this.state.house.counter ++;
                 }
             }.bind(this),
-            drawHouse: function(){
-                draw(this.assets.house["frame"+this.state.house.frame], this.state.house.offset)
-                //***for testing flicker
-                // draw(this.assets.house.frame1, this.state.house.offset)
-            }.bind(this)
+            
         },
-        field:{
-            drawField: function(){
-                // console.log(this.field.playField)
-                draw(this.field.playField, this.state.field.offset)
-            }.bind(this)
+        // field:{
+        //     //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
+        //     frame1: function(){
+        //         return this.field.playField
+        //     },
+        // }
+    };
+    //Used to composite the frame and draw it.
+    //Loops through all assets and calls draw.possitionSprite() and draw.color() eliminating the need for individual asset methods.
+    //**Add color with positionSprite, make sure to do a check if it is defined first though */
+    drawCurrentFrame(){
+        let frameAssets = [];
+        //Adds the play field to the top of the draw list.
+        frameAssets.push(draw.possitionSprite(this.field.playField, this.state.field.offset))
+        for(let asset in this.assets){
+            //Checks if current asset should be drawn.
+            if(this.state[asset].draw){
+                //Adds the sprite to the array to composite.    
+                frameAssets.push(draw.possitionSprite(this.assets[asset]["frame"+this.state[asset].frame], this.state[asset].offset))
+            }
         }
-    }
+        let frameArray = draw.createFrame(frameAssets);
+        let frameString = draw.arrayToString(frameArray);
+        console.log(frameString);
+    };
+
     //Contains game logic.
     playGame(){
         console.clear();
@@ -240,8 +268,7 @@ class Game {
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let lose = function(){
             console.clear();
-            this.assets.field.drawField()
-            console.log("\n")
+            this.drawCurrentFrame()
             this.gameStats.win = false;
             eventEmitter.emit("loss");
             outcome = "loss";
@@ -251,16 +278,19 @@ class Game {
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let win = function(){
             console.clear();
-            this.assets.field.drawField()
-            console.log("\n")
+            this.drawCurrentFrame()
             this.gameStats.win = true;
             eventEmitter.emit("win");
             outcome = "win";
         }.bind(this);
         
-        
+        //***What are these coments? */
         //Play loop logic that is called to allow the player to move around the board. Changes playField to show path. Includes win/loss and out of bounds logic.
-            //Sets up board and prompts user for direction input.
+        //Sets up board and prompts user for direction input.
+        
+        //Used to process user move input.
+        //Checks for validity of move and then checks for win/loss conditions.
+        //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let move = function(key){
             //Moves the player avatar, sets the x,y possition, and checks for win or loss conditions.
             ///***can path be moved to check move? does it matter? checkmove deals with the new space, while path is the old space and could be handled by the while loop */
@@ -335,22 +365,24 @@ class Game {
         process.stdin.setRawMode(true);
         //Sets encoding.
         process.stdin.setEncoding( 'utf8' );
-        //Turns on the move listener
+        //Turns on the move listener and calls move to handle player movements
         process.stdin.on( 'data', move);
         
         //Draws the frames and checks game status.
         //.bind(this) is used to reference the mainInterface object's "this" rather than the function's "this".
         //**This portion or part of it will likely move to animate, update, etc */ or use animate here, since it is still part of the game logic really
         //**can the ending logic somehow be moved to update rather than draw?maybe the whole function updates() the frame, draws() and then checks, it could have a different name too, maybe mainLoop. look at 2nd game link for ideas*/
-        //**have a state object that contains the location to draw each object, draw then draws each object at that location. Objects can be field and house for this game */
         //**Could be possible to write a while loop, starts logging the time, then at the end subtracts the amount of time that has passed for processing from the total time you want for each frame (1000/60) and waits for that time to elapse before continuing the loop again. */
-        //**NEXT make a draw object method that takes an x and y coordinate for where to place the upper left corner of the object, this can be used to print the field array and the house array  
         //**each grass could be an object with a hole property, drawn at it's coordinates, when the player moves there, the property is checked for hole, the gras is printed, but the player is printed over the grass kinda */
         let mainLoop = function(){
             console.clear();
-            this.assets.house.updateHouse()
-            this.assets.field.drawField()
-            this.assets.house.drawHouse()
+
+            //Updates states.
+            this.assets.house.update()
+
+            //Draws the current frame.
+            this.drawCurrentFrame()
+
             if(gameOver){
                 //Stops rendering the frames.
                 clearInterval(mainLoopInterval);
@@ -473,6 +505,7 @@ class Field {
         }
         //Helper function that decides which direction to move based on the crumbs present at adjacent spaces.
         //Sets valid to true or false if the hat is found or all adjacent paths have 2 crumbs/holes.
+        //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let decideDirection = function(){
             
             //Finds values for crumbs dropped on adjacent moves.
@@ -574,12 +607,12 @@ class Field {
 
     //Prints the field that will be displayed with objective and holes hidden (useful for debugging).
     drawPlayField(){
-        draw(this.playField)
+        console.log(draw.arrayToString(this.playField))
     };
 
     //Prints the actual field with holes and objective revealed (useful for debugging).
     drawHiddenField(){
-        draw(this.hiddenField)
+        console.log(draw.arrayToString(this.hiddenField))
     };
 
     //Resets the playField back to it's original state after being altered during gameplay.        
@@ -1067,125 +1100,171 @@ let mainInterface = {
     }
 }
 
-//Can be used to convert string art to an array for drawing. 
-//Create a multi line string with ` and begin on the next line.
-//Remeber to escape backslashes with an extra backslash
-let convertToArray = function(string){
-    let array = []
-    for(let row of string.split('\n')){
-        let rowArray = []
-        for(let character of row){
-            rowArray.push(character)
-        }
-        array.push(rowArray)
-    }
-    array.shift()
-    console.log(JSON.stringify(array))
-}
+
 
 
 //Draws an array in the console.  Offsets the top left corner of the array from the top left corner of the terminal.
 //Offset entered as an object containing x and y keys and their respective offsets.
-let draw = function(array, offset={x:0, y:0}){
-    let x = offset.x
-    let y = offset.y
-    for(let row of array){
-        readline.cursorTo(process.stdout, x, y)
-        y++
-        for(let column of row){
-            process.stdout.write(column)
-        }
-    }  
-};
+//**causes flicker */
+// let draw = function(array, offset={x:0, y:0}){
+//     let x = offset.x
+//     let y = offset.y
+//     for(let row of array){
+//         readline.cursorTo(process.stdout, x, y)
+//         y++
+//         for(let column of row){
+//             process.stdout.write(column)
+//         }
+//     }  
+// };
 
-//With this method, might want to roll back and find the offset being made with spaces code to speed things up
-let testArray1 = [
-    [1],
-    [2,2,2,2],
-    ['blank']
-]
-
-let testArray2 = [
-    [' '],
-    [' ', ' '],
-    [3,3,3],
-    ['4']
-]
-
-let arrayToString = function(array){
-    let string = ``    
-    for(let row of array){
-        for(let character of row){
-            string+=character
-        }
-        string += '\n'
-    }
-    return string
-}
-
-//**Margins and empty space in the arrays should be 'blank' as this will essentially create sprites with transparent backgrounds that can be layered */
-//**change asset arrays to have 'blank' instead of ' ' for empty space (i.e. not the walls) */
-//Takes an array of array assets to combine.
-//The first array will be the top layer, while the final array will be the bottom layer.
-//just need to replace blanks with spaces and it should work
-//then need to create assets based on their offsets (adding spaces for margins)
-let createFrame = function(arrays, offset){
-    let frame = []
-    let xDimension = 0
-    let yDimension = 0
-    
-    //Finds the array with the most columns and sets the dimension.
-    for(let array of arrays){
-        for(let row of array){
-            if(row.length > xDimension){
-                xDimension = row.length
+let draw = {
+    //**Margins and empty space in the arrays should be 'blank' as this will essentially create sprites with transparent backgrounds that can be layered */
+    //**change asset arrays to have 'blank' instead of ' ' for empty space (i.e. not the walls) */
+    //Takes an array of array sprites to composite into a single frame.
+    //The first array will be the top layer, while the final array will be the bottom layer.
+    //just need to replace blanks with spaces and it should work
+    //then need to create assets based on their offsets (adding spaces for margins)
+    createFrame: function(arrays){
+        let frame = []
+        let xDimension = 0
+        let yDimension = 0
+        //Finds the array with the most columns and sets the dimension.
+        for(let array of arrays){
+            for(let row of array){
+                if(row.length > xDimension){
+                    xDimension = row.length
+                }
             }
         }
-    }
-    //Finds the array with the most rows and sets the dimension.
-    for(let array of arrays){
-        if(array.length > yDimension){
-            yDimension = array.length
+        //Finds the array with the most rows and sets the dimension.
+        for(let array of arrays){
+            if(array.length > yDimension){
+                yDimension = array.length
+            }
         }
-    }
-    //Uses the dimensions to build a blank frame filled with spaces.
-    for(let y = yDimension; y > 0; y--){
-        let row = []
-        for(let x = xDimension; x >0; x--){
-            row.push('blank')
+        //Uses the dimensions to build a blank frame filled with spaces.
+        for(let y = yDimension; y > 0; y--){
+            let row = []
+            for(let x = xDimension; x >0; x--){
+                row.push('blank')
+            }
+            frame.push(row)
         }
-        frame.push(row)
-    }
-    //Populate the frame with assets while skipping the margins
-    for(let array of arrays){
-        let yIndex = 0
-        let xIndex = 0
-        //Loops through the arrays
+        //Populates the frame with assets only on 'blank' spots, allowing for layering.
+        for(let array of arrays){
+            let yIndex = 0
+            let xIndex = 0
+            //Loops through the arrays.
+            for(let row of array){
+                for(let character of row){
+                    if(frame[yIndex][xIndex] === 'blank'){
+                        frame[yIndex][xIndex] = character
+                    }
+                    //Increments xIndex used to replace characters across the row.
+                    xIndex++
+                }
+                //Resets xIndex for the next row and increments yIndex to replace characters in the next row.
+                xIndex = 0
+                yIndex++
+            }
+        }
+        //Replaces 'blank' with ' ' for drawing to terminal.
+        for(let array of frame){
+            for(let character of array){
+                if(character === 'blank'){
+                    array[array.indexOf(character)] = ' '   
+                }
+            }
+        }
+        return frame
+    },
+    //Used to create a string from the frame array.
+    arrayToString: function(array){
+        let string = ``    
         for(let row of array){
             for(let character of row){
-                if(frame[yIndex][xIndex] === 'blank'){
-                    frame[yIndex][xIndex] = character
-                }
-                //Increments xIndex
-                xIndex++
+                string+=character
             }
-            //Resets xIndex for the next row and increments yIndex
-            xIndex = 0
-            yIndex++
+            string += '\n'
         }
+        return string
+    },
+    //Can be used to convert string art to an array for drawing. 
+    //Create a multi line string with ` and begin on the next line.
+    //Remeber to escape backslashes with an extra backslash.
+    stringToArray: function(string){
+        let array = []
+        for(let row of string.split('\n')){
+            let rowArray = []
+            for(let character of row){
+                rowArray.push(character)
+            }
+            array.push(rowArray)
+        }
+        array.shift()
+        return JSON.stringify(array)
+    },
+    //Adds 'blank' margins to possition a sprite correctly in the frame.
+    //Offset argument is an object such as {x:0, y:0}.
+    //Moves the top left corner of the sprite from the top left of the frame according to the offset.
+    possitionSprite: function(array, offset){
+        //Creates a copy of the array to add margins to while leaving the original asset intact.
+        let possitionedSprite = []
+        for(let row of array){
+            let rowCopy = []
+            for(let character of row){
+                rowCopy.push(character)   
+            }
+            possitionedSprite.push(rowCopy)
+        }
+        //Adds a blank margin to the top to move the sprite down according to the offset.
+        for(let y = offset.y; y>0; y--){
+            possitionedSprite.unshift(['blank'])
+        }
+        //Adds a blank margin to the left side to move the sprite right according to the offset.
+        for(let row of possitionedSprite){
+            for(let x = offset.x; x>0; x--){
+                row.unshift('blank')
+            }
+        }
+        return possitionedSprite
+    },
+    //Animates an array of multiline strings.
+    //Use arrayToString() to convert an array asset to a multi line string.
+    //Callback is the function that will run when the animation is complete.
+    animate(array, fps, callback){
+        let numberOfFrames = array.length
+        let index = 0
+        let animationLoop = function(){
+            console.clear()
+            console.log(array[index])
+            index++
+            numberOfFrames--
+            if(numberOfFrames === 0){
+                clearInterval(animationLoopInterval)
+                callback()
+            }
+        }
+        animationLoopInterval = setInterval(animationLoop, 1000/fps)
     }
-    return frame
 }
 
-// console.log(createFrame([testArray1, testArray2]))
+// console.clear()
+// console.log("𓀠")
+// // console.log("̯  ͡ ^")
+// //u0300 accent works on head
+// //A
+// console.log("\u0041\u0300")
+// //t
+// console.log("\u0074\u0300")
+// //avatar
+// console.log("\u03EE\u0300")
 
-
-
+// // console.log("\u1DFC")
+// // fence = "Ħ"
+// // fence = '‡'
 mainInterface.begin()
-
-
-
-
 
 
 // let test = new Player("brenden")
@@ -1205,6 +1284,8 @@ mainInterface.begin()
 //     [hole, hole, hole, hole, grass, grass],
 //     [hat, grass, grass, grass, grass, hole]
 //   ]);
+
+//   field1.drawHiddenField()
 
 // let game1 = new Game(field1)
 // game1.draw(field1.playField, 2, 2)
