@@ -1,5 +1,5 @@
 
-//If adding a new asset the following are required.
+//When adding a new asset the following are required.
 //State setting offset. 
 //State setting frame. Even if there is only one frame, as it is needed for the loop to recognize and draw.
 //State setting draw. Set either to true or false.
@@ -46,11 +46,8 @@ let settings = {
         }, 
         states:{
             field:{
-                offset: {x:3, y:6},
-            },
-            house:{
-                offset: {x:2, y:0}
-            }    
+                offset: {x:15, y:8},
+            }  
         }
     },
     medium: {
@@ -60,39 +57,45 @@ let settings = {
         }, 
         states:{
             field: {
-                offset: {x:3, y:6}
-            },
-            house: {
-                offset: {x:3, y:0}
+                offset: {x:14, y:8}
             }
         }
     },
     hard: {
         fieldSettings:{
             holes: 15, 
-            dimensions:{x:12, y:5}
+            dimensions:{x:12, y:8}
         }, 
         states:{
             field:{
-                offset: {x:3, y:6}
-            },
-            house:{
-                offset: {x:5, y:0}
+                offset: {x:12, y:8}
             }
         }
     },
     //Sets the default states not dependent on difficulty
     initialStates: {
         house:{
-            counter: 1,
-            frame: 1,
             draw: true,
-            color: '\x1b[1;31m'
+            frame: 1,
+            offset: {x:14,y:2},
+            counter: 0
         },
         field: {
             draw: true,
+            frame: 1
+        },
+        stars: {
+            draw: true,
+            color: '\x1b[97m',
             frame: 1,
-            color: undefined
+            offset: {x:0, y:0},
+            counter: 0 
+        },
+        horizon: {
+            draw: true,
+            frame: 1,
+            offset: {x:0, y:6}
+
         }
     }
 };
@@ -201,8 +204,35 @@ class Game {
                     this.state.house.counter ++;
                 }
             }.bind(this),
+
             
         },
+        stars: {
+            frame1: [
+                [" "," "," "," "," "," "," "," "," "," ","*"],
+                [],
+                [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","*"],
+                [" "," "," "," "," "," "," "," "," "," "," "," "," "," ","*"],
+                [" "," "," "," "," "," ","*"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","*"," "," "," "," "," "," "," "," ","*"],
+                [],
+            ],
+            update: function(){
+                if(this.state.stars.color === '\x1b[97m' && this.state.stars.counter === 30){
+                    this.state.stars.color = '\x1b[90m';
+                    this.state.stars.counter = 0;
+                }else if(this.state.stars.color === '\x1b[90m' && this.state.stars.counter === 2){
+                    this.state.stars.color = '\x1b[97m';
+                    this.state.stars.counter = 0;
+                }else{
+                    this.state.stars.counter ++;
+                }
+            }.bind(this)
+        },
+        horizon: {
+            frame1: [
+                ["_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_"]
+            ]
+        }
         // field:{
         //     //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         //     frame1: function(){
@@ -210,6 +240,17 @@ class Game {
         //     },
         // }
     };
+    
+    // Loops through all of the assets and updates the state object if the asset has an update method.
+    update(){
+        for(let asset in this.assets){
+            if(this.assets[asset].update){
+                this.assets[asset].update()
+            }
+            
+        }
+    }
+    
     //Used to composite the frame and draw it.
     //Loops through all assets and calls draw.possitionSprite() and draw.color() eliminating the need for individual asset methods.
     //**Add color with positionSprite, make sure to do a check if it is defined first though */
@@ -383,8 +424,7 @@ class Game {
             console.clear();
 
             //Updates states.
-            this.assets.house.update()
-
+            this.update()
             //Draws the current frame.
             this.drawCurrentFrame()
 
@@ -1243,13 +1283,6 @@ let draw = {
     colorSprite(array,color){
         //Creates a copy of the array to color while leaving the original asset intact.
         let coloredSprite = [];
-        // for(let row of array){
-        //     let rowCopy = [];
-        //     for(let character of row){
-        //         rowCopy.push(character)  ; 
-        //     }
-        //     coloredSprite.push(rowCopy);
-        // }
         for(let row of array){
             let coloredRow = []
             for(let character of row){
@@ -1326,4 +1359,5 @@ mainInterface.begin()
 // let game1 = new Game(field1)
 // game1.draw(field1.playField, 2, 2)
 
-
+// console.log("\x1b[90mnormal")
+// console.log("\x1b[1mnormal")
