@@ -79,7 +79,8 @@ let settings = {
     initialStates: {
         field: {
             draw: true,
-            frame: 1
+            frame: 1,
+            color: '\x1b[97m'
         },
         tree: {
             draw: true,
@@ -139,6 +140,9 @@ let settings = {
             draw: true,
             frame: 1,
             offset: {x:0, y:6}
+        },
+        time: {
+            current: 'day'
         }
     }
 };
@@ -197,6 +201,9 @@ class Game {
         
         //Sets the state from settings object based on difficulty level.
         this._state =  _.merge(settings[difficulty].states, settings.initialStates)
+
+        //Adds playField to assets.
+        this.assets.field.frame1 = this.field.playField
     };
     get field(){
         return this._field;
@@ -228,12 +235,12 @@ class Game {
         star6: new assets.Star(240, 2),
         horizon: new assets.Horizon(32),
         //**not working */
-        // field: {
-        //     copyPlayField(){
-        //         return this.field.playField
-        //     },
-        //     frame1: copyPlayField()
-        // }
+        //The frame1 property will be filled with the playField in the game constructor.
+        field: {
+            update(){
+
+            }
+        }
         
     };
 
@@ -253,7 +260,7 @@ class Game {
     drawCurrentFrame(){
         let frameAssets = [];
         //Draws the play Field.
-        frameAssets.push(draw.possitionSprite(this.field.playField, this.state.field.offset))
+        // frameAssets.push(draw.possitionSprite(this.field.playField, this.state.field.offset))
         //Draws the remaining assets.
         for(let asset in this.assets){
             //Checks if current asset should be drawn.
