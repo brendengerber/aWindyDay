@@ -1,4 +1,6 @@
-module.exports.star = class {
+///////////Change classes and calls to uppercase!!!!!!!!!!!
+
+module.exports.Star = class {
     //Arguments are entered as integers for the number of desired frames.
     constructor(flickerDelay, flickerDuration){
         this._flickerDelay = flickerDelay;
@@ -28,7 +30,7 @@ module.exports.star = class {
     
 }
 
-module.exports.house = class {
+module.exports.House = class {
     //Argument is entered as integers for the number of desired frames.
     constructor(frameDuration){
         this._frameDuration = frameDuration
@@ -69,13 +71,8 @@ module.exports.house = class {
     }
 }
 
-module.exports.horizon = class {
-    frame1 = [
-        ["_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_"]
-    ]
-}
 
-module.exports.tree = class {
+module.exports.Tree = class {
     frame1 = [
         ["blank","blank","blank","blank","blank","blank","blank","blank","\\","/"," "," ","/"],
         ["blank","blank","blank","blank","|","/"," "," ","/","/"," ","\\","\\"," ","/","/"],
@@ -93,26 +90,21 @@ module.exports.tree = class {
     ]
 }
 
-//not working, how can i set the property based on arg?
 
-// module.exports.horizon = class{
-//     constructor(horizonLength){
-//         this._horizonLength = horizonLength
-//     }
-//     get horizonLength(){
-//         return this._horizonLength
-//     }
+module.exports.Horizon = class{
+    constructor(horizonLength){
+        this.frame1 = this.buildFrame(horizonLength)
+    }
+    //Builds the asset array based on the constructor
+    buildFrame(horizonLength){
+        let frame = [[]]
+        for(let i = horizonLength ; i > 0; i--){
+            frame[0].push("_")
+        }
+        return frame
+    }
+}
 
-//     buildFrame(horizonLength){
-//         let frame = []
-//         for(let i = horizonLength ; i > 0; i--){
-//             frame.push("_")
-//         }
-//         return frame
-//     }
-
-//     frame1 = this.buildFrame(this.horizonLength)
-// }
 
 
 
