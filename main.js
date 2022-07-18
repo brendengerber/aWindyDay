@@ -1180,9 +1180,11 @@ let mainInterface = {
     },
 
     //Restarts the game.
+    //***This should probably be in game object? */
     restartGame(){
         //Resets the play field to blank.
         this.game.field.resetPlayField();
+        this.game.assets.field.frame1 = this.game.field.playField
 
         //Calls the game logic.
         this.game.playGame();
