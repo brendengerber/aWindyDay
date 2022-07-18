@@ -1,4 +1,6 @@
 
+//make an asset field class? Which takes the array as the constructor to contain all that logic in the assets?
+//make field and fence offsets populate automatically based on field size if possible
 
 // NEXT
 // make an assets module to store them.
@@ -57,6 +59,7 @@
 //Asset property asset.frame1 = [] with an array consisting of what will be drawn. Further frames can be numbered frame2, frame3, etc.
 //The draw.stringToArray() method can be used to make the array for asset objects.
 //Update methods are optional.
+//Update methods can accept two args: state which is their own individual state, followed by time which will be the time of day in the full state object.
 //Color state is optional, default is white.
 
 
@@ -206,7 +209,7 @@ let settings = {
             offset: {x:0, y:6}
         },
         time: {
-            current: 'day'
+            current: 'night'
         }
     }
 };
@@ -294,8 +297,8 @@ class Game {
 
         //The frame1 property will be filled with the playField in the game constructor.
         field: {
-            update(){
-
+            update(state, time){
+                assets.updateColorByTime(state, time)
             }
         },
         tree: new assets.Tree(),
@@ -314,7 +317,7 @@ class Game {
         for(let asset in this.assets){
             //Checks that the object has an update method and runs it if so.
             if(this.assets[asset].update){
-                this.assets[asset].update(this.state[asset])
+                this.assets[asset].update(this.state[asset], this.state.time.current)
             }
         }
     }
@@ -1179,8 +1182,7 @@ let mainInterface = {
         this.game.playGame();
     },
 
-    //Restarts the game.
-    //***This should probably be in game object? */
+    //Resets and restarts the game.
     restartGame(){
         //Resets the play field to blank.
         this.game.field.resetPlayField();

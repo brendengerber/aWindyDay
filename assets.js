@@ -1,4 +1,19 @@
-///////////Change classes and calls to uppercase!!!!!!!!!!!
+//Helper function to change the color of an asset based on the time of day (light or dark).
+module.exports.updateColorByTime = function(state, time){
+    if(time === 'day'){
+        state.color = '\x1b[97m'
+    }else if(time === 'night'){
+        state.color = '\x1b[90m'
+    }
+}
+//Same helper function for use within the module.
+let updateColorByTime = function(state, time){
+    if(time === 'day'){
+        state.color = '\x1b[97m'
+    }else if(time === 'night'){
+        state.color = '\x1b[90m'
+    }
+}
 
 module.exports.Star = class {
     //Arguments are entered as integers for the number of desired frames.
@@ -44,7 +59,7 @@ module.exports.House = class {
         ["blank","blank","blank","blank","blank","~","blank","blank","blank","blank"],
         ["blank","blank","_","_","|","|","blank","blank","blank","blank"],
         ["blank","/","/","/","\\","\\","\\"],
-        ["blank","|","_","[","]","_","|","blank","blank","blank","blank"]
+        ["blank","|"," ","[","]"," ","|","blank","blank","blank","blank"]
     ]
 
     frame2 = [                
@@ -53,11 +68,11 @@ module.exports.House = class {
         ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
         ["blank","blank","_","_","|","|","blank","blank","blank","blank"],
         ["blank","/","/","/","\\","\\","\\"],
-        ["blank","|","_","[","]","_","|","blank","blank","blank","blank"]
+        ["blank","|"," ","[","]"," ","|","blank","blank","blank","blank"]
     ]
 
     //The state argument should be a state object for the specific object (as opposed to the full state object).
-    update(state){
+    update(state, time){
         //Updates counter and current frame in the state object, in charge of changing frames.
         if(state.frame === 1 && state.counter === 30){
             state.frame = 2;
@@ -68,6 +83,7 @@ module.exports.House = class {
         }else{
             state.counter ++;
         }
+        updateColorByTime(state, time);
     }
 }
 
@@ -88,6 +104,9 @@ module.exports.Tree = class {
         ["blank","blank","blank","blank","blank","blank","blank","blank","|"," ","|"],
         ["blank","blank","blank","blank","blank","blank","blank","͡"," ","͡"," ","͡"]
     ]
+    update(state, time){
+        updateColorByTime(state, time);
+    }
 }
 
 
@@ -103,6 +122,9 @@ module.exports.Horizon = class{
             frame[0].push("_")
         }
         return frame
+    }
+    update(state, time){
+        updateColorByTime(state, time);
     }
 }
 module.exports.Fence = class {
@@ -145,7 +167,12 @@ module.exports.Fence = class {
         }
         return frame
     }
+    update(state, time){
+        updateColorByTime(state, time)
+    }
 }
+
+
 
 
 
