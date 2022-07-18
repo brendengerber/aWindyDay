@@ -1,57 +1,4 @@
 
-//make an asset field class? Which takes the array as the constructor to contain all that logic in the assets?
-//make field and fence offsets populate automatically based on field size if possible
-//fix if you end in the middle of night, state should be reset to day and all other states should also be reset somehow
-//add logic for days stats
-
-// NEXT
-// make an assets module to store them.
-// include class for stars so that i can give them different flicker delays (the delay will be an arg for the constructor)
-
-// NEXT 
-// Does the postioning method mutate the original?
-// Setting new position should be done in update (i.e. updating state), but actual positioning should be done in draw, since it is the act of drawing. 
-// should color and possition be methods on draw, or each asset?
-// maybe position sprite should not be a method of  each asset. Draw should loop through and draw each sprite (and possition them), based on the current state. That means move position sprite out of the asset. Should all be called using a loop in the composite stage. That way to add an object, you just have to add the object and the state, you dont have to updtade draw, position, and color too. Draw frame can loop through all assets, color them, and then possition/layer them. It will be a loop so that assets dont have to be called individually. The functions can take in the state object, and the asset array. Each asset it checks it's state. colors it, possitions it, and at the end draws it all.  state[asset].color can work for all of them
-
-// NEXT
-// /there will be an update and draw method that loops through the assets. update will call the update method inside the asset by using brackets for asset of assets, assets[asset].update. Don't call assets.house.update, like it is now, way harder to maintian as you wuold have to add a statement for each object rather than letting a loop do it.
-// should possition stay to act like a counter to update? A draw method for each asset could run color and possition and then return the final array which would be used in the loop to push to the final array which drawFrame would then draw.
-
-// FINAL
-// update will be a function that calls all the assets update methods, draw will be a function that calls all of the assets draw methods, adding them to an array which will then be composited using the draw method
-// each draw method on the assets will consist of a possition call and color call. Both calls are methods of draw. Call color first inside of possition. Each take an array and return an array. Color returns a new version of the stock, which is the array arg for possition which returns a colored and possitioned.
-// can the color and possition be standard somehow?
-
-// For interview, might be good to eliminate hidden field. Make field an asset. Can create field based on the array made by generate valid field. But each space is an object, frame is grass, and a state for hole and hat as well. check move then checks the state of that object.
-// alternatively i can set the field asset rather than a field property. that field object can have a state object that is the current field and the hidden field. then check move checks the state to see the validity of the move. 
-// either way would want to add field to assets and remove the function that draws it in the draw current frame method.
-
-// draw current frame vs composite frame, should all be in draw? where does color go? How can I color and possitions without muitating the original?
-// add more assets like shimmering sun and fense. easy to do now that the logic is there, and makes it way nicer
-// add emotions convo, makes him more quarky and grumpy
-// simple stats logic
-// Make sure there is an explanation about hwo the sprites work using invisible margins
-
-// have an old offset and a new offset, if new offset = old offset, then do not redraw possitioned sprite. If update changes new offset, then redraw the sprite
-// should test how it works redrawing each time first though just to see, maybe it wont impact performance much
-
-//possible to set field and fense default offsets based on field size using constructor? Makes it easier to tweak difficulty
-
-// in a perfect world I would make each grass it's own object. Have the object contain if it has a hole. Then when landing on that grid space, would run a check to see. That would allow me to have larger assets.  Game could be a grid with the center of the objects on the grid point and the assets bounce from one to the next and check other objects with that state. could even make hitboxes that way by having their state contain several points connected to the middle.
-
-// reorganize shit
-
-// move field to assets?
-// can add a state for the order of layering, then have the loop adding them check that and add in order
-
-// Inspired by maze craze
-
-
-
-// could be fun to have a biger field, and a snake thats chasing you or a bird 
-// could add a loop to go through all assets and call their draws, would need a state draw: true
-// bigger hat ˄
 
 //ADDING NEW ASSETS
     //When adding a new asset the following are required.
@@ -392,17 +339,18 @@ class Game {
             }
         }.bind(this);
 
-        //Helper function initiates the loss dialog and displays the final field.
+        //Helper function displays the final field, resets the state object, and records loss via event emitter and game property.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let lose = function(){
             console.clear();
             this.drawCurrentFrame()
+            this._state = _.merge(settings[this.difficulty].states, settings.initialStates)
             this.gameStats.win = false;
             eventEmitter.emit("loss");
             outcome = "loss";
         }.bind(this);
 
-        //Helper function initiates the loss dialog and displays the final field.
+        //Helper function displays the final field, and records win via event emitter and game property.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let win = function(){
             console.clear();
