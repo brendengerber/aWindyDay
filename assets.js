@@ -1,17 +1,17 @@
 //Helper function to change the color of an asset based on the time of day (light or dark).
-module.exports.updateColorByTime = function(state, time){
-    if(time === 'day'){
-        state.color = '\x1b[97m'
-    }else if(time === 'night'){
-        state.color = '\x1b[90m'
+module.exports.updateColorByTime = function(name, state){
+    if(state.time.current === 'day'){
+        state[name].color = '\x1b[97m'
+    }else if(state.time.current === 'night'){
+        state[name].color = '\x1b[90m'
     }
 }
 //Same helper function for use within the module.
-let updateColorByTime = function(state, time){
-    if(time === 'day'){
-        state.color = '\x1b[97m'
-    }else if(time === 'night'){
-        state.color = '\x1b[90m'
+let updateColorByTime = function(name, state){
+    if(state.time.current === 'day'){
+        state[name].color = '\x1b[97m'
+    }else if(state.time.current === 'night'){
+        state[name].color = '\x1b[90m'
     }
 }
 
@@ -31,18 +31,23 @@ module.exports.Star = class {
     frame1 = [['*']];
 
     //The state argument should be a state object for the specific object (as opposed to the full state object).
-    update(state){
-        if(state.color === '\x1b[97m' && state.counter === this.flickerDelay){
-            state.color = '\x1b[90m';
-            state.counter = 0;
-        }else if(state.color === '\x1b[90m' && state.counter === this.flickerDuration){
-            state.color = '\x1b[97m';
-            state.counter = 0;
+    update(name, state){
+        if(state[name].color === '\x1b[97m' && state[name].counter === this.flickerDelay){
+            state[name].color = '\x1b[90m';
+            state[name].counter = 0;
+        }else if(state[name].color === '\x1b[90m' && state[name].counter === this.flickerDuration){
+            state[name].color = '\x1b[97m';
+            state[name].counter = 0;
         }else{
-            state.counter ++;
+            state[name].counter ++;
         }
+        if(state.time.current === 'day'){
+            state[name].draw = false
+        }else if(state.time.current === 'night'){
+            state[name].draw = true
+        }
+            
     }
-    
 }
 
 module.exports.House = class {
@@ -72,18 +77,18 @@ module.exports.House = class {
     ]
 
     //The state argument should be a state object for the specific object (as opposed to the full state object).
-    update(state, time){
+    update(name, state){
         //Updates counter and current frame in the state object, in charge of changing frames.
-        if(state.frame === 1 && state.counter === 30){
-            state.frame = 2;
-            state.counter = 0;
-        }else if(state.frame === 2 && state.counter === 30){
-            state.frame = 1;
-            state.counter = 0;
+        if(state[name].frame === 1 && state[name].counter === 30){
+            state[name].frame = 2;
+            state[name].counter = 0;
+        }else if(state[name].frame === 2 && state[name].counter === 30){
+            state[name].frame = 1;
+            state[name].counter = 0;
         }else{
-            state.counter ++;
+            state[name].counter ++;
         }
-        updateColorByTime(state, time);
+        updateColorByTime(name, state);
     }
 }
 
@@ -97,15 +102,15 @@ module.exports.Tree = class {
         ["blank","-","-","\\","\\"," ","\\","v","/","\\","\\"," ","/","/","=","=","/"],
         ["blank","blank","blank","blank","blank","=","=","|","|"," ","\\","v","/"],
         ["blank","blank","=","=","/","/"," ","\\","\\"," ","/","/","=","=","="],
-        ["blank","/"," "," "," "," "," "," ","|","V","|"," "," "," ","\\","\\","="],
+        ["blank","/","blank","blank","blank","blank","blank","blank","|","V","|"," "," "," ","\\","\\","="],
         ["blank","blank","blank","blank","blank","blank","blank","blank","|"," ","|"],
         ["blank","blank","blank","blank","blank","blank","blank","blank","|","0","|"],
         ["blank","blank","blank","blank","blank","blank","blank","blank","|"," ","|"],
         ["blank","blank","blank","blank","blank","blank","blank","blank","|"," ","|"],
         ["blank","blank","blank","blank","blank","blank","blank","͡"," ","͡"," ","͡"]
     ]
-    update(state, time){
-        updateColorByTime(state, time);
+    update(name, state){
+        updateColorByTime(name, state);
     }
 }
 
@@ -123,8 +128,8 @@ module.exports.Horizon = class{
         }
         return frame
     }
-    update(state, time){
-        updateColorByTime(state, time);
+    update(name, state){
+        updateColorByTime(name, state);
     }
 }
 module.exports.Fence = class {
@@ -167,19 +172,82 @@ module.exports.Fence = class {
         }
         return frame
     }
-    update(state, time){
-        updateColorByTime(state, time)
+    update(name, state){
+        updateColorByTime(name, state);
     }
 }
 
 
-
-
-
-
-
-
-
-
-
-
+module.exports.CelestialBody = class{
+         frame1 = [["\x1b[1mO"]]
+         frame2 = [["\x1b[1mC"]]
+         update(name, state){
+            //Sets the movement delay in number of frames.
+            let delay = 40
+            let initialOffset = {x: state[name].initialOffset.x, y: state[name].initialOffset.y}
+            //Controls the initial ascent.        
+            if(state[name].counter === delay && state[name].direction === 'rise'){
+                state[name].offset.x = state[name].offset.x + 2
+                state[name].offset.y = state[name].offset.y - 1
+                state[name].counter = 0
+                state[name].steps ++
+                //Changes directtion after desired steps are reached.
+                if(state[name].steps === 2){
+                    state[name].steps = 0
+                    state[name].direction = 'up'
+                }
+            }else if(state[name].counter === delay && state[name].direction === 'up'){
+                state[name].offset.x = state[name].offset.x + 4
+                state[name].offset.y = state[name].offset.y - 1
+                state[name].counter = 0
+                state[name].steps ++
+                //Changes directtion after desired steps are reached.
+                if(state[name].steps === 3){
+                    state[name].steps = 0
+                    state[name].direction = 'parallel'
+                }
+            //Controlls paralell movement    
+            }else if(state[name].counter === delay && state[name].direction === 'parallel'){
+                state[name].offset.x = state[name].offset.x + 3
+                state[name].counter = 0
+                state[name].steps ++
+                //Changes direction after desired steps are reached.
+                if(state[name].steps === 1){
+                    state[name].steps = 0
+                    state[name].direction = 'down'
+                }
+            //Controlls the descent.
+            }else if(state[name].counter === delay && state[name].direction === 'down'){
+                state[name].offset.x = state[name].offset.x + 4
+                state[name].offset.y = state[name].offset.y + 1
+                state[name].counter = 0
+                state[name].steps ++
+                //Changes celestial body and resets the offset.
+                if(state[name].steps === 2){
+                    state[name].steps = 0
+                    state[name].direction = 'set'
+                }
+            //Controlls the final decent.    
+            }else if(state[name].counter === delay && state[name].direction === 'set'){
+                state[name].offset.x = state[name].offset.x + 2
+                state[name].offset.y = state[name].offset.y + 1
+                state[name].counter = 0
+                state[name].steps ++
+                //Changes directtion after desired steps are reached.
+                if(state[name].steps === 4){
+                    state[name].steps = 0
+                    state[name].direction = 'rise'
+                    state[name].offset = initialOffset
+                    if(state[name].frame === 1){
+                        state[name].frame = 2
+                        state.time.current = 'night'
+                    }else if(state[name].frame === 2){
+                        state[name].frame = 1
+                        state.time.current = 'day'
+                    }
+                }
+            }else{
+                state[name].counter++
+            }
+        }
+    }

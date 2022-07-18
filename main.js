@@ -1,6 +1,8 @@
 
 //make an asset field class? Which takes the array as the constructor to contain all that logic in the assets?
 //make field and fence offsets populate automatically based on field size if possible
+//fix if you end in the middle of night, state should be reset to day and all other states should also be reset somehow
+//add logic for days stats
 
 // NEXT
 // make an assets module to store them.
@@ -51,27 +53,28 @@
 // could add a loop to go through all assets and call their draws, would need a state draw: true
 // bigger hat ˄
 
+//ADDING NEW ASSETS
+    //When adding a new asset the following are required.
+    //Individual state object within full state object.
+    //State setting offset. Set to an object such as {X:1, y:2}.
+    //State setting frame. Set to 1. Even if there is only one frame, as it is needed for the loop to recognize and draw.
+    //State setting draw. Set either to true or false.
+    //Asset property frame1. Set to a 2D array consisting of what will be drawn. Further frames can be numbered frame2, frame3, etc.
 
-//When adding a new asset the following are required.
-//State setting offset. 
-//State setting frame1. Even if there is only one frame, as it is needed for the loop to recognize and draw.
-//State setting draw. Set either to true or false.
-//Asset property asset.frame1 = [] with an array consisting of what will be drawn. Further frames can be numbered frame2, frame3, etc.
-//The draw.stringToArray() method can be used to make the array for asset objects.
-//Update methods are optional.
-//Update methods can accept two args: state which is their own individual state, followed by time which will be the time of day in the full state object.
-//Color state is optional, default is white.
+    //The draw.stringToArray() method can be used to make the array for asset objects.
+    //Update methods are optional.
+    //Update methods should accept two args: state which is the full state object, followed by name which will be the name of the object (used for accessing it's own individual state).
+    //Color state is optional and default is white.
 
 
 //Imports necessary modules.
 const fs = require('fs');
 const events  = require('events');
-const readlineSync = require('readline-sync')
+const readlineSync = require('readline-sync');
 const hideCursor = require('hide-terminal-cursor');
 const showCursor = require("show-terminal-cursor");
 const _ = require('lodash');
-const assets = require('./assets.js')
-
+const assets = require('./assets.js');
 
 //Adds eventEmitter used for gameplay.
 const eventEmitter = new events.EventEmitter();
@@ -147,7 +150,7 @@ let settings = {
         tree: {
             draw: true,
             frame: 1,
-            offset: {x:33, y:1}
+            offset: {x:34, y:2}
         },
         fence:{
             draw: true,
@@ -162,42 +165,42 @@ let settings = {
         },
         
         star1: {
-            draw: true,
+            draw: false,
             color: '\x1b[97m',
             frame: 1,
             offset: {x:11, y:0},
             counter: 0 
         },
         star2: {
-            draw: true,
+            draw: false,
             color: '\x1b[97m',
             frame: 1,
             offset: {x:31, y:2},
             counter: 0
         },
         star3: {
-            draw: true,
+            draw: false,
             color: '\x1b[97m',
             frame: 1,
             offset: {x:15, y:3},
             counter: 0
         },
         star4: {
-            draw: true,
+            draw: false,
             color: '\x1b[97m',
             frame: 1,
             offset: {x:7, y:4},
             counter: 0
         },
         star5: {
-            draw: true,
+            draw: false,
             color: '\x1b[97m',
             frame: 1,
             offset: {x:29, y:4},
             counter: 0
         },
         star6: {
-            draw: true,
+            draw: false,
             color: '\x1b[97m',
             frame: 1,
             offset: {x:38, y:4},
@@ -208,8 +211,18 @@ let settings = {
             frame: 1,
             offset: {x:0, y:6}
         },
+        celestialBody: {
+            draw: true,
+            frame: 1,
+            offset: {x:1, y:5},
+            //Used to reset the body after a full arch. Should be the same as offset.
+            initialOffset: {x:1, y:5},
+            counter: 0,
+            steps: 0,
+            direction: 'rise'
+        },
         time: {
-            current: 'night'
+            current: 'day'
         }
     }
 };
@@ -297,10 +310,11 @@ class Game {
 
         //The frame1 property will be filled with the playField in the game constructor.
         field: {
-            update(state, time){
-                assets.updateColorByTime(state, time)
+            update(name, state){
+                assets.updateColorByTime(name, state)
             }
         },
+        celestialBody: new assets.CelestialBody(),
         tree: new assets.Tree(),
         house: new assets.House(30),
         star1: new assets.Star(40, 2),
@@ -309,7 +323,7 @@ class Game {
         star4: new assets.Star(160, 2),
         star5: new assets.Star(200, 2),
         star6: new assets.Star(240, 2),
-        horizon: new assets.Horizon(32)
+        horizon: new assets.Horizon(40)
     };
 
     // Loops through all of the assets and updates the state object if the asset has an update method.
@@ -317,7 +331,7 @@ class Game {
         for(let asset in this.assets){
             //Checks that the object has an update method and runs it if so.
             if(this.assets[asset].update){
-                this.assets[asset].update(this.state[asset], this.state.time.current)
+                this.assets[asset].update(asset, this.state)
             }
         }
     }
