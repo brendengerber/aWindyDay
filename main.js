@@ -1,3 +1,53 @@
+//NEXT
+//make an assets module to store them.
+//include class for stars so that i can give them different flicker delays (the delay will be an arg for the constructor)
+
+//NEXT 
+//Does the postioning method mutate the original?
+//Setting new position should be done in update (i.e. updating state), but actual positioning should be done in draw, since it is the act of drawing. 
+//should color and possition be methods on draw, or each asset?
+//maybe position sprite should not be a method of  each asset. Draw should loop through and draw each sprite (and possition them), based on the current state. That means move position sprite out of the asset. Should all be called using a loop in the composite stage. That way to add an object, you just have to add the object and the state, you dont have to updtade draw, position, and color too. Draw frame can loop through all assets, color them, and then possition/layer them. It will be a loop so that assets dont have to be called individually. The functions can take in the state object, and the asset array. Each asset it checks it's state. colors it, possitions it, and at the end draws it all.  state[asset].color can work for all of them
+
+//NEXT
+///there will be an update and draw method that loops through the assets. update will call the update method inside the asset by using brackets for asset of assets, assets[asset].update. Don't call assets.house.update, like it is now, way harder to maintian as you wuold have to add a statement for each object rather than letting a loop do it.
+//should possition stay to act like a counter to update? A draw method for each asset could run color and possition and then return the final array which would be used in the loop to push to the final array which drawFrame would then draw.
+
+//FINAL
+//update will be a function that calls all the assets update methods, draw will be a function that calls all of the assets draw methods, adding them to an array which will then be composited using the draw method
+//each draw method on the assets will consist of a possition call and color call. Both calls are methods of draw. Call color first inside of possition. Each take an array and return an array. Color returns a new version of the stock, which is the array arg for possition which returns a colored and possitioned.
+//can the color and possition be standard somehow?
+
+//For interview, might be good to eliminate hidden field. Make field an asset. Can create field based on the array made by generate valid field. But each space is an object, frame is grass, and a state for hole and hat as well. check move then checks the state of that object.
+//alternatively i can set the field asset rather than a field property. that field object can have a state object that is the current field and the hidden field. then check move checks the state to see the validity of the move. 
+//either way would want to add field to assets and remove the function that draws it in the draw current frame method.
+
+//draw current frame vs composite frame, should all be in draw? where does color go? How can I color and possitions without muitating the original?
+//add more assets like shimmering sun and fense. easy to do now that the logic is there, and makes it way nicer
+//add emotions convo, makes him more quarky and grumpy
+//simple stats logic
+//Make sure there is an explanation about hwo the sprites work using invisible margins
+
+//have an old offset and a new offset, if new offset = old offset, then do not redraw possitioned sprite. If update changes new offset, then redraw the sprite
+//should test how it works redrawing each time first though just to see, maybe it wont impact performance much
+
+
+//in a perfect world I would make each grass it's own object. Have the object contain if it has a hole. Then when landing on that grid space, would run a check to see. That would allow me to have larger assets.  Game could be a grid with the center of the objects on the grid point and the assets bounce from one to the next and check other objects with that state. could even make hitboxes that way by having their state contain several points connected to the middle.
+
+//reorganize shit
+
+//move field to assets?
+//can add a state for the order of layering, then have the loop adding them check that and add in order
+
+//Inspired by maze craze
+
+
+
+//could be fun to have a biger field, and a snake thats chasing you or a bird 
+//could add a loop to go through all assets and call their draws, would need a state draw: true
+//bigger hat ˄
+
+
+
 
 //When adding a new asset the following are required.
 //State setting offset. 
@@ -16,6 +66,7 @@ const readlineSync = require('readline-sync')
 const hideCursor = require('hide-terminal-cursor');
 const showCursor = require("show-terminal-cursor");
 const _ = require('lodash');
+const assets = require('./assets.js')
 
 
 //Adds eventEmitter used for gameplay.
@@ -46,7 +97,7 @@ let settings = {
         }, 
         states:{
             field:{
-                offset: {x:15, y:8},
+                offset: {x:16, y:8},
             }  
         }
     },
@@ -57,7 +108,7 @@ let settings = {
         }, 
         states:{
             field: {
-                offset: {x:14, y:8}
+                offset: {x:15, y:8}
             }
         }
     },
@@ -68,34 +119,74 @@ let settings = {
         }, 
         states:{
             field:{
-                offset: {x:12, y:8}
+                offset: {x:13, y:8}
             }
         }
     },
     //Sets the default states not dependent on difficulty
     initialStates: {
-        house:{
-            draw: true,
-            frame: 1,
-            offset: {x:14,y:2},
-            counter: 0
-        },
         field: {
             draw: true,
             frame: 1
         },
-        stars: {
+        tree: {
+            draw: true,
+            frame: 1,
+            offset: {x:33, y:1}
+        },
+        house:{
+            draw: true,
+            frame: 1,
+            offset: {x:15,y:2},
+            counter: 0
+        },
+        
+        star1: {
             draw: true,
             color: '\x1b[97m',
             frame: 1,
-            offset: {x:0, y:0},
+            offset: {x:11, y:0},
             counter: 0 
+        },
+        star2: {
+            draw: true,
+            color: '\x1b[97m',
+            frame: 1,
+            offset: {x:31, y:2},
+            counter: 0
+        },
+        star3: {
+            draw: true,
+            color: '\x1b[97m',
+            frame: 1,
+            offset: {x:15, y:3},
+            counter: 0
+        },
+        star4: {
+            draw: true,
+            color: '\x1b[97m',
+            frame: 1,
+            offset: {x:7, y:4},
+            counter: 0
+        },
+        star5: {
+            draw: true,
+            color: '\x1b[97m',
+            frame: 1,
+            offset: {x:29, y:4},
+            counter: 0
+        },
+        star6: {
+            draw: true,
+            color: '\x1b[97m',
+            frame: 1,
+            offset: {x:38, y:4},
+            counter: 0
         },
         horizon: {
             draw: true,
             frame: 1,
             offset: {x:0, y:6}
-
         }
     }
 };
@@ -174,65 +265,16 @@ class Game {
     //Assets should be an array of arrays. Use stringToArrray to convert multi line string art into an asset.
     //Transparent characters should be 'blank' while ' ' is used for solid space. This allows for the layering of sprites.
     assets = {
-        house:{
-            frame1: [
-                ["blank","blank","blank","blank","blank","blank","blank","blank","blank","~"],
-                ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
-                ["blank","blank","blank","blank","blank","~","blank","blank","blank","blank"],
-                ["blank","blank","_","_","|","|","blank","blank","blank","blank"],
-                ["blank","/","/","/","\\","\\","\\"],
-                ["blank","|","_","[","]","_","|","blank","blank","blank","blank"]
-            ],
-            frame2: [                
-                ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
-                ["blank","blank","blank","blank","blank","blank","blank","~","blank","blank"],
-                ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
-                ["blank","blank","_","_","|","|","blank","blank","blank","blank"],
-                ["blank","/","/","/","\\","\\","\\"],
-                ["blank","|","_","[","]","_","|","blank","blank","blank","blank"]
-            ],
-            //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
-            update: function(){
-                //Updates counter and current frame in the state object, in charge of changing frames.
-                if(this.state.house.frame === 1 && this.state.house.counter === 30){
-                    this.state.house.frame = 2;
-                    this.state.house.counter = 0;
-                }else if(this.state.house.frame === 2 && this.state.house.counter === 30){
-                    this.state.house.frame = 1;
-                    this.state.house.counter = 0;
-                }else{
-                    this.state.house.counter ++;
-                }
-            }.bind(this),
 
-            
-        },
-        stars: {
-            frame1: [
-                [" "," "," "," "," "," "," "," "," "," ","*"],
-                [],
-                [" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","*"],
-                [" "," "," "," "," "," "," "," "," "," "," "," "," "," ","*"],
-                [" "," "," "," "," "," ","*"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","*"," "," "," "," "," "," "," "," ","*"],
-                [],
-            ],
-            update: function(){
-                if(this.state.stars.color === '\x1b[97m' && this.state.stars.counter === 30){
-                    this.state.stars.color = '\x1b[90m';
-                    this.state.stars.counter = 0;
-                }else if(this.state.stars.color === '\x1b[90m' && this.state.stars.counter === 2){
-                    this.state.stars.color = '\x1b[97m';
-                    this.state.stars.counter = 0;
-                }else{
-                    this.state.stars.counter ++;
-                }
-            }.bind(this)
-        },
-        horizon: {
-            frame1: [
-                ["_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_","_"]
-            ]
-        }
+        tree: new assets.tree(),
+        house: new assets.house(30),
+        star1: new assets.star(40, 2),
+        star2: new assets.star(80, 2),
+        star3: new assets.star(120, 2),
+        star4: new assets.star(160, 2),
+        star5: new assets.star(200, 2),
+        star6: new assets.star(240, 2),
+        horizon: new assets.horizon()
         // field:{
         //     //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         //     frame1: function(){
@@ -240,14 +282,14 @@ class Game {
         //     },
         // }
     };
-    
+
     // Loops through all of the assets and updates the state object if the asset has an update method.
     update(){
         for(let asset in this.assets){
+            //Checks that the object has an update method and runs it if so.
             if(this.assets[asset].update){
-                this.assets[asset].update()
+                this.assets[asset].update(this.state[asset])
             }
-            
         }
     }
     
@@ -266,9 +308,7 @@ class Game {
                 if(this.state[asset].color){
                     possitionedColoredArray = draw.colorSprite(possitionedColoredArray, this.state[asset].color)
                 }
-                   
                 frameAssets.push(possitionedColoredArray) 
-                
             }
         }
         let frameArray = draw.createFrame(frameAssets);
@@ -1236,8 +1276,8 @@ let draw = {
         return string
     },
     //Can be used to convert string art to an array for drawing. 
-    //Create a multi line string with ` and begin on the next line.
-    //Remeber to escape backslashes with an extra backslash.
+    //Create a multi line string with String.raw` and begin on the next line. This is important especially if the asset includes backslashes which would normall escape.
+    
     stringToArray: function(string){
         let array = []
         for(let row of string.split('\n')){
@@ -1319,6 +1359,8 @@ let draw = {
     }
 }
 
+
+
 // console.clear()
 // console.log("𓀠")
 // // console.log("̯  ͡ ^")
@@ -1334,7 +1376,20 @@ let draw = {
 // // fence = "Ħ"
 // // fence = '‡'
 mainInterface.begin()
-
+// console.log(draw.stringToArray(String.raw`
+//         \/  /      
+//     |/  // \\ //
+//   ==\\/ \\  \v/-
+//      \\ // \||  
+//  --\\ \v/\\ //==/
+//      ==|| \v/   
+//   ==// \\ //===                             
+// /       |V|   \\=
+//         | |        
+//         |0|
+//         | |
+//         | |
+//        ͡ ͡ ͡`))
 
 // let test = new Player("brenden")
 // let testArray = []
