@@ -1,8 +1,10 @@
 
 //make an asset field class? Which takes the array as the constructor to contain all that logic in the assets?
 //make field and fence offsets populate automatically based on field size if possible
-//add logic for days stats
-//remove assets from being recorded to json
+//Make a settings propertie that is an array with the draw order, then loop through that with the main drawer
+//Add a note about transparent backgrounds
+//add clouds
+
 
 // NEXT
 // make an assets module to store them.
@@ -54,13 +56,17 @@
 // bigger hat ˄
 
 //ADDING NEW ASSETS
+    //Create asset in assets.js as a class.
+    //Add any new instances to game.assets.
+    //Add default individual state object to full state object via settings.
+    //The first object in settings will be drawn as the top layer, with all subsequent objects drawn below in decending order.
+
     //When adding a new asset the following are required.
-    //Individual state object within full state object.
     //State setting offset. Set to an object such as {X:1, y:2}.
     //State setting frame. Set to 1. Even if there is only one frame, as it is needed for the loop to recognize and draw.
     //State setting draw. Set either to true or false.
     //Asset property frame1. Set to a 2D array consisting of what will be drawn. Further frames can be numbered frame2, frame3, etc.
-
+    
     //The draw.stringToArray() method can be used to make the array for asset objects.
     //Update methods are optional.
     //Update methods should accept two args: state which is the full state object, followed by name which will be the name of the object (used for accessing it's own individual state).
@@ -149,7 +155,7 @@ let settings = {
                 offset: {x:16, y:9},
             },
             fence: {
-                offset: {x:15, y: 8}
+                offset: {x:14, y: 8}
             }  
         }
     },
@@ -163,7 +169,7 @@ let settings = {
                 offset: {x:15, y:9}
             },
             fence: {
-                offset: {x:14, y:8}
+                offset: {x:13, y:8}
 
             }  
         }
@@ -178,7 +184,7 @@ let settings = {
                 offset: {x:13, y:9}
             },
             fence: {
-                offset: {x:12, y:8}
+                offset: {x:11, y:8}
             }  
         }
     },
@@ -189,15 +195,15 @@ let settings = {
             frame: 1,
             color: '\x1b[97m'
         },
-        tree: {
-            draw: true,
-            frame: 1,
-            offset: {x:34, y:2}
-        },
         fence:{
             draw: true,
             frame: 1,
             color: '\x1b[97m'
+        },
+        tree: {
+            draw: true,
+            frame: 1,
+            offset: {x:34, y:2}
         },
         house:{
             draw: true,
@@ -263,8 +269,19 @@ let settings = {
             steps: 0,
             direction: 'rise'
         },
+        grass: {
+            draw: true,
+            frame: 1,
+            offset: {x:2, y:8}
+        },
         time: {
             current: 'day'
+        },
+        layerOrder: {
+            // current: this.setDefaultOrder(),
+            // setDfaultOrder(){
+
+            // }
         }
     }
 };
@@ -277,7 +294,7 @@ class Game {
         this._field = field;
         
         //Sets the state from settings object based on difficulty level.
-        this._state =  _.merge(settings[difficulty].states, settings.initialStates)
+        this._state =  _.merge(settings.initialStates, settings[difficulty].states)
 
         //Adds playField to assets.
         this.assets.field.frame1 = this.field.playField
@@ -321,7 +338,8 @@ class Game {
         star4: new assets.Star(160, 2),
         star5: new assets.Star(200, 2),
         star6: new assets.Star(240, 2),
-        horizon: new assets.Horizon(40)
+        horizon: new assets.Horizon(40),
+        grass: new assets.grass()
     };
 
     // Loops through all of the assets and updates the state object if the asset has an update method.
@@ -340,13 +358,13 @@ class Game {
     drawCurrentFrame(){
         let frameAssets = [];
         //Draws all assets.
-        for(let asset in this.assets){
+        for(let key of Object.keys(this.state)){
             //Checks if current asset should be drawn.
-            if(this.state[asset].draw){
+            if(this.state[key].draw){
                 //Adds the sprite to the array to composite.
-                let possitionedColoredArray = draw.possitionSprite(this.assets[asset]["frame"+this.state[asset].frame], this.state[asset].offset)
-                if(this.state[asset].color){
-                    possitionedColoredArray = draw.colorSprite(possitionedColoredArray, this.state[asset].color)
+                let possitionedColoredArray = draw.possitionSprite(this.assets[key]["frame"+this.state[key].frame], this.state[key].offset)
+                if(this.state[key].color){
+                    possitionedColoredArray = draw.colorSprite(possitionedColoredArray, this.state[key].color)
                 }
                 frameAssets.push(possitionedColoredArray) 
             }
@@ -1320,6 +1338,7 @@ let draw = {
         }
         return frame
     },
+
     //Used to create a string from the frame array.
     arrayToString: function(array){
         let string = ``    
@@ -1432,6 +1451,22 @@ let draw = {
 // // fence = "Ħ"
 // // fence = '‡'
 mainInterface.begin()
+
+// console.log(draw.stringToArray(
+// String.raw`
+// \/    \ 
+// /     
+      
+// \    \/  
+      
+// \/     \
+      
+//   \/  
+// `))
+
+
+
+
 // console.log(draw.stringToArray(String.raw`
 //         \/  /      
 //     |/  // \\ //
