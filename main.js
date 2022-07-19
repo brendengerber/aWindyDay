@@ -87,8 +87,53 @@ const avatar = '8';
 // const avatar = '\u03EE';
 // const avatar = "𓀠";
 
+//Used to create a new player and to track stats.
+class Player{
+    constructor(name){
+        this.name = name;
+    };
+    stats = {
+        easy: {
+            wins: 0,
+            unsolved: 0,
+            totalAttemptsToWin: 0,
+            totalMovesToWin: 0,
+            totalDaysToWin: 0 
+        },
+
+        medium: {
+            wins: 0,
+            unsolved: 0,
+            totalAttemptsToWin: 0,
+            totalMovesToWin: 0,
+            totalDaysToWin: 0 
+        },
+
+        hard: {
+            wins: 0,
+            unsolved: 0,
+            totalAttemptsToWin: 0,
+            totalMovesToWin: 0,
+            totalDaysToWin: 0 
+        },
+    }
+        games = [];
+
+        firstLoss = false;
+    
+    static processStats(player){
+        let processedStats = {};
+        for(difficulty in player.stats){
+            
+        }
 
 
+//***add stats logic here */
+
+        
+        return processedStats;
+    };
+};
 
 //Sets ifficulty settings and default settings.
 //Balancing and tweaks can be done here.
@@ -222,54 +267,6 @@ let settings = {
             current: 'day'
         }
     }
-};
-
-//Used to create a new player and to track stats.
-class Player{
-    constructor(name){
-        this.name = name;
-    };
-    stats = {
-        easy: {
-            wins: 0,
-            unsolved: 0,
-            totalAttemptsToWin: 0,
-            totalMovesToWin: 0,
-            totalDaysToWin: 0 
-        },
-
-        medium: {
-            wins: 0,
-            unsolved: 0,
-            totalAttemptsToWin: 0,
-            totalMovesToWin: 0,
-            totalDaysToWin: 0 
-        },
-
-        hard: {
-            wins: 0,
-            unsolved: 0,
-            totalAttemptsToWin: 0,
-            totalMovesToWin: 0,
-            totalDaysToWin: 0 
-        },
-    }
-        games = [];
-
-        firstLoss = false;
-    
-    static processStats(player){
-        let processedStats = {};
-        for(difficulty in player.stats){
-            
-        }
-
-
-//***add stats logic here */
-
-        
-        return processedStats;
-    };
 };
 
 //Contains game logic.
@@ -1007,7 +1004,7 @@ let mainInterface = {
         let moveHandler = function(){
             //Increment stats and updates the playerJSON.
             this.game.gameStats.moves ++;
-            this.player.games.splice(-1, 1, this.game);
+            this.player.games.splice(-1, 1, {stats: this.game.gameStats, field: this.game.field.hiddenField});
             this.updatePlayersJSON();
         }.bind(this);
         eventEmitter.on("move", moveHandler);
@@ -1018,7 +1015,7 @@ let mainInterface = {
         //.bind(this) is used to reference the mainInterface object's "this" rather than the function's "this".
         let attemptHandler = function(){
             this.game.gameStats.attempts ++;
-            this.player.games.splice(-1, 1, this.game);
+            this.player.games.splice(-1, 1, {stats: this.game.gameStats, field: this.game.field.hiddenField});
             this.updatePlayersJSON();
         }.bind(this);
         eventEmitter.on("attempt", attemptHandler);
@@ -1029,7 +1026,7 @@ let mainInterface = {
         //.bind(this) is used to reference the mainInterface object's "this" rather than the function's "this".
         let dayHandler = function(){
             this.game.gameStats.days ++;
-            this.player.games.splice(-1, 1, this.game);
+            this.player.games.splice(-1, 1, {stats: this.game.gameStats, field: this.game.field.hiddenField});
             this.updatePlayersJSON();
         }.bind(this);
         eventEmitter.on("day", dayHandler)
@@ -1205,7 +1202,7 @@ let mainInterface = {
         //Increments the unsolved player stat while the game is being played, records the unsolved game, and writes to playersJSON.
         //Prevents player from force quitting to avoid an unsolved stat. Will be removed on win.
         this.player.stats[this.game.difficulty].unsolved ++;
-        this.player.games.push(this.game);
+        this.player.games.push({stats: this.game.gameStats, field: this.game.field.hiddenField});
         this.updatePlayersJSON();
         
         //Calls the game logic.
