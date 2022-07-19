@@ -1,3 +1,6 @@
+//Requires necessary moduals. 
+const eventEmitter  = require('./eventEmitter.js')
+
 //Helper function to change the color of an asset based on the time of day (light or dark).
 module.exports.updateColorByTime = function(name, state){
     if(state.time.current === 'day'){
@@ -238,12 +241,14 @@ module.exports.CelestialBody = class{
                     state[name].steps = 0
                     state[name].direction = 'rise'
                     state[name].offset = initialOffset
+                    // eventEmitter.emit("loss")
                     if(state[name].frame === 1){
                         state[name].frame = 2
                         state.time.current = 'night'
                     }else if(state[name].frame === 2){
                         state[name].frame = 1
                         state.time.current = 'day'
+                        eventEmitter.emit("day")
                     }
                 }
             }else{
