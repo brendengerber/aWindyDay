@@ -3,7 +3,8 @@
 //make field and fence offsets populate automatically based on field size if possible
 //Make a settings propertie that is an array with the draw order, then loop through that with the main drawer
 //Add a note about transparent backgrounds
-//add clouds
+//add clouds, could be fun to have it move across the screen and not stop for day or night, i.e. be the only state that doesnt reset somehow
+//make an asset that builds a margin that can be placed to hide things like clouds that go off screen
 
 
 // NEXT
@@ -369,7 +370,7 @@ class Game {
                 frameAssets.push(possitionedColoredArray) 
             }
         }
-        let frameArray = draw.createFrame(frameAssets);
+        let frameArray = draw.createFrame(frameAssets, {x:40, y:10});
         let frameString = draw.arrayToString(frameArray);
         console.log(frameString);
     };
@@ -1282,26 +1283,35 @@ let draw = {
     //**change asset arrays to have 'blank' instead of ' ' for empty space (i.e. not the walls) */
     //Takes an array of array sprites to composite into a single frame.
     //The first array will be the top layer, while the final array will be the bottom layer.
-    //just need to replace blanks with spaces and it should work
-    //then need to create assets based on their offsets (adding spaces for margins)
-    createFrame: function(arrays){
+    //Dimensions arg should be an object such as {x:, y:}. Anything outside of those dimensions will not be drawn.
+    //Default dimensions are the longest x and the longest y dimensions present in the array of sprites.
+    createFrame: function(arrays, dimensions){
         let frame = []
         let xDimension = 0
         let yDimension = 0
-        //Finds the array with the most columns and sets the dimension.
-        for(let array of arrays){
-            for(let row of array){
-                if(row.length > xDimension){
-                    xDimension = row.length
+        //Sets the frame's dimensions to the dimensions arg if one was given.
+        if(dimensions !== undefined){
+            xDimension = dimensions.x
+            yDimension = dimensions.y
+        }
+        //Sets the frame's dimensions in case no dimensions arg was given.
+        if(dimensions === undefined){
+            //Finds the array with the most columns and sets the dimension.
+            for(let array of arrays){
+                for(let row of array){
+                    if(row.length > xDimension){
+                        xDimension = row.length
+                    }
+                }
+            }
+            //Finds the array with the most rows and sets the dimension.
+            for(let array of arrays){
+                if(array.length > yDimension){
+                    yDimension = array.length
                 }
             }
         }
-        //Finds the array with the most rows and sets the dimension.
-        for(let array of arrays){
-            if(array.length > yDimension){
-                yDimension = array.length
-            }
-        }
+
         //Uses the dimensions to build a blank frame filled with spaces.
         for(let y = yDimension; y > 0; y--){
             let row = []
@@ -1312,19 +1322,28 @@ let draw = {
         }
         //Populates the frame with assets only on 'blank' spots, allowing for layering.
         for(let array of arrays){
+            //Used to track which x,y location the loop is at so characters can be added if the location is 'blank'.
             let yIndex = 0
             let xIndex = 0
             //Loops through the arrays.
-            for(let row of array){
-                for(let character of row){
-                    if(frame[yIndex][xIndex] === 'blank'){
-                        frame[yIndex][xIndex] = character
+            for(let [i, row] of array.entries()){
+                //Checks if the character is to be drawn within the set y dimension of the frame.
+                if(i < yDimension){
+                    for(let [i, character] of row.entries()){
+                        //Checks if the character is to be drawn within the set x dimension of the frame.
+                        if(i < xDimension){
+                            //If the x,y location is blank, adds the character.
+                            if(frame[yIndex][xIndex] === 'blank'){
+                                frame[yIndex][xIndex] = character
+                            }
+                            //Increments xIndex to start the next column.
+                            xIndex++
+                        }
                     }
-                    //Increments xIndex used to replace characters across the row.
-                    xIndex++
                 }
                 //Resets xIndex for the next row and increments yIndex to replace characters in the next row.
                 xIndex = 0
+                //Increments the yIndex to start the next row.
                 yIndex++
             }
         }
@@ -1352,7 +1371,6 @@ let draw = {
     },
     //Can be used to convert string art to an array for drawing. 
     //Create a multi line string with String.raw` and begin on the next line. This is important especially if the asset includes backslashes which would normall escape.
-    
     stringToArray: function(string){
         let array = []
         for(let row of string.split('\n')){
@@ -1436,51 +1454,13 @@ let draw = {
 
 
 
-// console.clear()
-// console.log("𓀠")
-// // console.log("̯  ͡ ^")
-// //u0300 accent works on head
-// //A
-// console.log("\u0041\u0300")
-// //t
-// console.log("\u0074\u0300")
-// //avatar
-// console.log("\u03EE\u0300")
 
-// // console.log("\u1DFC")
-// // fence = "Ħ"
-// // fence = '‡'
 mainInterface.begin()
 
-// console.log(draw.stringToArray(
-// String.raw`
-// \/    \ 
-// /     
-      
-// \    \/  
-      
-// \/     \
-      
-//   \/  
-// `))
 
 
 
 
-// console.log(draw.stringToArray(String.raw`
-//         \/  /      
-//     |/  // \\ //
-//   ==\\/ \\  \v/-
-//      \\ // \||  
-//  --\\ \v/\\ //==/
-//      ==|| \v/   
-//   ==// \\ //===                             
-// /       |V|   \\=
-//         | |        
-//         |0|
-//         | |
-//         | |
-//        ͡ ͡ ͡`))
 
 // let test = new Player("brenden")
 // let testArray = []
@@ -1505,5 +1485,3 @@ mainInterface.begin()
 // let game1 = new Game(field1)
 // game1.draw(field1.playField, 2, 2)
 
-// console.log("\x1b[90mnormal")
-// console.log("\x1b[1mnormal")
