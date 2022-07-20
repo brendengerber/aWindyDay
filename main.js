@@ -154,10 +154,10 @@ let settings = {
         }, 
         states:{
             field:{
-                offset: {x:16, y:9},
+                offset: {x:16, y:12},
             },
             fence: {
-                offset: {x:14, y: 8}
+                offset: {x:14, y: 11}
             }  
         }
     },
@@ -168,10 +168,10 @@ let settings = {
         }, 
         states:{
             field: {
-                offset: {x:15, y:9}
+                offset: {x:15, y:12}
             },
             fence: {
-                offset: {x:13, y:8}
+                offset: {x:13, y:11}
 
             }  
         }
@@ -183,10 +183,10 @@ let settings = {
         }, 
         states:{
             field:{
-                offset: {x:13, y:9}
+                offset: {x:13, y:12}
             },
             fence: {
-                offset: {x:11, y:8}
+                offset: {x:11, y:11}
             }  
         }
     },
@@ -205,67 +205,75 @@ let settings = {
         tree: {
             draw: true,
             frame: 1,
-            offset: {x:34, y:2}
+            offset: {x:35, y:1}
         },
         house:{
             draw: true,
             frame: 1,
-            offset: {x:15,y:2},
+            offset: {x:15,y:5},
             counter: 0
         },
+        
         star1: {
             draw: false,
             color: '\x1b[97m',
             frame: 1,
-            offset: {x:11, y:0},
+            offset: {x:11, y:3},
             counter: 0 
         },
         star2: {
             draw: false,
             color: '\x1b[97m',
             frame: 1,
-            offset: {x:31, y:2},
+            offset: {x:31, y:5},
             counter: 0
         },
         star3: {
             draw: false,
             color: '\x1b[97m',
             frame: 1,
-            offset: {x:15, y:3},
+            offset: {x:15, y:6},
             counter: 0
         },
         star4: {
             draw: false,
             color: '\x1b[97m',
             frame: 1,
-            offset: {x:7, y:4},
+            offset: {x:7, y:7},
             counter: 0
         },
         star5: {
             draw: false,
             color: '\x1b[97m',
             frame: 1,
-            offset: {x:29, y:4},
+            offset: {x:29, y:7},
             counter: 0
         },
         star6: {
             draw: false,
             color: '\x1b[97m',
             frame: 1,
-            offset: {x:38, y:4},
+            offset: {x:4, y:1},
+            counter: 0
+        },
+        star7: {
+            draw: false,
+            color: '\x1b[97m',
+            frame: 1,
+            offset: {x:23, y:2},
             counter: 0
         },
         horizon: {
             draw: true,
             frame: 1,
-            offset: {x:0, y:6}
+            offset: {x:0, y:9}
         },
         celestialBody: {
             draw: true,
             frame: 1,
-            offset: {x:1, y:5},
+            offset: {x:1, y:8},
             //Used to reset the body after a full arch. Should be the same as offset.
-            initialOffset: {x:1, y:5},
+            initialOffset: {x:1, y:8},
             counter: 0,
             steps: 0,
             direction: 'rise'
@@ -273,7 +281,7 @@ let settings = {
         grass: {
             draw: true,
             frame: 1,
-            offset: {x:2, y:8}
+            offset: {x:2, y:11}
         },
         time: {
             current: 'day'
@@ -333,7 +341,8 @@ class Game {
         star4: new assets.Star(160, 2),
         star5: new assets.Star(200, 2),
         star6: new assets.Star(240, 2),
-        horizon: new assets.Horizon(40),
+        star7: new assets.Star(260, 2),
+        horizon: new assets.Horizon(52),
         grass: new assets.grass()
     };
 
@@ -1395,7 +1404,7 @@ let draw = {
         //Possitions sprite if y offset is positive.
         if(offset.y > 0){
             //Adds a blank margin to the top to move the sprite down according to the offset.
-            for(let y = offset.y; y>0; y--){
+            for(let y = offset.y; y > 0; y--){
                 possitionedSprite.unshift(['blank']);
             }
         }
