@@ -348,7 +348,7 @@ class Game {
         for(let asset in this.assets){
             //Checks that the object has an update method and runs it if so.
             if(this.assets[asset].update){
-                this.assets[asset].update(asset, this.state)
+                this.assets[asset].update(asset, this.state);
             }
         }
     }
@@ -363,14 +363,14 @@ class Game {
             //Checks if current asset should be drawn.
             if(this.state[key].draw){
                 //Adds the sprite to the array to composite.
-                let possitionedColoredArray = draw.possitionSprite(this.assets[key]["frame"+this.state[key].frame], this.state[key].offset)
+                let possitionedColoredArray = draw.possitionSprite(this.assets[key]["frame"+this.state[key].frame], this.state[key].offset);
                 if(this.state[key].color){
-                    possitionedColoredArray = draw.colorSprite(possitionedColoredArray, this.state[key].color)
+                    possitionedColoredArray = draw.colorSprite(possitionedColoredArray, this.state[key].color);
                 }
-                frameAssets.push(possitionedColoredArray) 
+                frameAssets.push(possitionedColoredArray);
             }
         }
-        let frameArray = draw.createFrame(frameAssets, {x:40, y:10});
+        let frameArray = draw.createFrame(frameAssets);
         let frameString = draw.arrayToString(frameArray);
         console.log(frameString);
     };
@@ -384,7 +384,7 @@ class Game {
         let y = 0;
         let outcome;
         eventEmitter.emit("attempt");
-        eventEmitter.emit("day")
+        eventEmitter.emit("day");
 
         //Helper function that checks the move for Win/Loss and update the playField appropriately.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
@@ -1048,7 +1048,7 @@ let mainInterface = {
             this.player.games.splice(-1, 1, {stats: this.game.gameStats, field: this.game.field.hiddenField});
             this.updatePlayersJSON();
         }.bind(this);
-        eventEmitter.on("day", dayHandler)
+        eventEmitter.on("day", dayHandler);
 
 
         //Creates a handler for wins and adds it to the eventEmitter.
@@ -1286,13 +1286,13 @@ let draw = {
     //Dimensions arg should be an object such as {x:, y:}. Anything outside of those dimensions will not be drawn.
     //Default dimensions are the longest x and the longest y dimensions present in the array of sprites.
     createFrame: function(arrays, dimensions){
-        let frame = []
-        let xDimension = 0
-        let yDimension = 0
+        let frame = [];
+        let xDimension = 0;
+        let yDimension = 0;
         //Sets the frame's dimensions to the dimensions arg if one was given.
         if(dimensions !== undefined){
-            xDimension = dimensions.x
-            yDimension = dimensions.y
+            xDimension = dimensions.x;
+            yDimension = dimensions.y;
         }
         //Sets the frame's dimensions in case no dimensions arg was given.
         if(dimensions === undefined){
@@ -1300,32 +1300,32 @@ let draw = {
             for(let array of arrays){
                 for(let row of array){
                     if(row.length > xDimension){
-                        xDimension = row.length
+                        xDimension = row.length;
                     }
                 }
             }
             //Finds the array with the most rows and sets the dimension.
             for(let array of arrays){
                 if(array.length > yDimension){
-                    yDimension = array.length
+                    yDimension = array.length;
                 }
             }
         }
 
         //Uses the dimensions to build a blank frame filled with spaces.
         for(let y = yDimension; y > 0; y--){
-            let row = []
+            let row = [];
             for(let x = xDimension; x >0; x--){
-                row.push('blank')
+                row.push('blank');
             }
-            frame.push(row)
+            frame.push(row);
         }
         //Populates the frame with assets only on 'blank' spots, allowing for layering.
         for(let array of arrays){
-            //Used to track which x,y location the loop is at so characters can be added if the location is 'blank'.
-            let yIndex = 0
-            let xIndex = 0
-            //Loops through the arrays.
+            //Used to track which x,y location the loop is at so characters can be added if the location in the final frame is 'blank'.
+            let yIndex = 0;
+            let xIndex = 0;
+            //Loops through the sprite.
             for(let [i, row] of array.entries()){
                 //Checks if the character is to be drawn within the set y dimension of the frame.
                 if(i < yDimension){
@@ -1334,79 +1334,79 @@ let draw = {
                         if(i < xDimension){
                             //If the x,y location is blank, adds the character.
                             if(frame[yIndex][xIndex] === 'blank'){
-                                frame[yIndex][xIndex] = character
+                                frame[yIndex][xIndex] = character;
                             }
                             //Increments xIndex to start the next column.
-                            xIndex++
+                            xIndex++;
                         }
                     }
                 }
                 //Resets xIndex for the next row and increments yIndex to replace characters in the next row.
-                xIndex = 0
+                xIndex = 0;
                 //Increments the yIndex to start the next row.
-                yIndex++
+                yIndex++;
             }
         }
         //Replaces 'blank' with ' ' for drawing to terminal.
         for(let array of frame){
             for(let character of array){
                 if(character === 'blank'){
-                    array[array.indexOf(character)] = ' '   
+                    array[array.indexOf(character)] = ' ';  
                 }
             }
         }
-        return frame
+        return frame;
     },
 
     //Used to create a string from the frame array.
     arrayToString: function(array){
-        let string = ``    
+        let string = ``;   
         for(let row of array){
             for(let character of row){
-                string+=character
+                string+=character;
             }
-            string += '\n'
+            string += '\n';
         }
-        return string
+        return string;
     },
     //Can be used to convert string art to an array for drawing. 
     //Create a multi line string with String.raw` and begin on the next line. This is important especially if the asset includes backslashes which would normall escape.
     stringToArray: function(string){
-        let array = []
+        let array = [];
         for(let row of string.split('\n')){
-            let rowArray = []
+            let rowArray = [];
             for(let character of row){
-                rowArray.push(character)
+                rowArray.push(character);
             }
-            array.push(rowArray)
+            array.push(rowArray);
         }
-        array.shift()
-        return JSON.stringify(array)
+        array.shift();
+        return JSON.stringify(array);
     },
     //Adds 'blank' margins to possition a sprite correctly in the frame.
     //Offset argument is an object such as {x:0, y:0}.
     //Moves the top left corner of the sprite from the top left of the frame according to the offset.
     possitionSprite(array, offset){
         //Creates a copy of the array to add margins to while leaving the original asset intact.
-        let possitionedSprite = []
+        let possitionedSprite = [];
         for(let row of array){
-            let rowCopy = []
+            let rowCopy = [];
             for(let character of row){
-                rowCopy.push(character)   
+                rowCopy.push(character);   
             }
-            possitionedSprite.push(rowCopy)
+            possitionedSprite.push(rowCopy);
         }
         //Adds a blank margin to the top to move the sprite down according to the offset.
         for(let y = offset.y; y>0; y--){
-            possitionedSprite.unshift(['blank'])
+            possitionedSprite.unshift(['blank']);
         }
         //Adds a blank margin to the left side to move the sprite right according to the offset.
         for(let row of possitionedSprite){
             for(let x = offset.x; x>0; x--){
-                row.unshift('blank')
+                row.unshift('blank');
             }
         }
-        return possitionedSprite
+        return possitionedSprite;
     },
 
     //Colors a sprite. Color should be supplied as a string escape sequence such as "\x1b[31m"
@@ -1417,7 +1417,7 @@ let draw = {
         //Creates a copy of the array to color while leaving the original asset intact.
         let coloredSprite = [];
         for(let row of array){
-            let coloredRow = []
+            let coloredRow = [];
             for(let character of row){
                 if(character !== 'blank'){
                     coloredRow.push(color + character + '\x1b[0m');
@@ -1426,36 +1426,36 @@ let draw = {
                 }
                 
             }
-            coloredSprite.push(coloredRow)
+            coloredSprite.push(coloredRow);
         }
         // coloredSprite.push('\x1b[0m')
-        return coloredSprite
+        return coloredSprite;
     },
 
     //Animates an array of multiline strings.
     //Use arrayToString() to convert an array asset to a multi line string.
     //Callback is the function that will run when the animation is complete.
     animate(array, fps, callback){
-        let numberOfFrames = array.length
-        let index = 0
+        let numberOfFrames = array.length;
+        let index = 0;
         let animationLoop = function(){
-            console.clear()
-            console.log(array[index])
-            index++
-            numberOfFrames--
+            console.clear();
+            console.log(array[index]);
+            index++;
+            numberOfFrames--;
             if(numberOfFrames === 0){
-                clearInterval(animationLoopInterval)
-                callback()
+                clearInterval(animationLoopInterval);
+                callback();
             }
         }
-        animationLoopInterval = setInterval(animationLoop, 1000/fps)
+        animationLoopInterval = setInterval(animationLoop, 1000/fps);
     }
 }
 
 
 
 
-mainInterface.begin()
+mainInterface.begin();
 
 
 
