@@ -102,10 +102,10 @@ module.exports.Tree = class{
         ["blank","blank","blank","blank","blank","blank","blank","blank","\\","/","blank","blank","/"],
         ["blank","blank","blank","blank","|","/","blank","blank","/","/","blank","\\","\\","blank","/","/"],
         ["blank","blank","=","=","\\","\\","/","blank","\\","\\","blank","blank","\\","v","/","-"],
-        ["blank","blank","blank","blank","blank","\\","\\"," ","/","/"," ","\\","|","|"],
-        ["blank","-","-","\\","\\"," ","\\","v","/","\\","\\"," ","/","/","=","=","/"],
-        ["blank","blank","blank","blank","blank","=","=","|","|"," ","\\","v","/"],
-        ["blank","blank","=","=","/","/"," ","\\","\\"," ","/","/","=","=","="],
+        ["blank","blank","blank","blank","blank","\\","\\","blank","/","/","blank","\\","|","|"],
+        ["blank","-","-","\\","\\","blank","\\","v","/","\\","\\","blank","/","/","=","=","/"],
+        ["blank","blank","blank","blank","blank","=","=","|","|","blank","\\","v","/"],
+        ["blank","blank","=","=","/","/","blank","\\","\\","blank","/","/","=","=","="],
         ["blank","/","/","blank","blank","blank","blank","blank","|","V","|"," "," "," ","\\","\\","="],
         ["blank","blank","blank","blank","blank","blank","blank","blank","|"," ","|"],
         ["blank","blank","blank","blank","blank","blank","blank","blank","|","0","|"],
@@ -205,79 +205,79 @@ module.exports.Fence = class{
 };
 
 module.exports.CelestialBody = class{
-         frame1 = [["\x1b[1mO"]];
-         frame2 = [["\x1b[1mC"]];
-         update(name, state){
-            //Sets the movement delay in number of frames.
-            let delay = 40;
-            let initialOffset = {x: state[name].initialOffset.x, y: state[name].initialOffset.y};
-            //Controls the initial ascent.        
-            if(state[name].counter === delay && state[name].direction === 'rise'){
-                state[name].offset.x = state[name].offset.x + 2;
-                state[name].offset.y = state[name].offset.y - 1;
-                state[name].counter = 0;
-                state[name].steps ++;
-                //Changes directtion after desired steps are reached.
-                if(state[name].steps === 2){
-                    state[name].steps = 0;
-                    state[name].direction = 'up';
-                }
-            }else if(state[name].counter === delay && state[name].direction === 'up'){
-                state[name].offset.x = state[name].offset.x + 4;
-                state[name].offset.y = state[name].offset.y - 1;
-                state[name].counter = 0;
-                state[name].steps ++;
-                //Changes directtion after desired steps are reached.
-                if(state[name].steps === 3){
-                    state[name].steps = 0;
-                    state[name].direction = 'parallel';
-                }
-            //Controlls paralell movement    
-            }else if(state[name].counter === delay && state[name].direction === 'parallel'){
-                state[name].offset.x = state[name].offset.x + 3;
-                state[name].counter = 0;
-                state[name].steps ++;
-                //Changes direction after desired steps are reached.
-                if(state[name].steps === 1){
-                    state[name].steps = 0;
-                    state[name].direction = 'down';
-                }
-            //Controlls the descent.
-            }else if(state[name].counter === delay && state[name].direction === 'down'){
-                state[name].offset.x = state[name].offset.x + 4;
-                state[name].offset.y = state[name].offset.y + 1;
-                state[name].counter = 0;
-                state[name].steps ++;
-                //Changes celestial body and resets the offset.
-                if(state[name].steps === 2){
-                    state[name].steps = 0;
-                    state[name].direction = 'set';
-                }
-            //Controlls the final decent.    
-            }else if(state[name].counter === delay && state[name].direction === 'set'){
-                state[name].offset.x = state[name].offset.x + 2;
-                state[name].offset.y = state[name].offset.y + 1;
-                state[name].counter = 0;
-                state[name].steps ++;
-                //Changes directtion after desired steps are reached.
-                if(state[name].steps === 4){
-                    state[name].steps = 0;
-                    state[name].direction = 'rise';
-                    state[name].offset = initialOffset;
-                    // eventEmitter.emit("loss")
-                    if(state[name].frame === 1){
-                        state[name].frame = 2;
-                        state.time.current = 'night';
-                    }else if(state[name].frame === 2){
-                        state[name].frame = 1;
-                        state.time.current = 'day';
-                        eventEmitter.emit("day");
-                    }
-                }
-            }else{
-                state[name].counter++;
+    frame1 = [["\x1b[1mO"]];
+    frame2 = [["\x1b[1mC"]];
+    update(name, state){
+        //Sets the movement delay in number of frames.
+        let delay = 40;
+        let initialOffset = {x: state[name].initialOffset.x, y: state[name].initialOffset.y};
+        //Controls the initial ascent.        
+        if(state[name].counter === delay && state[name].direction === 'rise'){
+            state[name].offset.x = state[name].offset.x + 2;
+            state[name].offset.y = state[name].offset.y - 1;
+            state[name].counter = 0;
+            state[name].steps ++;
+            //Changes directtion after desired steps are reached.
+            if(state[name].steps === 2){
+                state[name].steps = 0;
+                state[name].direction = 'up';
             }
+        }else if(state[name].counter === delay && state[name].direction === 'up'){
+            state[name].offset.x = state[name].offset.x + 4;
+            state[name].offset.y = state[name].offset.y - 1;
+            state[name].counter = 0;
+            state[name].steps ++;
+            //Changes directtion after desired steps are reached.
+            if(state[name].steps === 3){
+                state[name].steps = 0;
+                state[name].direction = 'parallel';
+            }
+        //Controlls paralell movement    
+        }else if(state[name].counter === delay && state[name].direction === 'parallel'){
+            state[name].offset.x = state[name].offset.x + 3;
+            state[name].counter = 0;
+            state[name].steps ++;
+            //Changes direction after desired steps are reached.
+            if(state[name].steps === 1){
+                state[name].steps = 0;
+                state[name].direction = 'down';
+            }
+        //Controlls the descent.
+        }else if(state[name].counter === delay && state[name].direction === 'down'){
+            state[name].offset.x = state[name].offset.x + 4;
+            state[name].offset.y = state[name].offset.y + 1;
+            state[name].counter = 0;
+            state[name].steps ++;
+            //Changes celestial body and resets the offset.
+            if(state[name].steps === 2){
+                state[name].steps = 0;
+                state[name].direction = 'set';
+            }
+        //Controlls the final decent.    
+        }else if(state[name].counter === delay && state[name].direction === 'set'){
+            state[name].offset.x = state[name].offset.x + 2;
+            state[name].offset.y = state[name].offset.y + 1;
+            state[name].counter = 0;
+            state[name].steps ++;
+            //Changes directtion after desired steps are reached.
+            if(state[name].steps === 4){
+                state[name].steps = 0;
+                state[name].direction = 'rise';
+                state[name].offset = initialOffset;
+                // eventEmitter.emit("loss")
+                if(state[name].frame === 1){
+                    state[name].frame = 2;
+                    state.time.current = 'night';
+                }else if(state[name].frame === 2){
+                    state[name].frame = 1;
+                    state.time.current = 'day';
+                    eventEmitter.emit("day");
+                }
+            }
+        }else{
+            state[name].counter++;
         }
+    }
 }
 
 module.exports.Cloud = class{
@@ -294,11 +294,10 @@ module.exports.Cloud = class{
         if(state[name].offset.x > this.frameDimensions.x){
             state[name].offset.x = state[name].initialOffset.x;
         }
-        if(state[name].counter === 5){
+        if(state[name].counter === 3){
             state[name].offset.x++;
             state[name].counter = 0;
         }
         state[name].counter++;
-        
     };
 }
