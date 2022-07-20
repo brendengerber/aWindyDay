@@ -297,7 +297,8 @@ class Game {
         this._field = field;
         
         //Sets the state from settings object based on difficulty level.
-        this._state =  _.merge(settings.initialStates, settings[difficulty].states)
+        //Empty object is filled with settings thus leaving the original settings object in tact.
+        this._state =  _.merge({}, settings.initialStates, settings[difficulty].states)
 
         //Adds playField to assets.
         this.assets.field.frame1 = this.field.playField
@@ -418,7 +419,8 @@ class Game {
         let lose = function(){
             console.clear();
             this.drawCurrentFrame()
-            this._state = _.merge(settings[this.difficulty].states, settings.initialStates)
+            //Empty object is filled with settings thus leaving the original settings object in tact.
+            this._state = _.merge({}, settings.initialStates, settings[this.difficulty].states);
             this.gameStats.win = false;
             eventEmitter.emit("loss");
             outcome = "loss";
@@ -428,7 +430,7 @@ class Game {
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let win = function(){
             console.clear();
-            this.drawCurrentFrame()
+            this.drawCurrentFrame();
             this.gameStats.win = true;
             eventEmitter.emit("win");
             outcome = "win";
@@ -527,10 +529,12 @@ class Game {
         let mainLoop = function(){
             console.clear();
 
-            //Updates states.
-            this.update()
-            //Draws the current frame.
-            this.drawCurrentFrame()
+            if(!gameOver){
+                //Updates states.
+                this.update()
+                //Draws the current frame.
+                this.drawCurrentFrame()
+            }
 
             if(gameOver){
                 //Stops rendering the frames.
