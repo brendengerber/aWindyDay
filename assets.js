@@ -8,7 +8,8 @@ module.exports.updateColorByTime = function(name, state){
     }else if(state.time.current === 'night'){
         state[name].color = '\x1b[90m';
     }
-}
+};
+
 //Same helper function for use within the module.
 let updateColorByTime = function(name, state){
     if(state.time.current === 'day'){
@@ -16,20 +17,20 @@ let updateColorByTime = function(name, state){
     }else if(state.time.current === 'night'){
         state[name].color = '\x1b[90m';
     }
-}
+};
 
-module.exports.Star = class {
+module.exports.Star = class{
     //Arguments are entered as integers for the number of desired frames.
     constructor(flickerDelay, flickerDuration){
         this._flickerDelay = flickerDelay;
         this._flickerDuration = flickerDuration;
-    }
+    };
     get flickerDelay(){
         return this._flickerDelay;
-    }
+    };
     get flickerDuration(){
         return this._flickerDuration;
-    }
+    };
 
     frame1 = [['*']];
 
@@ -50,17 +51,17 @@ module.exports.Star = class {
             state[name].draw = true;
         }
             
-    }
-}
+    };
+};
 
-module.exports.House = class {
+module.exports.House = class{
     //Argument is entered as integers for the number of desired frames.
     constructor(frameDuration){
         this._frameDuration = frameDuration;
-    }
+    };
     get frameDuration(){
         return this._frameDruation;
-    }
+    };
     frame1 = [
         ["blank","blank","blank","blank","blank","blank","blank","blank","blank","~"],
         ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
@@ -68,7 +69,7 @@ module.exports.House = class {
         ["blank","blank","_","_","|","|","blank","blank","blank","blank"],
         ["blank","/","/","/","\\","\\","\\"],
         ["blank","|"," ","[","]"," ","|","blank","blank","blank","blank"]
-    ]
+    ];
 
     frame2 = [                
         ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
@@ -77,7 +78,7 @@ module.exports.House = class {
         ["blank","blank","_","_","|","|","blank","blank","blank","blank"],
         ["blank","/","/","/","\\","\\","\\"],
         ["blank","|"," ","[","]"," ","|","blank","blank","blank","blank"]
-    ]
+    ];
 
     //The state argument should be a state object for the specific object (as opposed to the full state object).
     update(name, state){
@@ -92,15 +93,15 @@ module.exports.House = class {
             state[name].counter ++;
         }
         updateColorByTime(name, state);
-    }
-}
+    };
+};
 
 
-module.exports.Tree = class {
+module.exports.Tree = class{
     frame1 = [
-        ["blank","blank","blank","blank","blank","blank","blank","blank","\\","/"," "," ","/"],
-        ["blank","blank","blank","blank","|","/"," "," ","/","/"," ","\\","\\"," ","/","/"],
-        ["blank","blank","=","=","\\","\\","/"," ","\\","\\"," "," ","\\","v","/","-"],
+        ["blank","blank","blank","blank","blank","blank","blank","blank","\\","/","blank","blank","/"],
+        ["blank","blank","blank","blank","|","/","blank","blank","/","/","blank","\\","\\","blank","/","/"],
+        ["blank","blank","=","=","\\","\\","/","blank","\\","\\","blank","blank","\\","v","/","-"],
         ["blank","blank","blank","blank","blank","\\","\\"," ","/","/"," ","\\","|","|"],
         ["blank","-","-","\\","\\"," ","\\","v","/","\\","\\"," ","/","/","=","=","/"],
         ["blank","blank","blank","blank","blank","=","=","|","|"," ","\\","v","/"],
@@ -111,13 +112,13 @@ module.exports.Tree = class {
         ["blank","blank","blank","blank","blank","blank","blank","blank","|"," ","|"],
         ["blank","blank","blank","blank","blank","blank","blank","blank","|"," ","|"],
         ["blank","blank","blank","blank","blank","blank","blank","͡"," ","͡"," ","͡"]
-    ]
+    ];
     update(name, state){
         updateColorByTime(name, state);
-    }
-}
+    };
+};
 
-module.exports.grass = class{
+module.exports.Grass = class{
     frame1 = [
         [" ","\\","/"," "," "," "," ","\\"," "," "," ","/"," "," "," "," "," "," "," "," "," "," "," ","\\"," "," "," "," "," ","\\","/"],
         [" "," "," ","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","/"],
@@ -129,17 +130,17 @@ module.exports.grass = class{
         [" ","/"," "," "," "," ","\\","/"," "," "," "," ","\\"," "," ","\\","/"," "," "," "," "," "," ","\\"," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," ","/"],
         [],
         []
-    ]
+    ];
     update(name, state){
         updateColorByTime(name, state);
-    }
-}
+    };
+};
 
 module.exports.Horizon = class{
     //Take an integer as an argument for how long to draw the horizon.
     constructor(horizonLength){
         this.frame1 = this.buildFrame(horizonLength);
-    }
+    };
     //Builds the asset array based on the constructor
     buildFrame(horizonLength){
         let frame = [[]];
@@ -147,16 +148,17 @@ module.exports.Horizon = class{
             frame[0].push("_");
         }
         return frame;
-    }
+    };
     update(name, state){
         updateColorByTime(name, state);
-    }
-}
-module.exports.Fence = class {
+    };
+};
+
+module.exports.Fence = class{
     //Takes integers for the size of the field it will contain.
     constructor(x,y){
         this.frame1 = this.buildFrame(x,y);
-    }
+    };
     buildFrame(x,y){
         let frame = [];
         //Builds the left side of the frame.
@@ -196,12 +198,11 @@ module.exports.Fence = class {
             row.push(' ');
         }
         return frame;
-    }
+    };
     update(name, state){
         updateColorByTime(name, state);
-    }
-}
-
+    };
+};
 
 module.exports.CelestialBody = class{
          frame1 = [["\x1b[1mO"]];
@@ -277,4 +278,27 @@ module.exports.CelestialBody = class{
                 state[name].counter++;
             }
         }
-    }
+}
+
+module.exports.Cloud = class{
+    constructor(frameDimensions){
+        this.frameDimensions = frameDimensions
+    };
+    frame1 = [
+        ["blank","blank","blank","blank","_","_","_"],
+        ["blank","_","_","(","_","_","_",")","_"],
+        ["(","_","_",")","_","_","_","_","_",")"],
+    ];
+    update(name, state){
+        updateColorByTime(name, state);
+        if(state[name].offset.x > this.frameDimensions.x){
+            state[name].offset.x = state[name].initialOffset.x;
+        }
+        if(state[name].counter === 5){
+            state[name].offset.x++;
+            state[name].counter = 0;
+        }
+        state[name].counter++;
+        
+    };
+}

@@ -146,6 +146,9 @@ class Player{
 //Sets ifficulty settings and default settings.
 //Balancing and tweaks can be done here.
 let settings = {
+    //Sets the dimensions of the frame.
+    frameDimensions: {x:63, y:19},
+
     //Used to set the number of holes and field dimensions for each difficulty level as well as states dependent on difficulty.
     easy: {
         fieldSettings:{
@@ -207,13 +210,21 @@ let settings = {
             frame: 1,
             offset: {x:35, y:1}
         },
+        cloud:{
+            draw: true,
+            frame: 1,
+            offset: {x:-10, y:1},
+            //Used to reset the cloud after a full pass. Should be the same as offset.
+            initialOffset: {x:-10, y:0},
+            color: '\x1b[97m',
+            counter: 0
+        },
         house:{
             draw: true,
             frame: 1,
             offset: {x:15,y:5},
             counter: 0
         },
-        
         star1: {
             draw: false,
             color: '\x1b[97m',
@@ -343,8 +354,9 @@ class Game {
         star5: new assets.Star(200, 2),
         star6: new assets.Star(240, 2),
         star7: new assets.Star(260, 2),
-        horizon: new assets.Horizon(52),
-        grass: new assets.grass()
+        horizon: new assets.Horizon(settings.frameDimensions.x),
+        grass: new assets.Grass(),
+        cloud: new assets.Cloud(settings.frameDimensions)
     };
 
     // Loops through all of the assets and updates the state object if the asset has an update method.
@@ -374,7 +386,7 @@ class Game {
                 frameAssets.push(possitionedColoredArray);
             }
         }
-        let frameArray = draw.createFrame(frameAssets);
+        let frameArray = draw.createFrame(frameAssets, settings.frameDimensions);
         let frameString = draw.arrayToString(frameArray);
         console.log(frameString);
     };
@@ -420,7 +432,7 @@ class Game {
             console.clear();
             this.drawCurrentFrame()
             //Empty object is filled with settings thus leaving the original settings object in tact.
-            this._state = _.merge({}, settings.initialStates, settings[this.difficulty].states);
+            this._state = _.merge({}, settings.frameDimensions, settings.initialStates, settings[this.difficulty].states);
             this.gameStats.win = false;
             eventEmitter.emit("loss");
             outcome = "loss";
@@ -1483,9 +1495,6 @@ let draw = {
         animationLoopInterval = setInterval(animationLoop, 1000/fps);
     }
 }
-
-
-
 
 mainInterface.begin();
 
