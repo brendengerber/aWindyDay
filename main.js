@@ -5,6 +5,7 @@
 //Add a note about transparent backgrounds
 //add clouds, could be fun to have it move across the screen and not stop for day or night, i.e. be the only state that doesnt reset somehow
 //make an asset that builds a margin that can be placed to hide things like clouds that go off screen
+//add logic to not error if offset is outside frame size.
 
 
 // NEXT
@@ -212,7 +213,6 @@ let settings = {
             offset: {x:15,y:2},
             counter: 0
         },
-        
         star1: {
             draw: false,
             color: '\x1b[97m',
@@ -278,12 +278,6 @@ let settings = {
         time: {
             current: 'day'
         },
-        layerOrder: {
-            // current: this.setDefaultOrder(),
-            // setDfaultOrder(){
-
-            // }
-        }
     }
 };
 
@@ -1386,9 +1380,10 @@ let draw = {
     //Adds 'blank' margins to possition a sprite correctly in the frame.
     //Offset argument is an object such as {x:0, y:0}.
     //Moves the top left corner of the sprite from the top left of the frame according to the offset.
+    //Negative coordinates are allowed and any portion of the sprite not in the frame will not be drawn.
     possitionSprite(array, offset){
-        //Creates a copy of the array to add margins to while leaving the original asset intact.
         let possitionedSprite = [];
+        //Creates a copy of the sprite to add margins/possition to while leaving the original sprite in tact.
         for(let row of array){
             let rowCopy = [];
             for(let character of row){
@@ -1396,16 +1391,40 @@ let draw = {
             }
             possitionedSprite.push(rowCopy);
         }
-        //Adds a blank margin to the top to move the sprite down according to the offset.
-        for(let y = offset.y; y>0; y--){
-            possitionedSprite.unshift(['blank']);
-        }
-        //Adds a blank margin to the left side to move the sprite right according to the offset.
-        for(let row of possitionedSprite){
-            for(let x = offset.x; x>0; x--){
-                row.unshift('blank');
+
+        //Possitions sprite if y offset is positive.
+        if(offset.y > 0){
+            //Adds a blank margin to the top to move the sprite down according to the offset.
+            for(let y = offset.y; y>0; y--){
+                possitionedSprite.unshift(['blank']);
             }
         }
+
+        //Possitions sprite if x offset is positive.
+        if(offset.x > 0){
+            //Adds a blank margin to the left side to move the sprite right according to the offset.
+            for(let row of possitionedSprite){
+                for(let x = offset.x; x>0; x--){
+                    row.unshift('blank');
+                }
+            }
+        }
+        
+        //Possitions sprite if y offset is negative.
+        if(offset.y < 0){
+            for(let y = offset.y; y < 0; y++){
+                possitionedSprite.shift();
+            }
+        }
+        //Possitions sprite if x offset is negative.
+        if(offset.x < 0){
+            for(let row of possitionedSprite){
+                for(let x = offset.x; x < 0; x++){
+                    row.shift();
+                }
+            }
+        }
+
         return possitionedSprite;
     },
 
