@@ -32,7 +32,7 @@ module.exports.Star = class{
         return this._flickerDuration;
     };
 
-    frame1 = [['*']];
+    frame1 = [["*"]];
 
     //The state argument should be a state object for the specific object (as opposed to the full state object).
     update(name, state){
@@ -55,6 +55,49 @@ module.exports.Star = class{
 };
 
 module.exports.House = class{
+    //Argument is entered as integers for the number of desired frames.
+    constructor(frameDuration){
+        this._frameDuration = frameDuration;
+    };
+    get frameDuration(){
+        return this._frameDruation;
+    };
+    frame1 = [
+        ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","~"],
+        ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
+        ["blank","blank","blank","blank","blank","blank","~","blank","blank","blank","blank"],
+        [" ","_","_","_","_","|","|"],
+        ["/","/","/","/","\\","\\","\\","\\"],
+        ["|","[","]"," "," ","[","]","|"],
+        ["|"," "," ","[","]"," "," ","|"]
+    ];
+
+    frame2 = [                
+        ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
+        ["blank","blank","blank","blank","blank","blank","blank","blank","~","blank","blank"],
+        ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
+        [" ","_","_","_","_","|","|"],
+        ["/","/","/","/","\\","\\","\\","\\"],
+        ["|","[","]"," "," ","[","]","|"],
+        ["|"," "," ","[","]"," "," ","|"]
+    ];
+    //The state argument should be a state object for the specific object (as opposed to the full state object).
+    update(name, state){
+        //Updates counter and current frame in the state object, in charge of changing frames.
+        if(state[name].frame === 1 && state[name].counter === 30){
+            state[name].frame = 2;
+            state[name].counter = 0;
+        }else if(state[name].frame === 2 && state[name].counter === 30){
+            state[name].frame = 1;
+            state[name].counter = 0;
+        }else{
+            state[name].counter ++;
+        }
+        updateColorByTime(name, state);
+    };
+}
+
+module.exports.House2 = class{
     //Argument is entered as integers for the number of desired frames.
     constructor(frameDuration){
         this._frameDuration = frameDuration;
@@ -108,7 +151,7 @@ module.exports.Tree = class{
         ["blank","blank","=","=","/","/","blank","\\","\\","blank","/","/","=","=","="],
         ["blank","/","/","blank","blank","blank","blank","blank","|","V","|"," "," "," ","\\","\\","="],
         ["blank","blank","blank","blank","blank","blank","blank","blank","|"," ","|"],
-        ["blank","blank","blank","blank","blank","blank","blank","blank","|","0","|"],
+        ["blank","blank","blank","blank","blank","blank","blank","blank","|","O","|"],
         ["blank","blank","blank","blank","blank","blank","blank","blank","|"," ","|"],
         ["blank","blank","blank","blank","blank","blank","blank","blank","|"," ","|"],
         ["blank","blank","blank","blank","blank","blank","blank","͡"," ","͡"," ","͡"]
@@ -123,7 +166,7 @@ module.exports.Grass = class{
         [" ","\\","/"," "," "," "," ","\\"," "," "," ","/"," "," "," "," "," "," "," "," "," "," "," ","\\"," "," "," "," "," ","\\","/"],
         [" "," "," ","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","/"],
         [" "," "," "," "," "," ","\\"," "," "," ","\\","/"," "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," ","\\"," "," "," "," "," "," ","/"],
-        ["\\","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," "," "," "," ","\\","/"],
+        ["\\","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," "," "," "," "],
         [" "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","\\"," "," "," "," "," "," "," "," ","/"],
         [" "," ","\\"," "," "," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," "," "," "," "," ","\\"],
         [" "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," "," ","\\"," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," ","\\"],
@@ -163,39 +206,39 @@ module.exports.Fence = class{
         let frame = [];
         //Builds the left side of the frame.
         for(let i = y; i > 0; i--){
-            frame.push(['‡']);
+            frame.push(["‡"]);
         }
         //Fills the middle with 'blank' to make it transparent.
         for(let i = x; i > 0; i--){
             for(let row of frame){
-                row.push('blank');
+                row.push("blank");
             }
         }
         //Builds the right side of the fence.
         for(let row of frame){
-            row.push('‡');
+            row.push("‡");
         }
         //Builds the bottom of the fence.
         frame.push([]);
         for(let i = x + 2; i > 0; i--){
-            frame[frame.length - 1].push('‡');
+            frame[frame.length - 1].push("‡");
         }
         //Builds the top of the fence.
         frame.unshift([]);
         for(let i = x + 2; i > 0; i--){
-            frame[0].push('‡')
+            frame[0].push("‡")
         }
         //Builds the fence's door.
         if(frame[0].length % 2 === 0){
-            frame[0][frame[0].length/2 - 1] = '-';
-            frame[0][frame[0].length/2] = '-';
+            frame[0][frame[0].length/2 - 1] = "-";
+            frame[0][frame[0].length/2] = "-";
         }else{
-            frame[0][Math.floor((frame[0].length/2))] = '-';
+            frame[0][Math.floor((frame[0].length/2))] = "-";
         }
         //Adds a margin to the right and left (looks better when layered over the grass)
         for(let row of frame){
-            row.unshift(' ');
-            row.push(' ');
+            row.unshift(" ");
+            row.push(" ");
         }
         return frame;
     };
@@ -209,7 +252,7 @@ module.exports.CelestialBody = class{
     frame2 = [["\x1b[1mC"]];
     update(name, state){
         //Sets the movement delay in number of frames.
-        let delay = 40;
+        let delay = 20;
         let initialOffset = {x: state[name].initialOffset.x, y: state[name].initialOffset.y};
         //Controls the initial ascent.        
         if(state[name].counter === delay && state[name].direction === 'rise'){
@@ -222,13 +265,14 @@ module.exports.CelestialBody = class{
                 state[name].steps = 0;
                 state[name].direction = 'up';
             }
+        //Controlls the final ascent.    
         }else if(state[name].counter === delay && state[name].direction === 'up'){
-            state[name].offset.x = state[name].offset.x + 4;
+            state[name].offset.x = state[name].offset.x + 3;
             state[name].offset.y = state[name].offset.y - 1;
             state[name].counter = 0;
             state[name].steps ++;
             //Changes directtion after desired steps are reached.
-            if(state[name].steps === 3){
+            if(state[name].steps === 4){
                 state[name].steps = 0;
                 state[name].direction = 'parallel';
             }
@@ -244,12 +288,12 @@ module.exports.CelestialBody = class{
             }
         //Controlls the descent.
         }else if(state[name].counter === delay && state[name].direction === 'down'){
-            state[name].offset.x = state[name].offset.x + 4;
+            state[name].offset.x = state[name].offset.x + 3;
             state[name].offset.y = state[name].offset.y + 1;
             state[name].counter = 0;
             state[name].steps ++;
             //Changes celestial body and resets the offset.
-            if(state[name].steps === 2){
+            if(state[name].steps === 4){
                 state[name].steps = 0;
                 state[name].direction = 'set';
             }
@@ -260,7 +304,7 @@ module.exports.CelestialBody = class{
             state[name].counter = 0;
             state[name].steps ++;
             //Changes directtion after desired steps are reached.
-            if(state[name].steps === 4){
+            if(state[name].steps === 3){
                 state[name].steps = 0;
                 state[name].direction = 'rise';
                 state[name].offset = initialOffset;
@@ -271,7 +315,7 @@ module.exports.CelestialBody = class{
                 }else if(state[name].frame === 2){
                     state[name].frame = 1;
                     state.time.current = 'day';
-                    eventEmitter.emit("day");
+                    eventEmitter.emit('day');
                 }
             }
         }else{
@@ -280,9 +324,10 @@ module.exports.CelestialBody = class{
     }
 }
 
+//Takes an integer for the travel distance before resetting (likely the frame x dimension)/
 module.exports.Cloud = class{
-    constructor(frameDimensions){
-        this.frameDimensions = frameDimensions
+    constructor(traveDistance){
+        this.traveDistance = traveDistance
     };
     frame1 = [
         ["blank","blank","blank","blank","_","_","_"],
@@ -291,10 +336,10 @@ module.exports.Cloud = class{
     ];
     update(name, state){
         updateColorByTime(name, state);
-        if(state[name].offset.x > this.frameDimensions.x){
+        if(state[name].offset.x > this.traveDistance){
             state[name].offset.x = state[name].initialOffset.x;
         }
-        if(state[name].counter === 3){
+        if(state[name].counter === 5){
             state[name].offset.x++;
             state[name].counter = 0;
         }
