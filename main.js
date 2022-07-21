@@ -215,7 +215,7 @@ let settings = {
             frame: 1,
             offset: {x:0, y:1},
             //Used to reset the cloud after a full pass. Should be the same as offset.
-            initialOffset: {x:-10, y:0},
+            initialOffset: {x:-10, y:1},
             color: '\x1b[97m',
             counter: 0
         },
