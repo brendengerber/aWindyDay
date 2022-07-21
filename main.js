@@ -208,12 +208,12 @@ let settings = {
         tree: {
             draw: true,
             frame: 1,
-            offset: {x:35, y:1}
+            offset: {x:37, y:1}
         },
         cloud:{
             draw: true,
             frame: 1,
-            offset: {x:-10, y:1},
+            offset: {x:0, y:1},
             //Used to reset the cloud after a full pass. Should be the same as offset.
             initialOffset: {x:-10, y:0},
             color: '\x1b[97m',
@@ -222,7 +222,7 @@ let settings = {
         house:{
             draw: true,
             frame: 1,
-            offset: {x:15,y:5},
+            offset: {x:15, y:5},
             counter: 0
         },
         star1: {
@@ -356,7 +356,7 @@ class Game {
         star7: new assets.Star(260, 2),
         horizon: new assets.Horizon(settings.frameDimensions.x),
         grass: new assets.Grass(),
-        cloud: new assets.Cloud(settings.frameDimensions)
+        cloud: new assets.Cloud(settings.frameDimensions.x)
     };
 
     // Loops through all of the assets and updates the state object if the asset has an update method.
