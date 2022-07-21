@@ -54,7 +54,7 @@ module.exports.Star = class{
     };
 };
 
-module.exports.House = class{
+module.exports.House1 = class{
     //Argument is entered as integers for the number of desired frames.
     constructor(frameDuration){
         this._frameDuration = frameDuration;
@@ -97,7 +97,7 @@ module.exports.House = class{
     };
 }
 
-module.exports.House2 = class{
+module.exports.House = class{
     //Argument is entered as integers for the number of desired frames.
     constructor(frameDuration){
         this._frameDuration = frameDuration;
@@ -106,21 +106,21 @@ module.exports.House2 = class{
         return this._frameDruation;
     };
     frame1 = [
-        ["blank","blank","blank","blank","blank","blank","blank","blank","blank","~"],
-        ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
-        ["blank","blank","blank","blank","blank","~","blank","blank","blank","blank"],
-        ["blank","blank","_","_","|","|","blank","blank","blank","blank"],
-        ["blank","/","/","/","\\","\\","\\"],
-        ["blank","|"," ","[","]"," ","|","blank","blank","blank","blank"]
+        ["~","blank","blank","blank","blank","blank",],
+        ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
+        ["blank","blank","blank","blank","~","blank","blank","blank","blank"],
+        ["blank","blank","blank","blank","|","|","_","_","blank","blank","blank","blank"],
+        ["blank","blank","blank","/","/","/","\\","\\","\\"],
+        ["blank","blank","blank","|"," ","[","]"," ","|","blank","blank","blank","blank"]
     ];
 
     frame2 = [                
-        ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
-        ["blank","blank","blank","blank","blank","blank","blank","~","blank","blank"],
-        ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
-        ["blank","blank","_","_","|","|","blank","blank","blank","blank"],
-        ["blank","/","/","/","\\","\\","\\"],
-        ["blank","|"," ","[","]"," ","|","blank","blank","blank","blank"]
+        ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
+        ["blank","blank","blank","~","blank","blank"],
+        ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
+        ["blank","blank","blank","blank","|","|","_","_","blank","blank","blank","blank"],
+        ["blank","blank","blank","/","/","/","\\","\\","\\"],
+        ["blank","blank","blank","|"," ","[","]"," ","|","blank","blank","blank","blank"]
     ];
 
     //The state argument should be a state object for the specific object (as opposed to the full state object).
@@ -324,23 +324,20 @@ module.exports.CelestialBody = class{
     }
 }
 
-//Takes an integer for the travel distance before resetting (likely the frame x dimension)/
 module.exports.Cloud = class{
-    constructor(traveDistance){
-        this.traveDistance = traveDistance
-    };
     frame1 = [
+        //**need to reverse */
         ["blank","blank","blank","blank","_","_","_"],
         ["blank","_","_","(","_","_","_",")","_"],
         ["(","_","_",")","_","_","_","_","_",")"],
     ];
     update(name, state){
         updateColorByTime(name, state);
-        if(state[name].offset.x > this.traveDistance){
+        if(state[name].offset.x < -10){
             state[name].offset.x = state[name].initialOffset.x;
         }
         if(state[name].counter === 5){
-            state[name].offset.x++;
+            state[name].offset.x--;
             state[name].counter = 0;
         }
         state[name].counter++;

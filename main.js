@@ -6,6 +6,10 @@
 //add clouds, could be fun to have it move across the screen and not stop for day or night, i.e. be the only state that doesnt reset somehow
 //make an asset that builds a margin that can be placed to hide things like clouds that go off screen
 //add logic to not error if offset is outside frame size.
+//NEXT try having the tree closer to the house and having the sun/moon arch over both, might help with scale
+//put it on the left so it doesnt interfere with smoke
+//make the sun go in reverse?
+//NEXT make possition sprite take care of being out of frame too, rather than draw frame, have it check if offset + width is longer than frame. Only works if assets are rectangular, probably should be anyway
 
 
 // NEXT
@@ -147,7 +151,7 @@ class Player{
 //Balancing and tweaks can be done here.
 let settings = {
     //Sets the dimensions of the frame.
-    frameDimensions: {x:63, y:19},
+    frameDimensions: {x:63, y:22},
 
     //Used to set the number of holes and field dimensions for each difficulty level as well as states dependent on difficulty.
     easy: {
@@ -208,21 +212,21 @@ let settings = {
         tree: {
             draw: true,
             frame: 1,
-            offset: {x:37, y:1}
+            offset: {x:24, y:1}
         },
         cloud:{
             draw: true,
             frame: 1,
-            offset: {x:0, y:1},
+            offset: {x:63, y:1},
             //Used to reset the cloud after a full pass. Should be the same as offset.
-            initialOffset: {x:-10, y:0},
+            initialOffset: {x:63, y:1},
             color: '\x1b[97m',
             counter: 0
         },
         house:{
             draw: true,
             frame: 1,
-            offset: {x:15, y:5},
+            offset: {x:13, y:5},
             counter: 0
         },
         star1: {
@@ -282,9 +286,9 @@ let settings = {
         celestialBody: {
             draw: true,
             frame: 1,
-            offset: {x:1, y:8},
+            offset: {x:0, y:8},
             //Used to reset the body after a full arch. Should be the same as offset.
-            initialOffset: {x:1, y:8},
+            initialOffset: {x:0, y:8},
             counter: 0,
             steps: 0,
             direction: 'rise'
