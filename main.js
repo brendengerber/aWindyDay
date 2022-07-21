@@ -1,4 +1,5 @@
 
+
 //make an asset field class? Which takes the array as the constructor to contain all that logic in the assets?
 //make field and fence offsets populate automatically based on field size if possible
 //Make a settings propertie that is an array with the draw order, then loop through that with the main drawer
@@ -87,6 +88,7 @@ const hideCursor = require('hide-terminal-cursor');
 const showCursor = require("show-terminal-cursor");
 const _ = require('lodash');
 const assets = require('./assets.js');
+const {table} = require('table');
 
 //Sets game characters.
 const hat = '^';
@@ -129,20 +131,21 @@ class Player{
             totalDaysToWin: 0 
         },
     }
-        games = [];
+    games = [];
 
-        firstLoss = false;
+    firstLoss = false;
     
     static processStats(player){
         let processedStats = {};
-        for(difficulty in player.stats){
-            
+        for(let difficulty in player.stats){
+            processedStats[difficulty] = {
+                "Wins": player.stats[difficulty].wins,
+                "Unsolved": player.stats[difficulty].unsolved,
+                "Average Attempts to Win": (player.stats[difficulty].totalAttemptsToWin / player.stats[difficulty].wins).toFixed(2),
+                "Average Moves to Win": (player.stats[difficulty].totalMovesToWin / player.stats[difficulty].wins).toFixed(2),
+                "Average Days to Win": (player.stats[difficulty].totalDaysToWin / player.stats[difficulty].wins).toFixed(2)
+            }
         }
-
-
-//***add stats logic here */
-
-        
         return processedStats;
     };
 };
@@ -857,7 +860,7 @@ let prompts = {
     },
 
     mainMenu(){
-        return this.formattedPrompt(["Play a game", "Check your Stats", "Exit"])
+        return this.formattedPrompt(["Play a game", "Check Your Stats", "Exit"])
     },
 
     mood(){
@@ -990,7 +993,7 @@ You can use W, A, S, D to move around and look for it.`
             "I knew you had it in you!",
             "This is the best day ever!",
             "That's really fantastic!" 
-    ];
+        ];
         this.randomSelector(options);
     },
 
@@ -1011,6 +1014,57 @@ You can use W, A, S, D to move around and look for it.`
     hard(){
         let options = ["Yikes, I really hope you make it out alive!"];
         this.randomSelector(options);
+    },
+    stats(difficulty){
+        let name = mainInterface.player.name;        
+        //Helper function to create a table of all the stats for each difficulty.
+        //The stat arg should be the object prepared by Player.processStats(player).
+        let createStatsTable = function(stats){
+            //Used to fill with stats.
+            let table = [[],[],[],[],[],[]]
+            //Used to track the colums and rows where stats will be entered.
+            let column = 0
+            let row = 1
+            //Parses the stats object and enters them into the array where appropriate to display the difficulties horizontally.
+            for(difficulty in stats){
+                table[0].push(difficulty.toUpperCase())
+                table[0].push(' ')
+                for(let [stat, value] of Object.entries(stats[difficulty])){
+                    table[row][column] = stat
+                    table[row][column+1] = value
+                    row++
+                }
+                column ++
+                column ++
+                row = 1
+            }
+            return table
+        }
+
+        //Contains the processed stats to parse into a table.
+        let stats = Player.processStats(mainInterface.player)
+
+        //Config object for logging the table of stats.
+        //****add more lines for medium and hard once I know the number of stats displayed on each */
+        const config = {
+            spanningCells: [
+              { col: 0, row: 0, colSpan: 2, alignment: 'center'},
+              { col: 2, row: 0, colSpan: 2, alignment: 'center'},
+              { col: 4, row: 0, colSpan: 2, alignment: 'center'}
+            ],
+            header: {alignment: 'center', content: `${name}'s Stats`}
+          };
+
+        //Logs a table of the processed stats.
+        console.log(table(createStatsTable(stats), config))
+        // console.log(createStatsTable(stats))
+        
+        //Random flavor dialog.
+        let options = [
+            "Not too bad, but not quite as good as me.",
+            "That's pretty good. If you keep it up, you might be almost as good as me some day."
+        ]
+        this.randomSelector(options)
     }
 };
 //***NEXT print play field can be a helper method in the create frame method. Print play field can take an x and y argument to position it from top left to bottom right, it can be done using " " */
@@ -1140,8 +1194,10 @@ let mainInterface = {
             this.next();
             this.setFieldAndGame();
             this.startGame();
-        }else if(answer === "view your stats"){
-//**********add logic here to show stats */
+        }else if(answer === "check your stats"){
+            dialogs.stats()
+            this.next()
+            this.mainMenu()
 
         }else if(answer === "exit"){
             this.exit();
