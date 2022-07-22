@@ -1,3 +1,4 @@
+//make sure stats and main menu isnt recursive
 
 
 //make an asset field class? Which takes the array as the constructor to contain all that logic in the assets?
@@ -56,28 +57,8 @@
 
 // Inspired by maze craze
 
-
-
 // could be fun to have a biger field, and a snake thats chasing you or a bird 
-// could add a loop to go through all assets and call their draws, would need a state draw: true
-// bigger hat ˄
 
-//ADDING NEW ASSETS
-    //Create asset in assets.js as a class.
-    //Add any new instances to game.assets.
-    //Add default individual state object to full state object via settings.
-    //The first object in settings will be drawn as the top layer, with all subsequent objects drawn below in decending order.
-
-    //When adding a new asset the following are required.
-    //State setting offset. Set to an object such as {X:1, y:2}.
-    //State setting frame. Set to 1. Even if there is only one frame, as it is needed for the loop to recognize and draw.
-    //State setting draw. Set either to true or false.
-    //Asset property frame1. Set to a 2D array consisting of what will be drawn. Further frames can be numbered frame2, frame3, etc.
-    
-    //The draw.stringToArray() method can be used to make the array for asset objects.
-    //Update methods are optional.
-    //Update methods should accept two args: state which is the full state object, followed by name which will be the name of the object (used for accessing it's own individual state).
-    //Color state is optional and default is white.
 
 
 //Requires necessary modules.
@@ -135,6 +116,7 @@ class Player{
 
     firstLoss = false;
     
+    //Processes the stats of a player.
     static processStats(player){
         let processedStats = {};
         for(let difficulty in player.stats){
@@ -148,6 +130,53 @@ class Player{
         }
         return processedStats;
     };
+
+    //Method to create a table of all the stats for each difficulty.
+    static createProcessedStatsTable(player){
+        let stats = Player.processStats(player);   
+
+        //Helper function to create an array from the processedStats object. 
+        //The stat arg should be the object prepared by Player.processStats(player).
+        let createStatsTableArray = function(stats){
+            //Used to fill with stats.
+            let statsTable = [[]];
+            for(let key in stats.easy){
+                statsTable.push([]);
+            }
+            //Used to track the colums and rows where stats will be entered.
+            let column = 0;
+            let row = 1;
+            //Parses the stats object and enters them into the array where appropriate to display the difficulties horizontally.
+            for(let difficulty in stats){
+                statsTable[0].push(difficulty.toUpperCase());
+                statsTable[0].push(' ');
+                for(let [stat, value] of Object.entries(stats[difficulty])){
+                    statsTable[row][column] = stat;
+                    statsTable[row][column+1] = value;
+                    row++;
+                }
+                column ++;
+                column ++;
+                row = 1;
+            }
+            return statsTable;
+        }
+
+        //Contains the processed stats to parse into a table.
+        
+
+        //Config object for logging the table of stats.
+        const config = {
+            spanningCells: [
+              { col: 0, row: 0, colSpan: 2, alignment: 'center'},
+              { col: 2, row: 0, colSpan: 2, alignment: 'center'},
+              { col: 4, row: 0, colSpan: 2, alignment: 'center'}
+            ],
+            header: {alignment: 'center', content: `${player.name}'s Stats`}
+          };
+
+        return table(createStatsTableArray(stats), config);
+    }
 };
 
 //Sets ifficulty settings and default settings.
@@ -1015,50 +1044,10 @@ You can use W, A, S, D to move around and look for it.`
         let options = ["Yikes, I really hope you make it out alive!"];
         this.randomSelector(options);
     },
-    stats(difficulty){
-        let name = mainInterface.player.name;        
-        //Helper function to create a table of all the stats for each difficulty.
-        //The stat arg should be the object prepared by Player.processStats(player).
-        let createStatsTable = function(stats){
-            //Used to fill with stats.
-            let table = [[],[],[],[],[],[]]
-            //Used to track the colums and rows where stats will be entered.
-            let column = 0
-            let row = 1
-            //Parses the stats object and enters them into the array where appropriate to display the difficulties horizontally.
-            for(difficulty in stats){
-                table[0].push(difficulty.toUpperCase())
-                table[0].push(' ')
-                for(let [stat, value] of Object.entries(stats[difficulty])){
-                    table[row][column] = stat
-                    table[row][column+1] = value
-                    row++
-                }
-                column ++
-                column ++
-                row = 1
-            }
-            return table
-        }
-
-        //Contains the processed stats to parse into a table.
-        let stats = Player.processStats(mainInterface.player)
-
-        //Config object for logging the table of stats.
-        //****add more lines for medium and hard once I know the number of stats displayed on each */
-        const config = {
-            spanningCells: [
-              { col: 0, row: 0, colSpan: 2, alignment: 'center'},
-              { col: 2, row: 0, colSpan: 2, alignment: 'center'},
-              { col: 4, row: 0, colSpan: 2, alignment: 'center'}
-            ],
-            header: {alignment: 'center', content: `${name}'s Stats`}
-          };
-
-        //Logs a table of the processed stats.
-        console.log(table(createStatsTable(stats), config))
-        // console.log(createStatsTable(stats))
+    stats(){
+        console.log("")
         
+        console.log(Player.createProcessedStatsTable(mainInterface.player))
         //Random flavor dialog.
         let options = [
             "Not too bad, but not quite as good as me.",
@@ -1093,6 +1082,12 @@ let mainInterface = {
 
         //Loads the player list
         this.players = require("./players.json");
+
+        //Used to avoid recursion from mainMenu calling itself.
+        let mainMenuHandler = function(){
+            mainInterface.mainMenu()
+        }.bind(this)
+        eventEmitter.on("mainMenu", mainMenuHandler)
 
         //Increments totalMoves, updates the current game, and writes to playersJSON
         //Creates a handler for moves and adds it to the eventEmitter.
@@ -1148,7 +1143,7 @@ let mainInterface = {
             this.field = undefined;
             this.game = undefined;
 
-            this.mainMenu();
+            this.mainMenu()
         }.bind(this);
         eventEmitter.on("win", winHandler);
 
@@ -1197,8 +1192,7 @@ let mainInterface = {
         }else if(answer === "check your stats"){
             dialogs.stats()
             this.next()
-            this.mainMenu()
-
+            eventEmitter.emit("mainMenu")
         }else if(answer === "exit"){
             this.exit();
         }
