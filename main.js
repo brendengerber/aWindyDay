@@ -1,78 +1,45 @@
+//make sure stats and main menu isnt recursive
+//Do the interview stuff
+
+//first hole makes the frame shift, make it less lines?
+
 
 //make an asset field class? Which takes the array as the constructor to contain all that logic in the assets?
 //make field and fence offsets populate automatically based on field size if possible
-//Make a settings propertie that is an array with the draw order, then loop through that with the main drawer
 //Add a note about transparent backgrounds
-//add clouds, could be fun to have it move across the screen and not stop for day or night, i.e. be the only state that doesnt reset somehow
-//make an asset that builds a margin that can be placed to hide things like clouds that go off screen
 //add logic to not error if offset is outside frame size.
-
-
-// NEXT
-// make an assets module to store them.
-// include class for stars so that i can give them different flicker delays (the delay will be an arg for the constructor)
+//NEXT make possition sprite take care of being out of frame too, rather than draw frame, have it check if offset + width is longer than frame. Only works if assets are rectangular, probably should be anyway
 
 // NEXT 
-// Does the postioning method mutate the original?
-// Setting new position should be done in update (i.e. updating state), but actual positioning should be done in draw, since it is the act of drawing. 
 // should color and possition be methods on draw, or each asset?
 // maybe position sprite should not be a method of  each asset. Draw should loop through and draw each sprite (and possition them), based on the current state. That means move position sprite out of the asset. Should all be called using a loop in the composite stage. That way to add an object, you just have to add the object and the state, you dont have to updtade draw, position, and color too. Draw frame can loop through all assets, color them, and then possition/layer them. It will be a loop so that assets dont have to be called individually. The functions can take in the state object, and the asset array. Each asset it checks it's state. colors it, possitions it, and at the end draws it all.  state[asset].color can work for all of them
 
-// NEXT
-// /there will be an update and draw method that loops through the assets. update will call the update method inside the asset by using brackets for asset of assets, assets[asset].update. Don't call assets.house.update, like it is now, way harder to maintian as you wuold have to add a statement for each object rather than letting a loop do it.
-// should possition stay to act like a counter to update? A draw method for each asset could run color and possition and then return the final array which would be used in the loop to push to the final array which drawFrame would then draw.
 
 // FINAL
-// update will be a function that calls all the assets update methods, draw will be a function that calls all of the assets draw methods, adding them to an array which will then be composited using the draw method
+// update will be a function that calls all the assets update methods, draw will be a function that calls all of the assets draw methods, adding them to an array which will then be composited using the draw method.  Should draw be a method of each asset with position and color? could be nice symetry for calling all the update methods by a loop.
 // each draw method on the assets will consist of a possition call and color call. Both calls are methods of draw. Call color first inside of possition. Each take an array and return an array. Color returns a new version of the stock, which is the array arg for possition which returns a colored and possitioned.
-// can the color and possition be standard somehow?
 
 // For interview, might be good to eliminate hidden field. Make field an asset. Can create field based on the array made by generate valid field. But each space is an object, frame is grass, and a state for hole and hat as well. check move then checks the state of that object.
 // alternatively i can set the field asset rather than a field property. that field object can have a state object that is the current field and the hidden field. then check move checks the state to see the validity of the move. 
 // either way would want to add field to assets and remove the function that draws it in the draw current frame method.
+//**The way to do this is move field to assets. then have it build the field like the other assets (only need one class then), might be nice to move hidden field to the state and have isHole and isHat check the state. For sure move it to assets though and have it construct like an asset. And put the update method in the class directly too. */
+//Constructor sets frame asset rather than frame property
+//Make sure field still gets saved to gameStats, where is that happening?
 
-// draw current frame vs composite frame, should all be in draw? where does color go? How can I color and possitions without muitating the original?
-// add more assets like shimmering sun and fense. easy to do now that the logic is there, and makes it way nicer
 // add emotions convo, makes him more quarky and grumpy
-// simple stats logic
 // Make sure there is an explanation about hwo the sprites work using invisible margins
 
 // have an old offset and a new offset, if new offset = old offset, then do not redraw possitioned sprite. If update changes new offset, then redraw the sprite
-// should test how it works redrawing each time first though just to see, maybe it wont impact performance much
-
-//possible to set field and fense default offsets based on field size using constructor? Makes it easier to tweak difficulty
 
 // in a perfect world I would make each grass it's own object. Have the object contain if it has a hole. Then when landing on that grid space, would run a check to see. That would allow me to have larger assets.  Game could be a grid with the center of the objects on the grid point and the assets bounce from one to the next and check other objects with that state. could even make hitboxes that way by having their state contain several points connected to the middle.
-
-// reorganize shit
 
 // move field to assets?
 // can add a state for the order of layering, then have the loop adding them check that and add in order
 
 // Inspired by maze craze
 
-
-
 // could be fun to have a biger field, and a snake thats chasing you or a bird 
-// could add a loop to go through all assets and call their draws, would need a state draw: true
-// bigger hat ˄
 
-//ADDING NEW ASSETS
-    //Create asset in assets.js as a class.
-    //Add any new instances to game.assets.
-    //Add default individual state object to full state object via settings.
-    //The first object in settings will be drawn as the top layer, with all subsequent objects drawn below in decending order.
-
-    //When adding a new asset the following are required.
-    //State setting offset. Set to an object such as {X:1, y:2}.
-    //State setting frame. Set to 1. Even if there is only one frame, as it is needed for the loop to recognize and draw.
-    //State setting draw. Set either to true or false.
-    //Asset property frame1. Set to a 2D array consisting of what will be drawn. Further frames can be numbered frame2, frame3, etc.
-    
-    //The draw.stringToArray() method can be used to make the array for asset objects.
-    //Update methods are optional.
-    //Update methods should accept two args: state which is the full state object, followed by name which will be the name of the object (used for accessing it's own individual state).
-    //Color state is optional and default is white.
 
 
 //Requires necessary modules.
@@ -83,6 +50,7 @@ const hideCursor = require('hide-terminal-cursor');
 const showCursor = require("show-terminal-cursor");
 const _ = require('lodash');
 const assets = require('./assets.js');
+const {table} = require('table');
 
 //Sets game characters.
 const hat = '^';
@@ -125,29 +93,83 @@ class Player{
             totalDaysToWin: 0 
         },
     }
-        games = [];
+    games = [];
 
-        firstLoss = false;
+    firstLoss = false;
     
+    //Processes the stats of a player.
+    //Stats can be added without affecting createProcessdStatsTable method.
     static processStats(player){
         let processedStats = {};
-        for(difficulty in player.stats){
-            
+        for(let difficulty in player.stats){
+            processedStats[difficulty] = {
+                "Wins": player.stats[difficulty].wins,
+                "Unsolved": player.stats[difficulty].unsolved,
+                "Average Attempts to Win": (player.stats[difficulty].totalAttemptsToWin / player.stats[difficulty].wins).toFixed(2),
+                "Average Moves to Win": (player.stats[difficulty].totalMovesToWin / player.stats[difficulty].wins).toFixed(2),
+                "Average Days to Win": (player.stats[difficulty].totalDaysToWin / player.stats[difficulty].wins).toFixed(2)
+            }
         }
-
-
-//***add stats logic here */
-
-        
         return processedStats;
     };
+
+    //Method to create a table of all the stats for each difficulty.
+    //Uses processStats method.
+    static createProcessedStatsTable(player){
+        //Contains the processed stats to parse into a table.
+        let stats = Player.processStats(player);   
+
+        //Helper function to create an array from the processedStats object. 
+        //The stat arg should be the object prepared by Player.processStats(player).
+        let createStatsTableArray = function(stats){
+            //Used to create an array which will be filled with all processed stats for each difficulty.
+            let statsTable = [[]];
+            for(let key in stats.easy){
+                statsTable.push([]);
+            }
+            //Used to track the colums and rows where stats will be entered.
+            let column = 0;
+            let row = 1;
+            //Parses the stats object and enters them into the array where appropriate to display the difficulties horizontally.
+            for(let difficulty in stats){
+                statsTable[0].push(difficulty.toUpperCase());
+                statsTable[0].push(' ');
+                for(let [stat, value] of Object.entries(stats[difficulty])){
+                    statsTable[row][column] = stat;
+                    //Checks if there is a stat recorded or not.
+                    if(value === 'NaN'){
+                        statsTable[row][column+1] = "None"
+                    }else{
+                        statsTable[row][column+1] = value;
+                    }
+                    row++;
+                }
+                column ++;
+                column ++;
+                row = 1;
+            }
+            return statsTable;
+        };        
+
+        //Config object for logging the table of stats.
+        const config = {
+            spanningCells: [
+              { col: 0, row: 0, colSpan: 2, alignment: 'center'},
+              { col: 2, row: 0, colSpan: 2, alignment: 'center'},
+              { col: 4, row: 0, colSpan: 2, alignment: 'center'}
+            ],
+            header: {alignment: 'center', content: `${player.name}'s Stats`}
+          };
+
+        return table(createStatsTableArray(stats), config);
+    }
 };
 
 //Sets ifficulty settings and default settings.
 //Balancing and tweaks can be done here.
 let settings = {
     //Sets the dimensions of the frame.
-    frameDimensions: {x:63, y:19},
+    frameDimensions: {x:55, y:23},
 
     //Used to set the number of holes and field dimensions for each difficulty level as well as states dependent on difficulty.
     easy: {
@@ -157,10 +179,10 @@ let settings = {
         }, 
         states:{
             field:{
-                offset: {x:16, y:12},
+                offset: {x:16, y:14},
             },
             fence: {
-                offset: {x:14, y: 11}
+                offset: {x:14, y: 13}
             }  
         }
     },
@@ -171,10 +193,10 @@ let settings = {
         }, 
         states:{
             field: {
-                offset: {x:15, y:12}
+                offset: {x:15, y:14}
             },
             fence: {
-                offset: {x:13, y:11}
+                offset: {x:13, y:13}
 
             }  
         }
@@ -186,10 +208,10 @@ let settings = {
         }, 
         states:{
             field:{
-                offset: {x:13, y:12}
+                offset: {x:13, y:14}
             },
             fence: {
-                offset: {x:11, y:11}
+                offset: {x:11, y:13}
             }  
         }
     },
@@ -208,83 +230,124 @@ let settings = {
         tree: {
             draw: true,
             frame: 1,
-            offset: {x:37, y:1}
+            offset: {x:24, y:3}
         },
         cloud:{
             draw: true,
             frame: 1,
-            offset: {x:0, y:1},
+            offset: {x:55, y:3},
             //Used to reset the cloud after a full pass. Should be the same as offset.
-            initialOffset: {x:-10, y:1},
+            initialOffset: {x:55, y:3},
             color: '\x1b[97m',
             counter: 0
         },
         house:{
             draw: true,
             frame: 1,
-            offset: {x:15, y:5},
+            offset: {x:13, y:7},
             counter: 0
         },
+        //ok
         star1: {
             draw: false,
             color: '\x1b[97m',
             frame: 1,
-            offset: {x:11, y:3},
+            offset: {x:11, y:5},
             counter: 0 
         },
+        //move
         star2: {
             draw: false,
             color: '\x1b[97m',
             frame: 1,
-            offset: {x:31, y:5},
+            offset: {x:28, y:1},
             counter: 0
         },
+        //okay
         star3: {
             draw: false,
             color: '\x1b[97m',
             frame: 1,
-            offset: {x:15, y:6},
+            offset: {x:20, y:7},
             counter: 0
         },
+        //ok
         star4: {
             draw: false,
             color: '\x1b[97m',
             frame: 1,
-            offset: {x:7, y:7},
+            offset: {x:7, y:9},
             counter: 0
         },
         star5: {
             draw: false,
             color: '\x1b[97m',
             frame: 1,
-            offset: {x:29, y:7},
+            offset: {x:11, y:1},
             counter: 0
         },
+        //ok
         star6: {
             draw: false,
             color: '\x1b[97m',
             frame: 1,
-            offset: {x:4, y:1},
+            offset: {x:4, y:3},
             counter: 0
         },
         star7: {
             draw: false,
             color: '\x1b[97m',
             frame: 1,
-            offset: {x:23, y:2},
+            offset: {x:21, y:4},
+            counter: 0
+        },
+        star8:{
+            draw: false,
+            color: '\x1b[97m',
+            frame: 1,
+            offset: {x:41, y:2},
+            counter: 0
+        },        
+        star9:{
+            draw: false,
+            color: '\x1b[97m',
+            frame: 1,
+            offset: {x:49, y:1},
+            counter: 0
+        },
+        star10:{
+            draw: false,
+            color: '\x1b[97m',
+            frame: 1,
+            offset: {x:46, y:6},
+            counter: 0
+        },
+
+        star11:{
+            draw: false,
+            color: '\x1b[97m',
+            frame: 1,
+            offset: {x:52, y:7},
+            counter: 0
+        },
+        star12:{
+            draw: false,
+            color: '\x1b[97m',
+            frame: 1,
+            offset: {x:45, y:10},
             counter: 0
         },
         horizon: {
             draw: true,
             frame: 1,
-            offset: {x:0, y:9}
+            offset: {x:0, y:11}
         },
         celestialBody: {
             draw: true,
             frame: 1,
-            offset: {x:1, y:8},
+            offset: {x:1, y:10},
             //Used to reset the body after a full arch. Should be the same as offset.
-            initialOffset: {x:1, y:8},
+            initialOffset: {x:1, y:10},
             counter: 0,
             steps: 0,
             direction: 'rise'
@@ -292,7 +355,7 @@ let settings = {
         grass: {
             draw: true,
             frame: 1,
-            offset: {x:2, y:11}
+            offset: {x:2, y:13}
         },
         time: {
             current: 'day'
@@ -314,7 +377,7 @@ class Game {
         //Adds playField to assets.
         this.assets.field.frame1 = this.field.playField
         
-        //Adds fence to assets.
+        //Adds a fence that fits the field to assets.
         this.assets.fence = new assets.Fence(this.assets.field.frame1[0].length, this.assets.field.frame1.length)
     };
     get field(){
@@ -347,13 +410,18 @@ class Game {
         celestialBody: new assets.CelestialBody(),
         tree: new assets.Tree(),
         house: new assets.House(30),
-        star1: new assets.Star(40, 2),
-        star2: new assets.Star(80, 2),
+        star1: new assets.Star(360, 2),
+        star2: new assets.Star(400, 2),
         star3: new assets.Star(120, 2),
         star4: new assets.Star(160, 2),
         star5: new assets.Star(200, 2),
-        star6: new assets.Star(240, 2),
-        star7: new assets.Star(260, 2),
+        star6: new assets.Star(440, 2),
+        star7: new assets.Star(280, 2),
+        star8: new assets.Star(320, 2),
+        star9: new assets.Star(40, 2),
+        star10: new assets.Star(80, 2),
+        star11: new assets.Star(480, 2),
+        star12: new assets.Star(240, 2),
         horizon: new assets.Horizon(settings.frameDimensions.x),
         grass: new assets.Grass(),
         cloud: new assets.Cloud(settings.frameDimensions.x)
@@ -369,24 +437,27 @@ class Game {
         }
     }
     
-    //Used to composite the frame and draw it.
+    //Composits all of the assets into a single frame and draws it.
     //Loops through all assets and calls draw.possitionSprite() and draw.color() eliminating the need for individual asset methods.
-    //**Add color with positionSprite, make sure to do a check if it is defined first though */
     drawCurrentFrame(){
         let frameAssets = [];
-        //Draws all assets.
+        //Loops through all assets present in state.
+        //The first asset listed in state will be the top layer and the following assets will be drawn under the top layer in decending order.
         for(let key of Object.keys(this.state)){
-            //Checks if current asset should be drawn.
+            //Checks if current asset should be drawn, processes position and color if so, and adds it to the array to composite.
             if(this.state[key].draw){
-                //Adds the sprite to the array to composite.
+                //Possitions the sprite.
                 let possitionedColoredArray = draw.possitionSprite(this.assets[key]["frame"+this.state[key].frame], this.state[key].offset);
+                //Colors the array if necessary.
                 if(this.state[key].color){
                     possitionedColoredArray = draw.colorSprite(possitionedColoredArray, this.state[key].color);
                 }
                 frameAssets.push(possitionedColoredArray);
             }
         }
+        //Creates the composited frame.
         let frameArray = draw.createFrame(frameAssets, settings.frameDimensions);
+        //Transforms the frame array to a string and logs it.
         let frameString = draw.arrayToString(frameArray);
         console.log(frameString);
     };
@@ -394,7 +465,6 @@ class Game {
     //Contains game logic.
     playGame(){
         console.clear();
-        
         let gameOver = false;
         let x = 0;
         let y = 0;
@@ -811,6 +881,10 @@ class Field {
         }
         return false;
     };
+    //Used to update during the game loop.
+    update(name, state){
+        assets.updateColorByTime(name, state)
+    }
 };
 
 
@@ -853,7 +927,7 @@ let prompts = {
     },
 
     mainMenu(){
-        return this.formattedPrompt(["Play a game", "Check your Stats", "Exit"])
+        return this.formattedPrompt(["Play a game", "Check Your Stats", "Exit"])
     },
 
     mood(){
@@ -908,8 +982,8 @@ let prompts = {
         console.log("So, what did you say your name was?");
     },
 
-    returningPlayer(){
-        let name = mainInterface.player.name;
+    returningPlayer(player){
+        let name = player.name;
         let options = [
             `Oh ${name}, you gave me quite the fright!`, 
             `Yikes ${name}, you startled me!`, 
@@ -918,8 +992,8 @@ let prompts = {
         this.randomSelector(options);
     },
 
-    newPlayer(){
-        let name = mainInterface.player.name;
+    newPlayer(player){
+        let name = player.name;
         console.log(`Why ${name}, I don't believe I've had the pleasure. It's very nice to meet you!`);
     },
 
@@ -986,7 +1060,7 @@ You can use W, A, S, D to move around and look for it.`
             "I knew you had it in you!",
             "This is the best day ever!",
             "That's really fantastic!" 
-    ];
+        ];
         this.randomSelector(options);
     },
 
@@ -1007,6 +1081,16 @@ You can use W, A, S, D to move around and look for it.`
     hard(){
         let options = ["Yikes, I really hope you make it out alive!"];
         this.randomSelector(options);
+    },
+    stats(player){
+        console.log("")
+        console.log(Player.createProcessedStatsTable(player))
+        let options = [
+            "Not too bad, but not quite as good as me.",
+            "Not quite as good as me, but I'm sure you did your best",
+            "That's pretty good. If you keep it up, you might be almost as good as me some day."
+        ]
+        this.randomSelector(options)
     }
 };
 //***NEXT print play field can be a helper method in the create frame method. Print play field can take an x and y argument to position it from top left to bottom right, it can be done using " " */
@@ -1035,6 +1119,12 @@ let mainInterface = {
 
         //Loads the player list
         this.players = require("./players.json");
+
+        //Used to avoid recursion from mainMenu calling itself.
+        let mainMenuHandler = function(){
+            mainInterface.mainMenu()
+        }.bind(this)
+        eventEmitter.on("mainMenu", mainMenuHandler)
 
         //Increments totalMoves, updates the current game, and writes to playersJSON
         //Creates a handler for moves and adds it to the eventEmitter.
@@ -1090,7 +1180,7 @@ let mainInterface = {
             this.field = undefined;
             this.game = undefined;
 
-            this.mainMenu();
+            this.mainMenu()
         }.bind(this);
         eventEmitter.on("win", winHandler);
 
@@ -1136,9 +1226,10 @@ let mainInterface = {
             this.next();
             this.setFieldAndGame();
             this.startGame();
-        }else if(answer === "view your stats"){
-//**********add logic here to show stats */
-
+        }else if(answer === "check your stats"){
+            dialogs.stats(this.player)
+            this.next()
+            eventEmitter.emit("mainMenu")
         }else if(answer === "exit"){
             this.exit();
         }
@@ -1175,9 +1266,9 @@ let mainInterface = {
         console.clear();
         if(name){
             if(this.loadPlayer(name)){
-                dialogs.returningPlayer();
+                dialogs.returningPlayer(this.player);
             }else{
-                dialogs.newPlayer();
+                dialogs.newPlayer(this.player);
             }
             //Sets the playerIndex.
             this.playerIndex = this.players.findIndex(player =>  player.name === this.player.name);

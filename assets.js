@@ -1,4 +1,20 @@
-//Requires necessary moduals. 
+//ADDING NEW ASSETS
+    //Create asset in assets.js as a class.
+    //Add any new instances to game.assets.
+    //Add default individual state object to full state object via settings.
+    //The first object in settings will be drawn as the top layer, with all subsequent objects drawn below in decending order.
+
+    //When adding a new asset the following are required.
+    //State setting offset. Set to an object such as {X:1, y:2}.
+    //State setting frame. Set to 1. Even if there is only one frame, as it is needed for the loop to recognize and draw.
+    //State setting draw. Set either to true or false.
+    //Asset property frame1. Set to a 2D array consisting of what will be drawn. Further frames can be numbered frame2, frame3, etc.
+    
+    //The draw.stringToArray() method can be used to make the array for asset objects.
+    //Update methods are optional.
+    //Update methods should accept two args: state which is the full state object, followed by name which will be the name of the object (used for accessing it's own individual state).
+    //Color state is optional and default is white.
+
 const eventEmitter  = require('./eventEmitter.js');
 
 //Helper function to change the color of an asset based on the time of day (light or dark).
@@ -54,7 +70,7 @@ module.exports.Star = class{
     };
 };
 
-module.exports.House = class{
+module.exports.House1 = class{
     //Argument is entered as integers for the number of desired frames.
     constructor(frameDuration){
         this._frameDuration = frameDuration;
@@ -97,7 +113,7 @@ module.exports.House = class{
     };
 }
 
-module.exports.House2 = class{
+module.exports.House = class{
     //Argument is entered as integers for the number of desired frames.
     constructor(frameDuration){
         this._frameDuration = frameDuration;
@@ -106,21 +122,21 @@ module.exports.House2 = class{
         return this._frameDruation;
     };
     frame1 = [
-        ["blank","blank","blank","blank","blank","blank","blank","blank","blank","~"],
-        ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
-        ["blank","blank","blank","blank","blank","~","blank","blank","blank","blank"],
-        ["blank","blank","_","_","|","|","blank","blank","blank","blank"],
-        ["blank","/","/","/","\\","\\","\\"],
-        ["blank","|"," ","[","]"," ","|","blank","blank","blank","blank"]
+        ["~","blank","blank","blank","blank","blank",],
+        ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
+        ["blank","blank","blank","blank","~","blank","blank","blank","blank"],
+        ["blank","blank","blank","blank","|","|","_","_","blank","blank","blank","blank"],
+        ["blank","blank","blank","/","/","/","\\","\\","\\"],
+        ["blank","blank","blank","|"," ","[","]"," ","|","blank","blank","blank","blank"]
     ];
 
     frame2 = [                
-        ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
-        ["blank","blank","blank","blank","blank","blank","blank","~","blank","blank"],
-        ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
-        ["blank","blank","_","_","|","|","blank","blank","blank","blank"],
-        ["blank","/","/","/","\\","\\","\\"],
-        ["blank","|"," ","[","]"," ","|","blank","blank","blank","blank"]
+        ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
+        ["blank","blank","blank","~","blank","blank"],
+        ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
+        ["blank","blank","blank","blank","|","|","_","_","blank","blank","blank","blank"],
+        ["blank","blank","blank","/","/","/","\\","\\","\\"],
+        ["blank","blank","blank","|"," ","[","]"," ","|","blank","blank","blank","blank"]
     ];
 
     //The state argument should be a state object for the specific object (as opposed to the full state object).
@@ -163,14 +179,14 @@ module.exports.Tree = class{
 
 module.exports.Grass = class{
     frame1 = [
-        [" ","\\","/"," "," "," "," ","\\"," "," "," ","/"," "," "," "," "," "," "," "," "," "," "," ","\\"," "," "," "," "," ","\\","/"],
-        [" "," "," ","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","/"],
-        [" "," "," "," "," "," ","\\"," "," "," ","\\","/"," "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," ","\\"," "," "," "," "," "," ","/"],
-        ["\\","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," "," "," "," "],
-        [" "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","\\"," "," "," "," "," "," "," "," ","/"],
-        [" "," ","\\"," "," "," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," "," "," "," "," ","\\"],
-        [" "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," "," ","\\"," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," ","\\"],
-        [" ","/"," "," "," "," ","\\","/"," "," "," "," ","\\"," "," ","\\","/"," "," "," "," "," "," ","\\"," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," ","/"],
+        [" ","\\","/"," "," "," "," ","\\"," "," "," ","/"," "," "," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," "," "," ","\\","/"," "," "," ","/"," "," "," "," "," "," ","\\"," "," "," ","/"],
+        [" "," "," ","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," ","\\","/"],
+        [" "," "," "," "," "," ","\\"," "," "," ","\\","/"," "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," ","\\"," "," "," "," "," "," "," "," "," ","\\","/"],
+        ["\\","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," ","/"," "," "," ","\\","/"," "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "],
+        [" "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","\\"," "," "," "," "," "," "," "," "," "," ","/"," "," ","\\","/"," "," "," "," "," "," ","\\"],
+        [" "," ","\\"," "," "," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," "," "," "," "," "," "," "],
+        [" "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," "," ","\\"," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," ","\\"," "," "," "," "," "," "," "," ","/"],
+        [" ","/"," "," "," "," ","\\","/"," "," "," "," ","\\"," "," ","\\","/"," "," "," "," "," "," ","\\"," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," ","\\","/"," "," "," "," "],
         [],
         []
     ];
@@ -257,17 +273,17 @@ module.exports.CelestialBody = class{
         //Controls the initial ascent.        
         if(state[name].counter === delay && state[name].direction === 'rise'){
             state[name].offset.x = state[name].offset.x + 2;
-            state[name].offset.y = state[name].offset.y - 1;
+            state[name].offset.y = state[name].offset.y - 2;
             state[name].counter = 0;
             state[name].steps ++;
             //Changes directtion after desired steps are reached.
-            if(state[name].steps === 2){
+            if(state[name].steps === 3){
                 state[name].steps = 0;
                 state[name].direction = 'up';
             }
         //Controlls the final ascent.    
         }else if(state[name].counter === delay && state[name].direction === 'up'){
-            state[name].offset.x = state[name].offset.x + 3;
+            state[name].offset.x = state[name].offset.x + 4;
             state[name].offset.y = state[name].offset.y - 1;
             state[name].counter = 0;
             state[name].steps ++;
@@ -278,7 +294,7 @@ module.exports.CelestialBody = class{
             }
         //Controlls paralell movement    
         }else if(state[name].counter === delay && state[name].direction === 'parallel'){
-            state[name].offset.x = state[name].offset.x + 3;
+            state[name].offset.x = state[name].offset.x + 8;
             state[name].counter = 0;
             state[name].steps ++;
             //Changes direction after desired steps are reached.
@@ -288,7 +304,7 @@ module.exports.CelestialBody = class{
             }
         //Controlls the descent.
         }else if(state[name].counter === delay && state[name].direction === 'down'){
-            state[name].offset.x = state[name].offset.x + 3;
+            state[name].offset.x = state[name].offset.x + 4;
             state[name].offset.y = state[name].offset.y + 1;
             state[name].counter = 0;
             state[name].steps ++;
@@ -300,11 +316,11 @@ module.exports.CelestialBody = class{
         //Controlls the final decent.    
         }else if(state[name].counter === delay && state[name].direction === 'set'){
             state[name].offset.x = state[name].offset.x + 2;
-            state[name].offset.y = state[name].offset.y + 1;
+            state[name].offset.y = state[name].offset.y + 2;
             state[name].counter = 0;
             state[name].steps ++;
             //Changes directtion after desired steps are reached.
-            if(state[name].steps === 3){
+            if(state[name].steps === 4){
                 state[name].steps = 0;
                 state[name].direction = 'rise';
                 state[name].offset = initialOffset;
@@ -324,23 +340,22 @@ module.exports.CelestialBody = class{
     }
 }
 
-//Takes an integer for the travel distance before resetting (likely the frame x dimension)/
 module.exports.Cloud = class{
-    constructor(traveDistance){
-        this.traveDistance = traveDistance
-    };
     frame1 = [
-        ["blank","blank","blank","blank","_","_","_"],
-        ["blank","_","_","(","_","_","_",")","_"],
-        ["(","_","_",")","_","_","_","_","_",")"],
+        //**need to reverse */
+        ["blank","blank","blank","_","_","_"],
+        ["blank","_","(","_","_","_",")","_","_"],
+        ["(","_","_","_","_","_","(","_","_",")"]
     ];
     update(name, state){
         updateColorByTime(name, state);
-        if(state[name].offset.x > this.traveDistance){
+        //Resets the cloud after it has moved completely out of frame on the left.
+        if(state[name].offset.x < -10){
             state[name].offset.x = state[name].initialOffset.x;
         }
+        //Moves the cloud to the left.
         if(state[name].counter === 5){
-            state[name].offset.x++;
+            state[name].offset.x--;
             state[name].counter = 0;
         }
         state[name].counter++;
