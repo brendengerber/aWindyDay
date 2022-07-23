@@ -1,19 +1,16 @@
 //make sure stats and main menu isnt recursive
 //Do the interview stuff
 
+//add or remove bind notes
+
 //first hole makes the frame shift, make it less lines?
 
-
-//make an asset field class? Which takes the array as the constructor to contain all that logic in the assets?
 //make field and fence offsets populate automatically based on field size if possible
-//Add a note about transparent backgrounds
-//add logic to not error if offset is outside frame size.
 //NEXT make possition sprite take care of being out of frame too, rather than draw frame, have it check if offset + width is longer than frame. Only works if assets are rectangular, probably should be anyway
 
 // NEXT 
 // should color and possition be methods on draw, or each asset?
 // maybe position sprite should not be a method of  each asset. Draw should loop through and draw each sprite (and possition them), based on the current state. That means move position sprite out of the asset. Should all be called using a loop in the composite stage. That way to add an object, you just have to add the object and the state, you dont have to updtade draw, position, and color too. Draw frame can loop through all assets, color them, and then possition/layer them. It will be a loop so that assets dont have to be called individually. The functions can take in the state object, and the asset array. Each asset it checks it's state. colors it, possitions it, and at the end draws it all.  state[asset].color can work for all of them
-
 
 // FINAL
 // update will be a function that calls all the assets update methods, draw will be a function that calls all of the assets draw methods, adding them to an array which will then be composited using the draw method.  Should draw be a method of each asset with position and color? could be nice symetry for calling all the update methods by a loop.
@@ -32,9 +29,6 @@
 // have an old offset and a new offset, if new offset = old offset, then do not redraw possitioned sprite. If update changes new offset, then redraw the sprite
 
 // in a perfect world I would make each grass it's own object. Have the object contain if it has a hole. Then when landing on that grid space, would run a check to see. That would allow me to have larger assets.  Game could be a grid with the center of the objects on the grid point and the assets bounce from one to the next and check other objects with that state. could even make hitboxes that way by having their state contain several points connected to the middle.
-
-// move field to assets?
-// can add a state for the order of layering, then have the loop adding them check that and add in order
 
 // Inspired by maze craze
 
@@ -178,7 +172,7 @@ let settings = {
             dimensions:{x:6, y:3}
         }, 
         states:{
-            field:{
+            fieldAsset:{
                 offset: {x:16, y:14},
             },
             fence: {
@@ -192,7 +186,7 @@ let settings = {
             dimensions:{x:8, y:5}
         }, 
         states:{
-            field: {
+            fieldAsset: {
                 offset: {x:15, y:14}
             },
             fence: {
@@ -207,7 +201,7 @@ let settings = {
             dimensions:{x:12, y:8}
         }, 
         states:{
-            field:{
+            fieldAsset:{
                 offset: {x:13, y:14}
             },
             fence: {
@@ -217,7 +211,7 @@ let settings = {
     },
     //Sets the default states not dependent on difficulty
     initialStates: {
-        field: {
+        fieldAsset: {
             draw: true,
             frame: 1,
             color: '\x1b[97m'
@@ -247,7 +241,6 @@ let settings = {
             offset: {x:13, y:7},
             counter: 0
         },
-        //ok
         star1: {
             draw: false,
             color: '\x1b[97m',
@@ -255,7 +248,6 @@ let settings = {
             offset: {x:11, y:5},
             counter: 0 
         },
-        //move
         star2: {
             draw: false,
             color: '\x1b[97m',
@@ -263,7 +255,6 @@ let settings = {
             offset: {x:28, y:1},
             counter: 0
         },
-        //okay
         star3: {
             draw: false,
             color: '\x1b[97m',
@@ -271,7 +262,6 @@ let settings = {
             offset: {x:20, y:7},
             counter: 0
         },
-        //ok
         star4: {
             draw: false,
             color: '\x1b[97m',
@@ -286,7 +276,6 @@ let settings = {
             offset: {x:11, y:1},
             counter: 0
         },
-        //ok
         star6: {
             draw: false,
             color: '\x1b[97m',
@@ -322,7 +311,6 @@ let settings = {
             offset: {x:46, y:6},
             counter: 0
         },
-
         star11:{
             draw: false,
             color: '\x1b[97m',
@@ -374,11 +362,11 @@ class Game {
         //Empty object is filled with settings thus leaving the original settings object in tact.
         this._state =  _.merge({}, settings.initialStates, settings[difficulty].states)
 
-        //Adds playField to assets.
-        this.assets.field.frame1 = this.field.playField
+        //Adds fieldAsset.
+        this.assets.fieldAsset = new assets.FieldAsset(this.field)
         
         //Adds a fence that fits the field to assets.
-        this.assets.fence = new assets.Fence(this.assets.field.frame1[0].length, this.assets.field.frame1.length)
+        this.assets.fence = new assets.Fence(this.assets.fieldAsset.frame1[0].length, this.assets.fieldAsset.frame1.length)
     };
     get field(){
         return this._field;
@@ -397,16 +385,7 @@ class Game {
         win: false,
     };
     //Contains all of the visual assets for the game.
-    //Assets should be an array of arrays. Use stringToArrray to convert multi line string art into an asset.
-    //Transparent characters should be 'blank' while ' ' is used for solid space. This allows for the layering of sprites.
     assets = {
-
-        //The frame1 property will be filled with the playField in the game constructor.
-        field: {
-            update(name, state){
-                assets.updateColorByTime(name, state)
-            }
-        },
         celestialBody: new assets.CelestialBody(),
         tree: new assets.Tree(),
         house: new assets.House(30),
@@ -517,10 +496,6 @@ class Game {
             eventEmitter.emit("win");
             outcome = "win";
         }.bind(this);
-        
-        //***What are these coments? */
-        //Play loop logic that is called to allow the player to move around the board. Changes playField to show path. Includes win/loss and out of bounds logic.
-        //Sets up board and prompts user for direction input.
         
         //Used to process user move input.
         //Checks for validity of move and then checks for win/loss conditions.
@@ -881,10 +856,6 @@ class Field {
         }
         return false;
     };
-    //Used to update during the game loop.
-    update(name, state){
-        assets.updateColorByTime(name, state)
-    }
 };
 
 
@@ -1342,7 +1313,7 @@ let mainInterface = {
     restartGame(){
         //Resets the play field to blank.
         this.game.field.resetPlayField();
-        this.game.assets.field.frame1 = this.game.field.playField
+        this.game.assets.fieldAsset.frame1 = this.game.field.playField
 
         //Calls the game logic.
         this.game.playGame();
@@ -1370,30 +1341,11 @@ let mainInterface = {
     }
 }
 
-
-
-
-//Draws an array in the console.  Offsets the top left corner of the array from the top left corner of the terminal.
-//Offset entered as an object containing x and y keys and their respective offsets.
-//**causes flicker */
-// let draw = function(array, offset={x:0, y:0}){
-//     let x = offset.x
-//     let y = offset.y
-//     for(let row of array){
-//         readline.cursorTo(process.stdout, x, y)
-//         y++
-//         for(let column of row){
-//             process.stdout.write(column)
-//         }
-//     }  
-// };
-
-let draw = {
-    //**Margins and empty space in the arrays should be 'blank' as this will essentially create sprites with transparent backgrounds that can be layered */
-    //**change asset arrays to have 'blank' instead of ' ' for empty space (i.e. not the walls) */
+let draw = {    
     //Takes an array of array sprites to composite into a single frame.
+    //Layers assets and treats "blank" as transparent which allows for transparent asset backgrounds and layering.
     //The first array will be the top layer, while the final array will be the bottom layer.
-    //Dimensions arg should be an object such as {x:, y:}. Anything outside of those dimensions will not be drawn.
+    //Dimensions arg should be an object such as {x:, y:}. Anything possitioned outside of those dimensions will not be drawn.
     //Default dimensions are the longest x and the longest y dimensions present in the array of sprites.
     createFrame: function(arrays, dimensions){
         let frame = [];
@@ -1421,7 +1373,6 @@ let draw = {
                 }
             }
         }
-
         //Uses the dimensions to build a blank frame filled with spaces.
         for(let y = yDimension; y > 0; y--){
             let row = [];
@@ -1467,7 +1418,6 @@ let draw = {
         }
         return frame;
     },
-
     //Used to create a string from the frame array.
     arrayToString: function(array){
         let string = ``;   
@@ -1479,6 +1429,7 @@ let draw = {
         }
         return string;
     },
+
     //Can be used to convert string art to an array for drawing. 
     //Create a multi line string with String.raw` and begin on the next line. This is important especially if the asset includes backslashes which would normall escape.
     stringToArray: function(string){
@@ -1493,7 +1444,8 @@ let draw = {
         array.shift();
         return JSON.stringify(array);
     },
-    //Adds 'blank' margins to possition a sprite correctly in the frame.
+
+    //Adds 'blank'/transparent margins to possition a sprite correctly in the frame.
     //Offset argument is an object such as {x:0, y:0}.
     //Moves the top left corner of the sprite from the top left of the frame according to the offset.
     //Negative coordinates are allowed and any portion of the sprite not in the frame will not be drawn.
@@ -1540,7 +1492,6 @@ let draw = {
                 }
             }
         }
-
         return possitionedSprite;
     },
 
@@ -1558,8 +1509,7 @@ let draw = {
                     coloredRow.push(color + character + '\x1b[0m');
                 }else{
                     coloredRow.push(character);
-                }
-                
+                } 
             }
             coloredSprite.push(coloredRow);
         }

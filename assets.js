@@ -1,5 +1,8 @@
 //ADDING NEW ASSETS
     //Create asset in assets.js as a class.
+    //Assets should be an array of arrays. Use draw.stringToArray to convert multi line string art into an asset.
+    //Transparent characters should be 'blank' while ' ' is used for solid space. This allows for the layering of sprites with transparent backgrounds.
+    
     //Add any new instances to game.assets.
     //Add default individual state object to full state object via settings.
     //The first object in settings will be drawn as the top layer, with all subsequent objects drawn below in decending order.
@@ -10,21 +13,11 @@
     //State setting draw. Set either to true or false.
     //Asset property frame1. Set to a 2D array consisting of what will be drawn. Further frames can be numbered frame2, frame3, etc.
     
-    //The draw.stringToArray() method can be used to make the array for asset objects.
     //Update methods are optional.
     //Update methods should accept two args: state which is the full state object, followed by name which will be the name of the object (used for accessing it's own individual state).
     //Color state is optional and default is white.
 
 const eventEmitter  = require('./eventEmitter.js');
-
-//Helper function to change the color of an asset based on the time of day (light or dark).
-module.exports.updateColorByTime = function(name, state){
-    if(state.time.current === 'day'){
-        state[name].color = '\x1b[97m';
-    }else if(state.time.current === 'night'){
-        state[name].color = '\x1b[90m';
-    }
-};
 
 //Same helper function for use within the module.
 let updateColorByTime = function(name, state){
@@ -34,6 +27,15 @@ let updateColorByTime = function(name, state){
         state[name].color = '\x1b[90m';
     }
 };
+
+module.exports.FieldAsset = class{
+    constructor(field){
+        this.frame1 = field.playField
+    }
+    update(name, state){
+        updateColorByTime(name, state)
+    }
+}
 
 module.exports.Star = class{
     //Arguments are entered as integers for the number of desired frames.
