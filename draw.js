@@ -1,3 +1,5 @@
+//Add note that assets must be rectangles
+
 module.exports = {    
     //Takes an array of array sprites to composite into a single frame.
     //Layers assets and treats "blank" as transparent which allows for transparent asset backgrounds and layering.
@@ -5,16 +7,16 @@ module.exports = {
     //Dimensions arg should be an object such as {x:, y:}. Anything possitioned outside of those dimensions will not be drawn.
     //Default dimensions are the longest x and the longest y dimensions present in the array of sprites.
     createFrame: function(arrays, dimensions){
-        let frame = [];
+        let frame;
         let xDimension = 0;
         let yDimension = 0;
         //Sets the frame's dimensions to the dimensions arg if one was given.
         if(dimensions !== undefined){
             xDimension = dimensions.x;
             yDimension = dimensions.y;
-        }
+        
         //Sets the frame's dimensions in case no dimensions arg was given.
-        if(dimensions === undefined){
+        }else{
             //Finds the array with the most columns and sets the dimension.
             for(let array of arrays){
                 for(let row of array){
@@ -30,34 +32,22 @@ module.exports = {
                 }
             }
         }
-        //Uses the dimensions to build a blank frame filled with spaces.
-        for(let y = yDimension; y > 0; y--){
-            let row = [];
-            for(let x = xDimension; x >0; x--){
-                row.push('blank');
-            }
-            frame.push(row);
-        }
+        //Uses the dimensions to build a transparent frame filled with "blank".
+        frame = Array.from({length: yDimension}, () => Array(xDimension).fill("blank"));        
+
         //Populates the frame with assets only on 'blank' spots, allowing for layering.
         for(let array of arrays){
             //Used to track which x,y location the loop is at so characters can be added if the location in the final frame is 'blank'.
             let yIndex = 0;
             let xIndex = 0;
             //Loops through the sprite.
-            for(let [i, row] of array.entries()){
-                //Checks if the character is to be drawn within the set y dimension of the frame.
-                if(i < yDimension){
-                    for(let [i, character] of row.entries()){
-                        //Checks if the character is to be drawn within the set x dimension of the frame.
-                        if(i < xDimension){
-                            //If the x,y location is blank, adds the character.
-                            if(frame[yIndex][xIndex] === 'blank'){
-                                frame[yIndex][xIndex] = character;
-                            }
-                            //Increments xIndex to start the next column.
-                            xIndex++;
-                        }
+            for(let row of array){
+                for(let character of row){
+                    if(frame[yIndex][xIndex] === 'blank'){
+                        frame[yIndex][xIndex] = character;
                     }
+                    //Increments xIndex to start the next column.
+                    xIndex++;
                 }
                 //Resets xIndex for the next row and increments yIndex to replace characters in the next row.
                 xIndex = 0;
@@ -101,12 +91,31 @@ module.exports = {
         array.shift();
         return JSON.stringify(array);
     },
+    //Helpful to add 'blank' space to the end of an array making it rectangular for drawing.
+    makeRectangular: function(array){
+        let rectangularArray = array;
+        let maxLength = 0;
+        for(let row of rectangularArray){
+            if(row.length > maxLength){
+                maxLength = row.length;
+            }
+        }
+        for(let row of rectangularArray){
+            if(row.length < maxLength){
+                for(let i = (maxLength - row.length); i > 0; i--){
+                    row.push('blank');
+                }
+            }
+        }
+        return JSON.stringify(rectangularArray);
+    },
 
     //Adds 'blank'/transparent margins to possition a sprite correctly in the frame.
     //Offset argument is an object such as {x:0, y:0}.
+    //Dimensions argument is an object such as {x:0, y:0} representing size of the final frame.
     //Moves the top left corner of the sprite from the top left of the frame according to the offset.
     //Negative coordinates are allowed and any portion of the sprite not in the frame will not be drawn.
-    possitionSprite(array, offset){
+    possitionSprite(array, offset, dimensions){
         let possitionedSprite = [];
         //Creates a copy of the sprite to add margins/possition to while leaving the original sprite in tact.
         for(let row of array){
@@ -115,14 +124,6 @@ module.exports = {
                 rowCopy.push(character);   
             }
             possitionedSprite.push(rowCopy);
-        }
-
-        //Possitions sprite if y offset is positive.
-        if(offset.y > 0){
-            //Adds a blank margin to the top to move the sprite down according to the offset.
-            for(let y = offset.y; y > 0; y--){
-                possitionedSprite.unshift(['blank']);
-            }
         }
 
         //Possitions sprite if x offset is positive.
@@ -134,21 +135,42 @@ module.exports = {
                 }
             }
         }
-        
-        //Possitions sprite if y offset is negative.
-        if(offset.y < 0){
-            for(let y = offset.y; y < 0; y++){
-                possitionedSprite.shift();
+
+        //Possitions sprite if y offset is positive.
+        if(offset.y > 0){
+            //Adds a blank margin to the top to move the sprite down according to the offset.
+            for(let y = offset.y; y > 0; y--){
+                //Adds a row of the proper length filled with 'blank'
+                possitionedSprite.unshift(Array.from({length: possitionedSprite[0].length}, () => "blank"))
             }
         }
+
         //Possitions sprite if x offset is negative.
         if(offset.x < 0){
             for(let row of possitionedSprite){
-                for(let x = offset.x; x < 0; x++){
-                    row.shift();
-                }
+                row.splice(0, Math.abs(offset.x));
             }
         }
+
+        //Possitions sprite if y offset is negative.
+        if(offset.y < 0){
+            row.splice(0,Math.abs(offset.y));
+        }
+
+        //Possitions the sprite if x offset brings part of the array out of the frame on the right.
+        if(possitionedSprite[0].length > dimensions.x){
+            let outOfFrame =  possitionedSprite[0].length - dimensions.x; 
+            for(let row of possitionedSprite){
+                row.splice(row.length - outOfFrame, outOfFrame);
+            }
+        }
+
+        //Possitions the sprite if y offset brings part of the array out of the frame on the bottom.
+        if(possitionedSprite.length > dimensions.y){
+            let outOfFrame =  possitionedSprite.length - dimensions.y;
+            possitionedSprite.splice(possitionedSprite.length - outOfFrame, outOfFrame);
+        }
+
         return possitionedSprite;
     },
 

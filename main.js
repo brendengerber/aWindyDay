@@ -429,7 +429,7 @@ class Game {
             //Checks if current asset should be drawn, processes position and color if so, and adds it to the array to composite.
             if(this.state[key].draw){
                 //Possitions the sprite.
-                let possitionedColoredArray = draw.possitionSprite(this.assets[key]["frame"+this.state[key].frame], this.state[key].offset);
+                let possitionedColoredArray = draw.possitionSprite(this.assets[key]["frame"+this.state[key].frame], this.state[key].offset, settings.frameDimensions);
                 //Colors the array if necessary.
                 if(this.state[key].color){
                     possitionedColoredArray = draw.colorSprite(possitionedColoredArray, this.state[key].color);
@@ -1374,4 +1374,20 @@ mainInterface.begin();
 
 // let game1 = new Game(field1)
 // game1.draw(field1.playField, 2, 2)
+// let tree = new assets.Tree()
+// let test = {frame1: [["blank",2,"blank",4],[1,2,3,4],[1,2,3,4],[1,2,3,4]]}
+// let test2 = {frame1: [[5,6]]}
+// test.frame1 = draw.possitionSprite(test.frame1, {x:1, y:1}, {x:5, y:5})
+
+// // console.log(draw.arrayToString(draw.possitionSprite(test.frame1, {x:1, y:1}, {x:2, y:2})))
+
+
+// // let array =[
+// //     ["blank","blank","blank","_","_","_"],
+// //     ["blank","_","(","_","_","_",")","_","_"],
+// //     ["(","_","_","_","_","_","(","_","_",")"]
+// // ]
+// // console.log(draw.makeRectangular(array))
+// console.log(test.frame1)
+// console.log(draw.createFrame([test.frame1, test2.frame1], {x:5,y:5}))
 

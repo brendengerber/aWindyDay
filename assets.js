@@ -1,6 +1,7 @@
 //ADDING NEW ASSETS
     //Create asset in assets.js as a class.
     //Assets should be an array of arrays. Use draw.stringToArray to convert multi line string art into an asset.
+    //Assets should be rectangular i.e., all rows should be the same length, and all columns should be the same length. The draw.makeRectangular method can help by adding blank space to the end of shorter rows. 
     //Transparent characters should be 'blank' while ' ' is used for solid space. This allows for the layering of sprites with transparent backgrounds.
     
     //Add any new instances to game.assets.
@@ -74,49 +75,6 @@ module.exports.Star = class{
     };
 };
 
-module.exports.House1 = class{
-    //Argument is entered as integers for the number of desired frames.
-    constructor(frameDuration){
-        this._frameDuration = frameDuration;
-    };
-    get frameDuration(){
-        return this._frameDruation;
-    };
-    frame1 = [
-        ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","~"],
-        ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
-        ["blank","blank","blank","blank","blank","blank","~","blank","blank","blank","blank"],
-        [" ","_","_","_","_","|","|"],
-        ["/","/","/","/","\\","\\","\\","\\"],
-        ["|","[","]"," "," ","[","]","|"],
-        ["|"," "," ","[","]"," "," ","|"]
-    ];
-
-    frame2 = [                
-        ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
-        ["blank","blank","blank","blank","blank","blank","blank","blank","~","blank","blank"],
-        ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
-        [" ","_","_","_","_","|","|"],
-        ["/","/","/","/","\\","\\","\\","\\"],
-        ["|","[","]"," "," ","[","]","|"],
-        ["|"," "," ","[","]"," "," ","|"]
-    ];
-    //State argument should be the full state object.
-    update(name, state){
-        //Updates counter and current frame in the state object, in charge of changing frames.
-        if(state[name].frame === 1 && state[name].counter === 30){
-            state[name].frame = 2;
-            state[name].counter = 0;
-        }else if(state[name].frame === 2 && state[name].counter === 30){
-            state[name].frame = 1;
-            state[name].counter = 0;
-        }else{
-            state[name].counter ++;
-        }
-        updateColorByTime(name, state);
-    };
-}
-
 module.exports.House = class{
     //Argument is entered as integers for the number of desired frames.
     constructor(frameDuration){
@@ -126,21 +84,21 @@ module.exports.House = class{
         return this._frameDruation;
     };
     frame1 = [
-        ["~","blank","blank","blank","blank","blank",],
-        ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
-        ["blank","blank","blank","blank","~","blank","blank","blank","blank"],
-        ["blank","blank","blank","blank","|","|","_","_","blank","blank","blank","blank"],
-        ["blank","blank","blank","/","/","/","\\","\\","\\"],
-        ["blank","blank","blank","|"," ","[","]"," ","|","blank","blank","blank","blank"]
+      ["~","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
+      ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
+      ["blank","blank","blank","blank","~","blank","blank","blank","blank","blank","blank","blank","blank"],
+      ["blank","blank","blank","blank","|","|","_","_","blank","blank","blank","blank","blank"],
+      ["blank","blank","blank","/","/","/","\\","\\","\\","blank","blank","blank","blank"],
+      ["blank","blank","blank","|"," ","[","]"," ","|","blank","blank","blank","blank"]
     ];
 
-    frame2 = [                
-        ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
-        ["blank","blank","blank","~","blank","blank"],
-        ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
-        ["blank","blank","blank","blank","|","|","_","_","blank","blank","blank","blank"],
-        ["blank","blank","blank","/","/","/","\\","\\","\\"],
-        ["blank","blank","blank","|"," ","[","]"," ","|","blank","blank","blank","blank"]
+    frame2 = [
+      ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
+      ["blank","blank","blank","~","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
+      ["blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank","blank"],
+      ["blank","blank","blank","blank","|","|","_","_","blank","blank","blank","blank","blank"],
+      ["blank","blank","blank","/","/","/","\\","\\","\\","blank","blank","blank","blank"],
+      ["blank","blank","blank","|"," ","[","]"," ","|","blank","blank","blank","blank"]
     ];
 
     //State argument should be the full state object.
@@ -159,22 +117,21 @@ module.exports.House = class{
     };
 };
 
-
 module.exports.Tree = class{
     frame1 = [
-        ["blank","blank","blank","blank","blank","blank","blank","blank","\\","/","blank","blank","/"],
-        ["blank","blank","blank","blank","|","/","blank","blank","/","/","blank","\\","\\","blank","/","/"],
-        ["blank","blank","=","=","\\","\\","/","blank","\\","\\","blank","blank","\\","v","/","-"],
-        ["blank","blank","blank","blank","blank","\\","\\","blank","/","/","blank","\\","|","|"],
-        ["blank","-","-","\\","\\","blank","\\","v","/","\\","\\","blank","/","/","=","=","/"],
-        ["blank","blank","blank","blank","blank","=","=","|","|","blank","\\","v","/"],
-        ["blank","blank","=","=","/","/","blank","\\","\\","blank","/","/","=","=","="],
-        ["blank","/","/","blank","blank","blank","blank","blank","|","V","|"," "," "," ","\\","\\","="],
-        ["blank","blank","blank","blank","blank","blank","blank","blank","|"," ","|"],
-        ["blank","blank","blank","blank","blank","blank","blank","blank","|","O","|"],
-        ["blank","blank","blank","blank","blank","blank","blank","blank","|"," ","|"],
-        ["blank","blank","blank","blank","blank","blank","blank","blank","|"," ","|"],
-        ["blank","blank","blank","blank","blank","blank","blank","͡"," ","͡"," ","͡"]
+      ["blank","blank","blank","blank","blank","blank","blank","blank","\\","/","blank","blank","/","blank","blank","blank","blank"],
+      ["blank","blank","blank","blank","|","/","blank","blank","/","/","blank","\\","\\","blank","/","/","blank"],
+      ["blank","blank","=","=","\\","\\","/","blank","\\","\\","blank","blank","\\","v","/","-","blank"],
+      ["blank","blank","blank","blank","blank","\\","\\","blank","/","/","blank","\\","|","|","blank","blank","blank"],
+      ["blank","-","-","\\","\\","blank","\\","v","/","\\","\\","blank","/","/","=","=","/"],
+      ["blank","blank","blank","blank","blank","=","=","|","|","blank","\\","v","/","blank","blank","blank","blank"],
+      ["blank","blank","=","=","/","/","blank","\\","\\","blank","/","/","=","=","=","blank","blank"],
+      ["blank","/","/","blank","blank","blank","blank","blank","|","V","|"," "," "," ","\\","\\","="],
+      ["blank","blank","blank","blank","blank","blank","blank","blank","|"," ","|","blank","blank","blank","blank","blank","blank"],
+      ["blank","blank","blank","blank","blank","blank","blank","blank","|","O","|","blank","blank","blank","blank","blank","blank"],
+      ["blank","blank","blank","blank","blank","blank","blank","blank","|"," ","|","blank","blank","blank","blank","blank","blank"],
+      ["blank","blank","blank","blank","blank","blank","blank","blank","|"," ","|","blank","blank","blank","blank","blank","blank"],
+      ["blank","blank","blank","blank","blank","blank","blank","͡"," ","͡"," ","͡","blank","blank","blank","blank","blank"]
     ];
     update(name, state){
         updateColorByTime(name, state);
@@ -183,16 +140,16 @@ module.exports.Tree = class{
 
 module.exports.Grass = class{
     frame1 = [
-        [" ","\\","/"," "," "," "," ","\\"," "," "," ","/"," "," "," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," "," "," ","\\","/"," "," "," ","/"," "," "," "," "," "," ","\\"," "," "," ","/"],
-        [" "," "," ","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","\\","/"],
-        [" "," "," "," "," "," ","\\"," "," "," ","\\","/"," "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," ","\\"," "," "," "," "," "," "," "," "," "," ","\\","/"],
-        ["\\","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," ","/"," "," "," ","\\","/"," "," "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "],
-        [" "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","\\"," "," "," "," "," "," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," "],
-        [" "," ","\\"," "," "," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," ","/"," "," "," "," "," "," "," "," "," "," ","\\"],
-        [" "," "," "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," ","\\"," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," ","\\"," "," "," "," "," "," "," "," ","/"],
-        [" ","/"," "," "," "," ","\\","/"," "," "," "," "," "," "," ","\\"," "," "," "," "," "," "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," ","\\","/"," "," "," "," "],
-        [" "," "," "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," ","\\","/"," "," "," "," ","\\"," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," "," "," ","\\"," "],
-        [" "," ","\\","/"," "," "," "," ","\\"," "," "," "," "," ","\\","/"," "," "," "," "," "," "," ","/"," "," "," "," "," "," ","\\"," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," "," "," "," ","/"]
+      [" ","\\","/"," "," "," "," ","\\"," "," "," ","/"," "," "," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," "," "," ","\\","/"," "," "," ","/"," "," "," "," "," "," ","\\"," "," "," ","/"],
+      [" "," "," ","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","\\","/","blank","blank","blank","blank","blank","blank","blank"],
+      [" "," "," "," "," "," ","\\"," "," "," ","\\","/"," "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," ","\\"," "," "," "," "," "," "," "," "," "," ","\\","/"],
+      ["\\","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," ","/"," "," "," ","\\","/"," "," "," "," "," "," "," "," "," "," ","/","blank","blank","blank","blank"],
+      [" "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","\\"," "," "," "," "," "," "," "," "," "," "," "," "," "," ","\\","/","blank","blank","blank","blank","blank","blank","blank"],
+      [" "," ","\\"," "," "," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," ","/"," "," "," "," "," "," "," "," "," "," ","\\"],
+      [" "," "," "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," ","\\"," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," ","\\"," "," "," "," "," "," "," "," ","/","blank","blank","blank","blank","blank","blank"],
+      [" ","/"," "," "," "," ","\\","/"," "," "," "," "," "," "," ","\\"," "," "," "," "," "," "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," ","\\","/","blank"],
+      [" "," "," "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," ","\\","/"," "," "," "," ","\\"," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," "," "," ","\\","blank","blank","blank","blank","blank","blank"],
+      [" "," ","\\","/"," "," "," "," ","\\"," "," "," "," "," ","\\","/"," "," "," "," "," "," "," ","/"," "," "," "," "," "," ","\\"," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," "," "," "," ","/"]
     ];
     //State argument should be the full state object.
     update(name, state){
@@ -349,10 +306,9 @@ module.exports.CelestialBody = class{
 
 module.exports.Cloud = class{
     frame1 = [
-        //**need to reverse */
-        ["blank","blank","blank","_","_","_"],
-        ["blank","_","(","_","_","_",")","_","_"],
-        ["(","_","_","_","_","_","(","_","_",")"]
+      ["blank","blank","blank","_","_","_","blank","blank","blank","blank"],
+      ["blank","_","(","_","_","_",")","_","_","blank"],
+      ["(","_","_","_","_","_","(","_","_",")"]
     ];
     //State argument should be the full state object.
     update(name, state){
