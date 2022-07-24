@@ -28,10 +28,13 @@ let updateColorByTime = function(name, state){
     }
 };
 
+//Simple and concise field asset based on the more robust Field class.
+//Used for drawing only, while robust Field class is used for processing changes and checking for win/loss/move validity.
 module.exports.FieldAsset = class{
     constructor(field){
         this.frame1 = field.playField
     }
+    //State argument should be the full state object.
     update(name, state){
         updateColorByTime(name, state)
     }
@@ -49,10 +52,9 @@ module.exports.Star = class{
     get flickerDuration(){
         return this._flickerDuration;
     };
-
     frame1 = [["*"]];
 
-    //The state argument should be a state object for the specific object (as opposed to the full state object).
+    //State argument should be the full state object.
     update(name, state){
         if(state[name].color === '\x1b[97m' && state[name].counter === this.flickerDelay){
             state[name].color = '\x1b[90m';
@@ -99,7 +101,7 @@ module.exports.House1 = class{
         ["|","[","]"," "," ","[","]","|"],
         ["|"," "," ","[","]"," "," ","|"]
     ];
-    //The state argument should be a state object for the specific object (as opposed to the full state object).
+    //State argument should be the full state object.
     update(name, state){
         //Updates counter and current frame in the state object, in charge of changing frames.
         if(state[name].frame === 1 && state[name].counter === 30){
@@ -141,7 +143,7 @@ module.exports.House = class{
         ["blank","blank","blank","|"," ","[","]"," ","|","blank","blank","blank","blank"]
     ];
 
-    //The state argument should be a state object for the specific object (as opposed to the full state object).
+    //State argument should be the full state object.
     update(name, state){
         //Updates counter and current frame in the state object, in charge of changing frames.
         if(state[name].frame === 1 && state[name].counter === 30){
@@ -182,16 +184,17 @@ module.exports.Tree = class{
 module.exports.Grass = class{
     frame1 = [
         [" ","\\","/"," "," "," "," ","\\"," "," "," ","/"," "," "," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," "," "," ","\\","/"," "," "," ","/"," "," "," "," "," "," ","\\"," "," "," ","/"],
-        [" "," "," ","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," ","\\","/"],
-        [" "," "," "," "," "," ","\\"," "," "," ","\\","/"," "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," ","\\"," "," "," "," "," "," "," "," "," ","\\","/"],
-        ["\\","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," ","/"," "," "," ","\\","/"," "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "],
-        [" "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","\\"," "," "," "," "," "," "," "," "," "," ","/"," "," ","\\","/"," "," "," "," "," "," ","\\"],
-        [" "," ","\\"," "," "," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," "," "," "," "," "," "," "],
-        [" "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," "," ","\\"," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," ","\\"," "," "," "," "," "," "," "," ","/"],
-        [" ","/"," "," "," "," ","\\","/"," "," "," "," ","\\"," "," ","\\","/"," "," "," "," "," "," ","\\"," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," ","\\","/"," "," "," "," "],
-        [],
-        []
+        [" "," "," ","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","\\","/"],
+        [" "," "," "," "," "," ","\\"," "," "," ","\\","/"," "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," ","\\"," "," "," "," "," "," "," "," "," "," ","\\","/"],
+        ["\\","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," ","/"," "," "," ","\\","/"," "," "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "],
+        [" "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","\\"," "," "," "," "," "," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," "],
+        [" "," ","\\"," "," "," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," ","/"," "," "," "," "," "," "," "," "," "," ","\\"],
+        [" "," "," "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," ","\\"," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," ","\\"," "," "," "," "," "," "," "," ","/"],
+        [" ","/"," "," "," "," ","\\","/"," "," "," "," "," "," "," ","\\"," "," "," "," "," "," "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," ","\\","/"," "," "," "," "],
+        [" "," "," "," "," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," ","\\","/"," "," "," "," ","\\"," "," "," "," "," "," ","\\","/"," "," "," "," "," "," "," "," "," ","\\"," "],
+        [" "," ","\\","/"," "," "," "," ","\\"," "," "," "," "," ","\\","/"," "," "," "," "," "," "," ","/"," "," "," "," "," "," ","\\"," "," "," "," "," "," "," ","/"," "," "," "," "," "," "," "," "," "," "," ","/"]
     ];
+    //State argument should be the full state object.
     update(name, state){
         updateColorByTime(name, state);
     };
@@ -210,6 +213,7 @@ module.exports.Horizon = class{
         }
         return frame;
     };
+    //State argument should be the full state object.
     update(name, state){
         updateColorByTime(name, state);
     };
@@ -260,6 +264,7 @@ module.exports.Fence = class{
         }
         return frame;
     };
+    //State argument should be the full state object.
     update(name, state){
         updateColorByTime(name, state);
     };
@@ -349,6 +354,7 @@ module.exports.Cloud = class{
         ["blank","_","(","_","_","_",")","_","_"],
         ["(","_","_","_","_","_","(","_","_",")"]
     ];
+    //State argument should be the full state object.
     update(name, state){
         updateColorByTime(name, state);
         //Resets the cloud after it has moved completely out of frame on the left.
