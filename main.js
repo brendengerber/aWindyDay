@@ -40,6 +40,7 @@
 const draw = require('./draw.js')
 const assets = require('./assets.js');
 const eventEmitter  = require('./eventEmitter.js');
+const tornadoAnimation = require('./tornadoAnimation.js')
 
 //Requires necessary modules.
 const fs = require('fs');
@@ -1196,10 +1197,7 @@ let mainInterface = {
             dialogs.excitedConfirmation();
             this.next();
             console.clear();
-            dialogs.intro();
-            this.next();
-            this.setFieldAndGame();
-            this.startGame();
+            draw.animate(tornadoAnimation, 20, [dialogs.intro, this.next.bind(this), this.setFieldAndGame.bind(this), this.startGame.bind(this)])
         }else if(answer === "check your stats"){
             dialogs.stats(this.player)
             this.next()
@@ -1304,6 +1302,7 @@ let mainInterface = {
     startGame(){ 
         //Increments the unsolved player stat while the game is being played, records the unsolved game, and writes to playersJSON.
         //Prevents player from force quitting to avoid an unsolved stat. Will be removed on win.
+        console.clear()
         this.player.stats[this.game.difficulty].unsolved ++;
         this.player.games.push({stats: this.game.gameStats, field: this.game.field.hiddenField});
         this.updatePlayersJSON();
