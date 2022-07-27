@@ -22,6 +22,8 @@
 //**The way to do this is move field to assets. then have it build the field like the other assets (only need one class then), might be nice to move hidden field to the state and have isHole and isHat check the state. For sure move it to assets though and have it construct like an asset. And put the update method in the class directly too. */
 //Constructor sets frame asset rather than frame property
 //Make sure field still gets saved to gameStats, where is that happening?
+        //**each grass could be an object with a hole property, drawn at it's coordinates, when the player moves there, the property is checked for hole, the gras is printed, but the player is printed over the grass kinda */
+
 
 // add emotions convo, makes him more quarky and grumpy
 // Make sure there is an explanation about hwo the sprites work using invisible margins
@@ -53,12 +55,7 @@ const hat = '^';
 const hole = 'O';
 const grass = '░';
 const path = ' ';
-// const grass = chalk.green('░');
-// const path = chalk.hex('#B87333').visible('░');
 const avatar = '8';
-// const avatar = '\u03EE';
-// const avatar = "𓀠";
-
 
 
 //Used to create a new player and to track stats.
@@ -356,7 +353,6 @@ let settings = {
 };
 
 //Contains game logic.
-//***maybe create a game info property containing stats and field, this will be what is written to the player games array, so that play field and _properties are not there */
 class Game {
     constructor(difficulty, field){
         this._difficulty = difficulty;
@@ -470,12 +466,10 @@ class Game {
                 this.field.playField[y][x] = hole;
                 gameOver = true;
                 lose();
-                // return true
             }else if(this.field.isHat(x,y)){
                 this.field.playField[y][x] = hat;
                 gameOver = true;
                 win();
-                // return true
             }
         }.bind(this);
 
@@ -583,10 +577,7 @@ class Game {
         
         //Draws the frames and checks game status.
         //.bind(this) is used to reference the mainInterface object's "this" rather than the function's "this".
-        //**This portion or part of it will likely move to animate, update, etc */ or use animate here, since it is still part of the game logic really
-        //**can the ending logic somehow be moved to update rather than draw?maybe the whole function updates() the frame, draws() and then checks, it could have a different name too, maybe mainLoop. look at 2nd game link for ideas*/
         //**Could be possible to write a while loop, starts logging the time, then at the end subtracts the amount of time that has passed for processing from the total time you want for each frame (1000/60) and waits for that time to elapse before continuing the loop again. */
-        //**each grass could be an object with a hole property, drawn at it's coordinates, when the player moves there, the property is checked for hole, the gras is printed, but the player is printed over the grass kinda */
         let mainLoop = function(){
             console.clear();
 
@@ -778,12 +769,13 @@ class Field {
     };
 
     //Generates a valid Field object and returns it.
+    //Dimensions arg should be an object such as {x:1, y:1}. 
     //While loop is used to avoid a recursive function that could reach a callstack overflow error.
-    static generateValidField(x, y, holes){
+    static generateValidField(dimensions, holes){
         let validField;
         let valid = false;
         while(!valid){
-            validField = Field.generateRandomField(x,y,holes);
+            validField = Field.generateRandomField(dimensions.x, dimensions.y, holes);
             valid = Field.validateField(validField);
         }
         return validField;
@@ -911,7 +903,7 @@ let prompts = {
 
     //Asks the user if they would like to play again on the same field. Then asks if they are ready. Returns Y or N.
     tryAgain(){
-        return this.formattedPrompt(["Try again", "Exit"])
+        return this.formattedPrompt(["Try again", "Check Your Stats", "Exit"])
     },
 
     //*****for symetry add logic for exit here!
@@ -1100,6 +1092,11 @@ let mainInterface = {
         }.bind(this)
         eventEmitter.on("mainMenu", mainMenuHandler)
 
+        let lossMenuHandler = function(){
+            mainInterface.lossMenu()
+        }.bind(this)
+        eventEmitter.on("lossMenu", lossMenuHandler)
+
         //Increments totalMoves, updates the current game, and writes to playersJSON
         //Creates a handler for moves and adds it to the eventEmitter.
         //.bind(this) is used to reference the mainInterface object's "this" rather than the function's "this".
@@ -1219,11 +1216,16 @@ let mainInterface = {
         console.clear();
         dialogs.tryAgain();
         let answer = prompts.tryAgain();
+        console.clear()
         if(answer === "try again"){
             console.clear();
             dialogs.excitedConfirmation();
             this.next();
             this.restartGame();
+        }else if(answer === "check your stats"){
+            dialogs.stats(this.player);
+            this.next();
+            eventEmitter.emit("lossMenu");
         }else if(answer === "exit"){
             this.exit(); 
         }
@@ -1274,33 +1276,14 @@ let mainInterface = {
         fs.writeFileSync("./players.json", JSON.stringify(this.players));
     },
 
-    //Helper method that sets the current field and game objects.
+    //Helper method that sets the current field and game objects of mainInterface.
     setFieldAndGame(){
         //Generates a valid field and game based on difficulty. Difficulty settings can be tweaked here.
-        //*****should generateValidField take in fieldDimensions.x and .y instead, makes changing difficulty in the future easier. Or is there a way to define difficulty somewhere outside of this as an interface property? */
-        //*like this.difficulty: {easy{x:3, y:3, holes: 2}}  Field.generateValidField(this[this.game.difficulty].x, this[this.game.difficulty].y, this[this.game.difficulty].y)
-        //*If changing difficulty, also need to change the next prompt in startGame, so it removes the proper amount of lines
         console.clear();
         dialogs.difficulty();
         let difficulty = prompts.difficulty();
-        this.field = Field.generateValidField(settings[difficulty].fieldSettings.dimensions.x, settings[difficulty].fieldSettings.dimensions.y,settings[difficulty].fieldSettings.holes)
+        this.field = Field.generateValidField(settings[difficulty].fieldSettings.dimensions, settings[difficulty].fieldSettings.holes)
         this.game = new Game (difficulty, this.field)
-        // if(difficulty){
-        //     switch(difficulty){
-        //         case "Easy":
-        //             this.field = Field.generateValidField(3,3,2);
-        //             this.game = new Game("Easy", this.field);
-        //             break;
-        //         case "Medium":
-        //             this.field = Field.generateValidField(5,5,6);
-        //             this.game = new Game("Medium", this.field);
-        //             break;
-        //         case "Hard": 
-        //             this.field = Field.generateValidField(7,7,11);
-        //             this.game = new Game("Hard", this.field);
-        //             break;
-        //     };
-        // }
     },
 
     //Starts the game.
@@ -1349,31 +1332,3 @@ let mainInterface = {
 
 
 mainInterface.begin();
-
-
-
-
-
-
-// let test = new Player("brenden")
-// let testArray = []
-// testArray.push(test)
-// console.log(testArray)
-
-// let testField = Field.generateValidField(5,5,5)
-
-// console.log(testField.hiddenField)
-
-//Starts game with basic field
-
-// let field1 = new Field([
-//     [grass, grass, hole, grass, grass, grass],
-//     [hole, grass, grass, grass, hole, grass],
-//     [hole, hole, hole, hole, grass, grass],
-//     [hat, grass, grass, grass, grass, hole]
-//   ]);
-
-//   field1.drawHiddenField()
-
-// let game1 = new Game(field1)
-// game1.draw(field1.playField, 2, 2)
