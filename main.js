@@ -1,14 +1,12 @@
-//if assets are square can frame do all the cutting rather than the offset? or offset could do both? could offset do both in the same way without any real refactor?
+//add first game of session and skip the explanation after that
+//can console.clear be moved into methods?
 
-//make sure stats and main menu isnt recursive
 //Do the interview stuff
 
 //add or remove bind notes
 
-//first hole makes the frame shift, make it less lines?
 
 //make field and fence offsets populate automatically based on field size if possible
-//NEXT make possition sprite take care of being out of frame too, rather than draw frame, have it check if offset + width is longer than frame. Only works if assets are rectangular, probably should be anyway
 
 // NEXT 
 // should color and possition be methods on draw, or each asset?
@@ -46,7 +44,7 @@ const tornadoAnimation = require('./tornadoAnimation.js')
 const fs = require('fs');
 const readlineSync = require('readline-sync');
 const hideCursor = require('hide-terminal-cursor');
-const showCursor = require("show-terminal-cursor");
+const showCursor = require('show-terminal-cursor');
 const _ = require('lodash');
 const {table} = require('table');
 
@@ -60,6 +58,8 @@ const path = ' ';
 const avatar = '8';
 // const avatar = '\u03EE';
 // const avatar = "𓀠";
+
+
 
 //Used to create a new player and to track stats.
 class Player{
@@ -998,8 +998,8 @@ You can use W, A, S, D to move around and look for it.`
         this.randomSelector(options);
     },
 
-    loseFirst(){
-        console.log("Oops, you fell in a hole!\nDid I forget to mention that there were holes?\nAlright, that one's on me.");
+    firstLoss(){
+        console.log("Oops, you fell in a hole! Did I forget to mention that there were holes? Alright, that one's on me.");
     },
 
     lose(){
@@ -1043,20 +1043,19 @@ You can use W, A, S, D to move around and look for it.`
         console.log("What difficulty would you like to play?");
     },
 
-    easy(){
-        let options = ["Alright, this should be a cinch!"];
-        this.randomSelector(options);
+    difficultyResponse(difficulty){
+        if(difficulty === 'easy'){
+            let options = ["Alright, this should be a cinch!"];
+            this.randomSelector(options);
+        }else if(difficulty === 'medium'){
+            let options = ["A noble selection."];
+            this.randomSelector(options);
+        }else if(difficulty === 'hard'){
+            let options = ["Yikes, I really hope you make it out alive!"];
+            this.randomSelector(options);
+        }
     },
 
-    medium(){
-        let options = ["A noble selection."];
-        this.randomSelector(options);
-    },
-
-    hard(){
-        let options = ["Yikes, I really hope you make it out alive!"];
-        this.randomSelector(options);
-    },
     stats(player){
         console.log("")
         console.log(Player.createProcessedStatsTable(player))
@@ -1164,7 +1163,7 @@ let mainInterface = {
         let lossHandler = function(){
             //Initiates dialog, options, and logic for the first ever loss by the player.
             if(this.player.firstLoss === false){
-                dialogs.loseFirst();
+                dialogs.firstLoss();
                 this.player.firstLoss = true;
                 this.updatePlayersJSON();
                 this.next();
@@ -1196,12 +1195,18 @@ let mainInterface = {
         if(answer === "play a game"){  
             dialogs.excitedConfirmation();
             this.next();
+            this.setFieldAndGame();
             console.clear();
-            draw.animate(tornadoAnimation, 20, [dialogs.intro, this.next.bind(this), this.setFieldAndGame.bind(this), this.startGame.bind(this)])
+            dialogs.difficultyResponse(this.game.difficulty);
+            this.next();
+            console.clear();
+            dialogs.intro();
+            this.next();
+            draw.animate(tornadoAnimation, 20, this.startGame.bind(this));
         }else if(answer === "check your stats"){
-            dialogs.stats(this.player)
-            this.next()
-            eventEmitter.emit("mainMenu")
+            dialogs.stats(this.player);
+            this.next();
+            eventEmitter.emit("mainMenu");
         }else if(answer === "exit"){
             this.exit();
         }
@@ -1302,7 +1307,6 @@ let mainInterface = {
     startGame(){ 
         //Increments the unsolved player stat while the game is being played, records the unsolved game, and writes to playersJSON.
         //Prevents player from force quitting to avoid an unsolved stat. Will be removed on win.
-        console.clear()
         this.player.stats[this.game.difficulty].unsolved ++;
         this.player.games.push({stats: this.game.gameStats, field: this.game.field.hiddenField});
         this.updatePlayersJSON();
@@ -1373,20 +1377,3 @@ mainInterface.begin();
 
 // let game1 = new Game(field1)
 // game1.draw(field1.playField, 2, 2)
-// let tree = new assets.Tree()
-// let test = {frame1: [["blank",2,"blank",4],[1,2,3,4],[1,2,3,4],[1,2,3,4]]}
-// let test2 = {frame1: [[5,6]]}
-// test.frame1 = draw.possitionSprite(test.frame1, {x:1, y:1}, {x:5, y:5})
-
-// // console.log(draw.arrayToString(draw.possitionSprite(test.frame1, {x:1, y:1}, {x:2, y:2})))
-
-
-// // let array =[
-// //     ["blank","blank","blank","_","_","_"],
-// //     ["blank","_","(","_","_","_",")","_","_"],
-// //     ["(","_","_","_","_","_","(","_","_",")"]
-// // ]
-// // console.log(draw.makeRectangular(array))
-// console.log(test.frame1)
-// console.log(draw.createFrame([test.frame1, test2.frame1], {x:5,y:5}))
-

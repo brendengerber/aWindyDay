@@ -1,7 +1,6 @@
-//Add note that assets must be rectangles
-
 module.exports = {    
     //Takes an array of array sprites to composite into a single frame.
+    //Array sprites should be rectangular i.e., all rows should be the same length, and all columns should be the same length. The draw.makeRectangular method can help by adding blank space to the end of shorter rows. 
     //Layers assets and treats "blank" as transparent which allows for transparent asset backgrounds and layering.
     //The first array will be the top layer, while the final array will be the bottom layer.
     //Dimensions arg should be an object such as {x:, y:}. Anything possitioned outside of those dimensions will not be drawn.
@@ -174,10 +173,10 @@ module.exports = {
         return possitionedSprite;
     },
 
-    //Colors a sprite. Color should be supplied as a string escape sequence such as "\x1b[31m"
-    //A helpful list of colors can be found here. https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
+    //Colors a sprite. Color should be supplied as a string escape sequence such as "\x1b[31m".
+    //A helpful list of colors can be found here. https://en.wikipedia.org/wiki/ANSI_escape_code#Colors.
     //Simply replace 31 with the number in the FG column. 
-    //Adding a 1 will make the color a lighter shade, 2 will make the color a dimmer shade. (\x1b[1;31m)
+    //Adding a 1 will make the color a lighter shade, 2 will make the color a dimmer shade. (\x1b[1;31m).
     colorSprite(array,color){
         //Creates a copy of the array to color while leaving the original asset intact.
         let coloredSprite = [];
@@ -198,8 +197,12 @@ module.exports = {
 
     //Animates an array of multiline strings.
     //Use arrayToString() to convert an array asset to a multi line string.
-    //Callback is the function that will run when the animation is complete.
-    animate(array, fps, callback){
+    //Callback will run when the animation is complete.
+    animate(array, fps, callback){      
+        //Prevents inputs from being buffered and potentially skipping the prompts following the animation.
+        process.stdin.resume();
+        process.stdin.setRawMode(true);
+
         let numberOfFrames = array.length;
         let index = 0;
         let animationLoop = function(){
@@ -207,7 +210,7 @@ module.exports = {
             console.log(array[index]);
             index++;
             numberOfFrames--;
-            if(numberOfFrames === 0){
+            if(numberOfFrames  === 0){
                 clearInterval(animationLoopInterval);
                 callback();
             }
