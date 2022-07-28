@@ -1,6 +1,8 @@
 //add first game of session and skip the explanation after that
 //can console.clear be moved into methods?
 
+//add logic for play again instead of play a game. Such as if answer === play a game || play again
+
 //Do the interview stuff
 
 //add or remove bind notes
@@ -451,7 +453,7 @@ class Game {
         eventEmitter.emit("attempt");
         eventEmitter.emit("day");
 
-        //Helper function that checks the move for Win/Loss and update the playField appropriately.
+        //Checks the move for Win/Loss and update the playField appropriately.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         //***should updatemove be part of Field just like isoutofbounds? */
         ///**should while loop be its own function? */
@@ -473,7 +475,7 @@ class Game {
             }
         }.bind(this);
 
-        //Helper function displays the final field, resets the state object, addresses stats, and emits a loss event.
+        //Displays the final field, resets the state object, addresses stats, and emits a loss event.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let lose = function(){
             console.clear();
@@ -485,7 +487,7 @@ class Game {
             outcome = "loss";
         }.bind(this);
 
-        //Helper function displays the final field, addresses stats, and emits a win event.
+        //Displays the final field, addresses stats, and emits a win event.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let win = function(){
             console.clear();
@@ -506,6 +508,8 @@ class Game {
             
             
             //*********should both mainInterface.player.games.splice(-1, 1, mainInterface.game) instances be their own method?*/
+
+            //NEXT move path setting to updatemove? Can out of bounds move ther?
             let direction = key.toUpperCase();
             let newY;
             let newX;
@@ -513,10 +517,6 @@ class Game {
             switch(direction){
                 case "W":
                     newY = y-1;
-                    // if(checkMove(x, newY)){
-                    //     this.field.playField[y][x] = path;
-                    //     y = newY
-                    // }
                     if(!this.field.isOutOfBounds(x, newY)){
                         eventEmitter.emit("move");
                         this.field.playField[y][x] = path;
@@ -526,10 +526,6 @@ class Game {
                     break;  
                 case "A":
                     newX = x-1;
-                    // if(checkMove(newX, y)){
-                    //     this.field.playField[y][x] = path;
-                    //     x = newX
-                    // }
                     if(!this.field.isOutOfBounds(newX, y)){
                         eventEmitter.emit("move");
                         this.field.playField[y][x] = path;
@@ -539,10 +535,6 @@ class Game {
                     break;
                 case "S":
                     newY = y+1;
-                    // if(checkMove(x, newY)){
-                    //     this.field.playField[y][x] = path;
-                    //     y = newY
-                    // }
                     if(!this.field.isOutOfBounds(x, newY)){
                         eventEmitter.emit("move");
                         this.field.playField[y][x] = path;
@@ -552,10 +544,6 @@ class Game {
                     break;
                 case "D":
                     newX = x+1;
-                    // if(checkMove(newX, y)){
-                    //     this.field.playField[y][x] = path;
-                    //     x = newX
-                    // }
                     if(!this.field.isOutOfBounds(newX, y)){
                         eventEmitter.emit("move"); 
                         this.field.playField[y][x] = path;
@@ -580,7 +568,6 @@ class Game {
         //**Could be possible to write a while loop, starts logging the time, then at the end subtracts the amount of time that has passed for processing from the total time you want for each frame (1000/60) and waits for that time to elapse before continuing the loop again. */
         let mainLoop = function(){
             console.clear();
-
             if(!gameOver){
                 //Updates states.
                 this.update()
@@ -748,7 +735,6 @@ class Field {
         }.bind(this);
 
         //Helper function that will move the xy possition and set crumbs on the previous space.
-        //This can run into call stack problems?
         let move = function(direction){
             testFieldArray[y][x]++;
             if(direction === "W"){
@@ -813,12 +799,12 @@ class Field {
 
     //Prints the field that will be displayed with objective and holes hidden (useful for debugging).
     drawPlayField(){
-        console.log(draw.arrayToString(this.playField))
+        console.log(draw.arrayToString(this.playField));
     };
 
     //Prints the actual field with holes and objective revealed (useful for debugging).
     drawHiddenField(){
-        console.log(draw.arrayToString(this.hiddenField))
+        console.log(draw.arrayToString(this.hiddenField));
     };
 
     //Resets the playField back to it's original state after being altered during gameplay.        
@@ -837,7 +823,7 @@ class Field {
         }
     };
 
-    //Returns true if coordinates are a hole, else returns false
+    //Returns true if coordinates are a hole, else returns false.
     isHole(x,y){
         if(this.hiddenField[y][x] === hole){
             return true;
@@ -845,7 +831,7 @@ class Field {
         return false;
     }
 
-    //Returns true if coordinates are a hat, else returns false
+    //Returns true if coordinates are a hat, else returns false.
     isHat(x,y){
         if(this.hiddenField[y][x] === hat){
             return true;
@@ -856,11 +842,9 @@ class Field {
 
 
 //Contains all the prompts used within the game logic.
-//****perhaps change dialog names to match the prompt names */
 let prompts = {    
 
     //Used for obtaining a username. Allows only alphanumeric characters up to 15 long.
-    //****need to test */
     formattedNamePrompt(){
         let answer = readlineSync.prompt()
         if(/^[a-zA-Z0-9]{1,15}$/.test(answer)){
@@ -875,20 +859,6 @@ let prompts = {
             return options[answer].toLowerCase();
     },
 
-    // Works for instant input, not great for movement as it flashes
-    // formattedDirectionPrompt(){
-    //     let answer = readlineSync.keyIn('', {hideEchoBack: true, mask: ''})
-    //     if(/^[a-zA-Z0-9]{1}$/.test(answer)){
-    //         return answer.toUpperCase();
-    //     }else{
-    //         return false;
-    //     }
-    // },
-
-    //The argument linesToKeep controls how many lines will NOT be cleared.  This is necessary as this prompt may at times be used with multi-line dialogs.
-    //*This is better as it isnt regressive, neither works for long wrong inputs though. This could also still use the clearoptions method too
-    //*Make sure to use while loops to remove recursiveness
-    //***invalids not working now */
     next(){
         return this.formattedPrompt(["Next", "Exit"]);   
     },
@@ -906,9 +876,8 @@ let prompts = {
         return this.formattedPrompt(["Try again", "Check Your Stats", "Exit"])
     },
 
-    //*****for symetry add logic for exit here!
     difficulty(){
-        return this.formattedPrompt(["Easy", "Medium", "Hard"]) 
+        return this.formattedPrompt(["Easy", "Medium", "Hard", "Exit"]) 
     },
 
     //Prompts the user for direction input and returns it. If input is invalid it will ask again.
@@ -923,14 +892,14 @@ let prompts = {
             return "S";
         }else if(direction==="D"){
             return "D";
-        //Returns undefined if a key other than WASD is pressed
+        //Returns undefined if a key other than WASD is pressed.
         }else{
             return undefined;
         }
     },
 };
 
- //Dialog object used by prompt and game objects
+ //Dialog object used by prompt and game objects.
  let dialogs = {
     //Used to randomly select one of the options and log it to the console.
     randomSelector(options){
@@ -998,7 +967,8 @@ You can use W, A, S, D to move around and look for it.`
             "Oh, you fell in a hole...again.", 
             "Oops, there's another hole.", 
             "The main strategy is to NOT fall in the holes.", 
-            "Soooo...that was a hole.", 
+            "Soooo...that was a hole.",
+            "Ouch, that looked like it hurt...maybe try to avoid the holes", 
             "You're good at...faling in holes."
         ];
         this.randomSelector(options);
@@ -1058,8 +1028,9 @@ You can use W, A, S, D to move around and look for it.`
         console.log(Player.createProcessedStatsTable(player))
         let options = [
             "Not too bad, but not quite as good as me.",
-            "Not quite as good as me, but I'm sure you did your best",
-            "That's pretty good. If you keep it up, you might be almost as good as me some day."
+            "Not quite as good as me, but I'm sure you're doing your best",
+            "That's pretty good. If you keep it up, you might be almost as good as me some day.",
+            "Not bad, but you still have a long way to go if you want to be a pro like me."
         ]
         this.randomSelector(options)
     }
@@ -1269,7 +1240,7 @@ let mainInterface = {
     //Update the players JSON with the most recent player stats.
     updatePlayersJSON(){
         this.players[this.playerIndex] = this.player;
-        fs.writeFileSync("./players.json", JSON.stringify(this.players));
+        fs.writeFileSync('./players.json', JSON.stringify(this.players));
     },
 
     //Helper method that sets the current field and game objects of mainInterface.
@@ -1277,8 +1248,13 @@ let mainInterface = {
         //Generates a valid field and game based on difficulty. Difficulty settings can be tweaked here.
         dialogs.difficulty();
         let difficulty = prompts.difficulty();
-        this.field = Field.generateValidField(settings[difficulty].fieldSettings.dimensions, settings[difficulty].fieldSettings.holes)
-        this.game = new Game (difficulty, this.field)
+        if(difficulty === 'exit'){
+            this.exit()
+        }else{
+            this.field = Field.generateValidField(settings[difficulty].fieldSettings.dimensions, settings[difficulty].fieldSettings.holes)
+            this.game = new Game (difficulty, this.field)
+        }
+
     },
 
     //Starts the game.
