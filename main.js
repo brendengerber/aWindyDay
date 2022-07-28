@@ -911,7 +911,7 @@ let prompts = {
         return this.formattedPrompt(["Easy", "Medium", "Hard"]) 
     },
 
-        //Prompts the user for direction input and returns it. If input is invalid it will ask again.
+    //Prompts the user for direction input and returns it. If input is invalid it will ask again.
     //*Can this also be a switch?
     direction(){
         let direction = this.formattedDirectionPrompt();
@@ -928,13 +928,9 @@ let prompts = {
             return undefined;
         }
     },
-
 };
 
  //Dialog object used by prompt and game objects
- //If updating dialogs to contain more or less lines, make sure to change the next that follows in interface is updated to save the correct number of lines
- //**Is it possible to have the dialogs return a number that is used in next so that it only has to be changed in one place? then use next(dialogs.someDialog) */
- //********if dialogs start with console.clear, can I leave it out of interface almost completely? */
  let dialogs = {
     //Used to randomly select one of the options and log it to the console.
     randomSelector(options){
@@ -942,14 +938,17 @@ let prompts = {
     },
 
     hello(){
+        console.clear()
         let options = ["Hello? Hello?! Who's there?!"];
         this.randomSelector(options);
     },
     name(){
+        console.clear()
         console.log("So, what did you say your name was?");
     },
 
     returningPlayer(player){
+        console.clear()
         let name = player.name;
         let options = [
             `Oh ${name}, you gave me quite the fright!`, 
@@ -960,23 +959,23 @@ let prompts = {
     },
 
     newPlayer(player){
+        console.clear()
         let name = player.name;
         console.log(`Why ${name}, I don't believe I've had the pleasure. It's very nice to meet you!`);
     },
 
-    howAreYou(){
-        console.log("How are you?");
-    },
-    
     unspportedString(){
+        console.clear()
         console.log("I'm sorry please only use up to 15 numbers and letters...It's just easier for me to remember that way.");
     },
 
     mainMenu(){
+        console.clear()
         console.log("What would you like to do now?");
     },
 
     intro(){
+        console.clear()
         console.log(
 `Thankfully the tornado missed your home town, 
 but the winds were still strong, and you lost your hat!
@@ -1006,11 +1005,13 @@ You can use W, A, S, D to move around and look for it.`
     },
 
     tryAgain(){
+        console.clear()
         let options = ["What would you like to do now?"];
         this.randomSelector(options);
     },
 
     goodbye(){
+        console.clear()
         let options = [
             "I'm really sorry to hear that. I'm going to miss you. Goodbye.",
             "It's so lonely without you. I hope you come back soon. Goodbye."
@@ -1019,6 +1020,7 @@ You can use W, A, S, D to move around and look for it.`
     },
 
     excitedConfirmation(){
+        console.clear()
         let options = [
             "That's great to hear, I'm excited for you!",
             "You just made me so happy!",
@@ -1032,10 +1034,12 @@ You can use W, A, S, D to move around and look for it.`
     },
 
     difficulty(){
+        console.clear()
         console.log("What difficulty would you like to play?");
     },
 
     difficultyResponse(difficulty){
+        console.clear()
         if(difficulty === 'easy'){
             let options = ["Alright, this should be a cinch!"];
             this.randomSelector(options);
@@ -1049,6 +1053,7 @@ You can use W, A, S, D to move around and look for it.`
     },
 
     stats(player){
+        console.clear()
         console.log("")
         console.log(Player.createProcessedStatsTable(player))
         let options = [
@@ -1059,14 +1064,9 @@ You can use W, A, S, D to move around and look for it.`
         this.randomSelector(options)
     }
 };
-//***NEXT print play field can be a helper method in the create frame method. Print play field can take an x and y argument to position it from top left to bottom right, it can be done using " " */
-//**NEXT make a method to draw the frame, this will incorporate a modified version of the drawPlayField which before printing adds spaces for margin unless there is a character other than space, then it adds that character to the final array */
-//***NEXT but should keep print playField method as it could be good for testing functionality and debugging */
+
 //***change name to application
-//***Should reset terminal to normal state, stdin resume, cursor on, what else? is there a way to just reset to total noralm? clear the entire cache? */
-//Should be a game loop consisting of update and draw (draw playing the frames, update preparing the frame if there was user input and changing animations etc). draw could be reused for the tornado intro */
 //****Maybe I should call functions prompt handlers? */
-//**Rename to application? */
 let mainInterface = {
     player: undefined,
     //Contains a list of all local players.
@@ -1075,6 +1075,8 @@ let mainInterface = {
     playerIndex: undefined,
     field: undefined,
     game: undefined,
+    //Used to skip intro and cutscene after the first time.
+    sessionFirstGame: true,
 
     //Begins dialog with the user.
     begin(){
@@ -1176,7 +1178,6 @@ let mainInterface = {
         eventEmitter.on("loss", lossHandler);
 
         //Begins Dialog and options.
-        console.clear();
         this.setPlayer();
         hideCursor();
         this.next();
@@ -1185,21 +1186,22 @@ let mainInterface = {
 
     //Presents the main menu and handles the player's response.
     mainMenu(){
-        console.clear();
         dialogs.mainMenu();
         let answer = prompts.mainMenu();
-        console.clear();
         if(answer === "play a game"){  
             dialogs.excitedConfirmation();
             this.next();
             this.setFieldAndGame();
-            console.clear();
             dialogs.difficultyResponse(this.game.difficulty);
             this.next();
-            console.clear();
-            dialogs.intro();
-            this.next();
-            draw.animate(tornadoAnimation, 20, this.startGame.bind(this));
+            if(this.sessionFirstGame){
+                this.sessionFirstGame = false;
+                dialogs.intro();
+                this.next();
+                draw.animate(tornadoAnimation, 20, this.startGame.bind(this));
+            }else{
+                this.startGame();
+            }
         }else if(answer === "check your stats"){
             dialogs.stats(this.player);
             this.next();
@@ -1211,14 +1213,10 @@ let mainInterface = {
 
     //Presents the loss menu and handles the player's response.
     //**Add option for a new field here and make a new a new instance of Game
-    //**Add option for stats */
     lossMenu(){
-        console.clear();
         dialogs.tryAgain();
         let answer = prompts.tryAgain();
-        console.clear()
         if(answer === "try again"){
-            console.clear();
             dialogs.excitedConfirmation();
             this.next();
             this.restartGame();
@@ -1237,12 +1235,10 @@ let mainInterface = {
         let name = prompts.formattedNamePrompt();;
         //Runs until a valid name is entered.
         while(!name){
-            console.clear();
             dialogs.unspportedString();
             dialogs.name();
             name = prompts.formattedNamePrompt();
         }
-        console.clear();
         if(name){
             if(this.loadPlayer(name)){
                 dialogs.returningPlayer(this.player);
@@ -1279,7 +1275,6 @@ let mainInterface = {
     //Helper method that sets the current field and game objects of mainInterface.
     setFieldAndGame(){
         //Generates a valid field and game based on difficulty. Difficulty settings can be tweaked here.
-        console.clear();
         dialogs.difficulty();
         let difficulty = prompts.difficulty();
         this.field = Field.generateValidField(settings[difficulty].fieldSettings.dimensions, settings[difficulty].fieldSettings.holes)
