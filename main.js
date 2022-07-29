@@ -1,5 +1,7 @@
-//add first game of session and skip the explanation after that
-//can console.clear be moved into methods?
+
+//reorder functions and mthods so grouping makes more sense
+
+
 
 //add logic for play again instead of play a game. Such as if answer === play a game || play again
 
@@ -447,47 +449,25 @@ class Game {
     playGame(){
         console.clear();
         let gameOver = false;
-        let x = 0;
-        let y = 0;
+        let location = {x:0, y:0}
+        let newLocation = {x:0, y:0};
         let outcome;
         eventEmitter.emit("attempt");
         eventEmitter.emit("day");
 
-        //Checks the move for Win/Loss and update the playField appropriately.
-        //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
-        //***should updatemove be part of Field just like isoutofbounds? */
-        ///**should while loop be its own function? */
-        let updateMove = function(x,y){
-            // if (this.field.isOutOfBounds(x,y)){
-            //     return false
-            // }
-            if(!this.field.isHole(x,y) && !this.field.isHat(x,y)){
-                this.field.playField[y][x] = avatar;
-                // return true
-            }else if(this.field.isHole(x,y)){
-                this.field.playField[y][x] = hole;
-                gameOver = true;
-                lose();
-            }else if(this.field.isHat(x,y)){
-                this.field.playField[y][x] = hat;
-                gameOver = true;
-                win();
-            }
-        }.bind(this);
-
-        //Displays the final field, resets the state object, addresses stats, and emits a loss event.
+        //Helper function that displays the final field, resets the state object, addresses stats, and emits a loss event.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let lose = function(){
             console.clear();
             this.drawCurrentFrame()
-            //Empty object is filled with settings thus leaving the original settings object in tact.
+            //Resets the state property.
             this._state = _.merge({}, settings.frameDimensions, settings.initialStates, settings[this.difficulty].states);
             this.gameStats.win = false;
             eventEmitter.emit("loss");
             outcome = "loss";
         }.bind(this);
 
-        //Displays the final field, addresses stats, and emits a win event.
+        //Helper function that displays the final field, addresses stats, and emits a win event.
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let win = function(){
             console.clear();
@@ -496,60 +476,79 @@ class Game {
             eventEmitter.emit("win");
             outcome = "win";
         }.bind(this);
-        
-        //Used to process user move input.
-        //Checks for validity of move and then checks for win/loss conditions.
+  
+        //Helper function that checks the move for out of bounds as well as win/loss.
+        //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
+        let checkMove = function(){
+            if(!this.field.isOutOfBounds(newLocation.x, newLocation.y)){
+                if(!this.field.isHole(newLocation.x, newLocation.y) && !this.field.isHat(newLocation.x, newLocation.y)){
+                    return "empty";
+                }else if(this.field.isHole(newLocation.x, newLocation.y)){
+                    return "hole";
+                }else if(this.field.isHat(newLocation.x, newLocation.y)){
+                    return "hat";                        
+                }                   
+            }
+            return "outOfBounds";
+        }.bind(this)
+
+        //Helper function that updates the location/newLocation and processes wins and losses based on the checked move.
+        //The move arg should be a value returned by checkMove.
+        //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
+        let updateMove = function(move){
+            switch(move){
+                case "empty":
+                    eventEmitter.emit("move");
+                    this.field.playField[location.y][location.x] = path;
+                    this.field.playField[newLocation.y][newLocation.x] = avatar;
+                    location.x = newLocation.x; 
+                    location.y = newLocation.y;                      
+                    break;
+                case "hole":
+                    eventEmitter.emit("move");
+                    this.field.playField[location.y][location.x] = path;
+                    this.field.playField[newLocation.y][newLocation.x] = hole;
+                    gameOver = true;
+                    lose();
+                    break
+                case "hat":
+                    eventEmitter.emit("move");
+                    this.field.playField[location.y][location.x] = path;
+                    this.field.playField[newLocation.y][newLocation.x] = hat;
+                    gameOver = true;
+                    win();
+                    break;
+                case "outOfBounds":
+                    newLocation.x = location.x;
+                    newLocation.y = location.y;
+                    break;
+            }
+        }.bind(this)
+
+        //Processes user move input. 
         //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let move = function(key){
-            //Moves the player avatar, sets the x,y possition, and checks for win or loss conditions.
-            ///***can path be moved to check move? does it matter? checkmove deals with the new space, while path is the old space and could be handled by the while loop */
-            //*******can make checkMove(x,y,newx,newy) This would allw me to move the path shit to checkMove too, which could even be renamed into move */
-            //**can remove the newy/nex like in validate? maybe no since in validate we already know we are moving? I could here, but would have to check the move first. Then can just increment with ++ and --
-            
-            
-            //*********should both mainInterface.player.games.splice(-1, 1, mainInterface.game) instances be their own method?*/
-
-            //NEXT move path setting to updatemove? Can out of bounds move ther?
             let direction = key.toUpperCase();
-            let newY;
-            let newX;
-            
             switch(direction){
-                case "W":
-                    newY = y-1;
-                    if(!this.field.isOutOfBounds(x, newY)){
-                        eventEmitter.emit("move");
-                        this.field.playField[y][x] = path;
-                        y = newY;
-                        updateMove(x,y);
-                    };
+                case "W":  
+                    newLocation.x = location.x;
+                    newLocation.y = location.y - 1;
+                    updateMove(checkMove(newLocation));
                     break;  
-                case "A":
-                    newX = x-1;
-                    if(!this.field.isOutOfBounds(newX, y)){
-                        eventEmitter.emit("move");
-                        this.field.playField[y][x] = path;
-                        x = newX;
-                        updateMove(x,y);
-                    };
+                case "A":  
+                    newLocation.x = location.x - 1;
+                    newLocation.y = location.y;
+                    updateMove(checkMove(newLocation));
                     break;
                 case "S":
-                    newY = y+1;
-                    if(!this.field.isOutOfBounds(x, newY)){
-                        eventEmitter.emit("move");
-                        this.field.playField[y][x] = path;
-                        y = newY;
-                        updateMove(x,y);
-                    };
+                    newLocation.x =  location.x;
+                    newLocation.y = location.y + 1; 
+                    updateMove(checkMove(newLocation));
                     break;
-                case "D":
-                    newX = x+1;
-                    if(!this.field.isOutOfBounds(newX, y)){
-                        eventEmitter.emit("move"); 
-                        this.field.playField[y][x] = path;
-                        x = newX;
-                        updateMove(x,y);
-                    };
+                case "D":   
+                    newLocation.x = location.x + 1;
+                    newLocation.y = location.y;    
+                    updateMove(checkMove(newLocation));
                     break;
                 };
         }.bind(this);
@@ -610,7 +609,6 @@ class Field {
     //Primarily used to update the playField property after each move and reset it to its original state after a game is over.
     set playField(newPlayFieldArray){
         this._playField = newPlayFieldArray;
-        // this._playField = Field.createPlayField(hiddenFieldArray);
     };
 
     //Creates a random field of size x by y containing the provided number of holes with a random distribution accross the board.
@@ -855,7 +853,7 @@ let prompts = {
     },
 
     formattedPrompt(options){
-        let answer = readlineSync.keyInSelect(options, "", {guide: false, cancel: false, hideEchoBack: true, mask: ""})
+        let answer = readlineSync.keyInSelect(options, "", {guide: false, cancel: false, hideEchoBack: true, mask: ""});
             return options[answer].toLowerCase();
     },
 
@@ -864,20 +862,20 @@ let prompts = {
     },
 
     mainMenu(){
-        return this.formattedPrompt(["Play a game", "Check Your Stats", "Exit"])
+        return this.formattedPrompt(["Play a game", "Check Your Stats", "Exit"]);
     },
 
     mood(){
-        return this.formattedPrompt(["Bad", "Okay", "Good", "Exit"])
+        return this.formattedPrompt(["Bad", "Okay", "Good", "Exit"]);
     },
 
     //Asks the user if they would like to play again on the same field. Then asks if they are ready. Returns Y or N.
     tryAgain(){
-        return this.formattedPrompt(["Try again", "Check Your Stats", "Exit"])
+        return this.formattedPrompt(["Try again", "Check Your Stats", "Exit"]);
     },
 
     difficulty(){
-        return this.formattedPrompt(["Easy", "Medium", "Hard", "Exit"]) 
+        return this.formattedPrompt(["Easy", "Medium", "Hard", "Exit"]);
     },
 
     //Prompts the user for direction input and returns it. If input is invalid it will ask again.
@@ -1073,6 +1071,8 @@ let mainInterface = {
         //Increments totalMoves, updates the current game, and writes to playersJSON
         //Creates a handler for moves and adds it to the eventEmitter.
         //.bind(this) is used to reference the mainInterface object's "this" rather than the function's "this".
+        //*********should mainInterface.player.games.splice(-1, 1, mainInterface.game) instances be their own method?*/
+
         let moveHandler = function(){
             //Increment stats and updates the playerJSON.
             this.game.gameStats.moves ++;
