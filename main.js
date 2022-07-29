@@ -1,9 +1,7 @@
 
 //reorder functions and mthods so grouping makes more sense
 
-
-
-//add logic for play again instead of play a game. Such as if answer === play a game || play again
+//be consistent about helpers
 
 //Do the interview stuff
 
@@ -810,7 +808,7 @@ class Field {
         this.playField = Field.createPlayField(this.hiddenField);
     };
 
-    //Helper method that checks if a move will move out of bounds and returns true if so.
+    //Checks if a move will move out of bounds and returns true if so.
     isOutOfBounds(x,y){
         if(y < 0 || y > (this.hiddenField.length-1)){
             return true;
@@ -861,8 +859,12 @@ let prompts = {
         return this.formattedPrompt(["Next", "Exit"]);   
     },
 
+    mainMenuFirstGameOfSession(){
+        return this.formattedPrompt(["Play a Game", "Check Your Stats", "Exit"]);
+    },
+    
     mainMenu(){
-        return this.formattedPrompt(["Play a game", "Check Your Stats", "Exit"]);
+        return this.formattedPrompt(["Play Again", "Check Your Stats", "Exit"]);
     },
 
     mood(){
@@ -1045,7 +1047,7 @@ let mainInterface = {
     field: undefined,
     game: undefined,
     //Used to skip intro and cutscene after the first time.
-    sessionFirstGame: true,
+    firstGameOfSession: true,
 
     //Begins dialog with the user.
     begin(){
@@ -1120,7 +1122,6 @@ let mainInterface = {
             this.next();
 
             //Resets the current field and game.
-            //****After changing the prompts to not need field dimensions, move these to before the dialogs above it, or into win handler
             this.field = undefined;
             this.game = undefined;
 
@@ -1158,20 +1159,28 @@ let mainInterface = {
     //Presents the main menu and handles the player's response.
     mainMenu(){
         dialogs.mainMenu();
-        let answer = prompts.mainMenu();
-        if(answer === "play a game"){  
+        //Checks which prompt to use based on if it is the first game of the session.
+        if(this.firstGameOfSession){
+            answer = prompts.mainMenuFirstGameOfSession();
+            this.firstGameOfSession = false;
+        }else if(!this.firstGameOfSession){
+            answer = prompts.mainMenu();
+        }
+
+        if(answer === "play a game" || answer === "play again"){ 
             dialogs.excitedConfirmation();
             this.next();
             this.setFieldAndGame();
             dialogs.difficultyResponse(this.game.difficulty);
             this.next();
-            if(this.sessionFirstGame){
-                this.sessionFirstGame = false;
+            //Starts game with animation if it is the first game of the session.
+            if(answer === "play a game"){
                 dialogs.intro();
                 this.next();
                 draw.animate(tornadoAnimation, 20, this.startGame.bind(this));
-            }else{
-                this.startGame();
+            //Starts game but skips the cutscene animation if it is not the first game of the session.
+            }else if(answer === "play again"){
+                this.startGame()
             }
         }else if(answer === "check your stats"){
             dialogs.stats(this.player);
@@ -1183,7 +1192,6 @@ let mainInterface = {
     },
 
     //Presents the loss menu and handles the player's response.
-    //**Add option for a new field here and make a new a new instance of Game
     lossMenu(){
         dialogs.tryAgain();
         let answer = prompts.tryAgain();
@@ -1221,7 +1229,7 @@ let mainInterface = {
         }
     },
     
-    // Loads player object and creates one if the player is new.
+    //Loads player object and creates one if the player is new.
     loadPlayer(name){
         //Checks if the player already exists, and loads the player info if so.
         for(let player of this.players){
@@ -1243,7 +1251,7 @@ let mainInterface = {
         fs.writeFileSync('./players.json', JSON.stringify(this.players));
     },
 
-    //Helper method that sets the current field and game objects of mainInterface.
+    //Sets the current field and game objects of mainInterface.
     setFieldAndGame(){
         //Generates a valid field and game based on difficulty. Difficulty settings can be tweaked here.
         dialogs.difficulty();
@@ -1301,5 +1309,5 @@ let mainInterface = {
     }
 }
 
-
+//Initiates the application.
 mainInterface.begin();
