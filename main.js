@@ -5,8 +5,6 @@
 
 //Do the interview stuff
 
-//add or remove bind notes
-
 
 //make field and fence offsets populate automatically based on field size if possible
 
@@ -21,10 +19,10 @@
 // For interview, might be good to eliminate hidden field. Make field an asset. Can create field based on the array made by generate valid field. But each space is an object, frame is grass, and a state for hole and hat as well. check move then checks the state of that object.
 // alternatively i can set the field asset rather than a field property. that field object can have a state object that is the current field and the hidden field. then check move checks the state to see the validity of the move. 
 // either way would want to add field to assets and remove the function that draws it in the draw current frame method.
-//**The way to do this is move field to assets. then have it build the field like the other assets (only need one class then), might be nice to move hidden field to the state and have isHole and isHat check the state. For sure move it to assets though and have it construct like an asset. And put the update method in the class directly too. */
+//*The way to do this is move field to assets. then have it build the field like the other assets (only need one class then), might be nice to move hidden field to the state and have isHole and isHat check the state. For sure move it to assets though and have it construct like an asset. And put the update method in the class directly too. */
 //Constructor sets frame asset rather than frame property
 //Make sure field still gets saved to gameStats, where is that happening?
-        //**each grass could be an object with a hole property, drawn at it's coordinates, when the player moves there, the property is checked for hole, the gras is printed, but the player is printed over the grass kinda */
+        //*each grass could be an object with a hole property, drawn at it's coordinates, when the player moves there, the property is checked for hole, the gras is printed, but the player is printed over the grass kinda */
 
 
 // add emotions convo, makes him more quarky and grumpy
@@ -36,7 +34,6 @@
 
 // Inspired by maze craze
 
-// could be fun to have a biger field, and a snake thats chasing you or a bird 
 
 //Requires necessary custom modules.
 const draw = require('./draw.js')
@@ -58,7 +55,6 @@ const hole = 'O';
 const grass = '░';
 const path = ' ';
 const avatar = '8';
-
 
 //Used to create a new player and to track stats.
 class Player{
@@ -454,7 +450,6 @@ class Game {
         eventEmitter.emit("day");
 
         //Helper function that displays the final field, resets the state object, addresses stats, and emits a loss event.
-        //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let lose = function(){
             console.clear();
             this.drawCurrentFrame()
@@ -466,7 +461,6 @@ class Game {
         }.bind(this);
 
         //Helper function that displays the final field, addresses stats, and emits a win event.
-        //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let win = function(){
             console.clear();
             this.drawCurrentFrame();
@@ -476,7 +470,6 @@ class Game {
         }.bind(this);
   
         //Helper function that checks the move for out of bounds as well as win/loss.
-        //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let checkMove = function(){
             if(!this.field.isOutOfBounds(newLocation.x, newLocation.y)){
                 if(!this.field.isHole(newLocation.x, newLocation.y) && !this.field.isHat(newLocation.x, newLocation.y)){
@@ -492,7 +485,6 @@ class Game {
 
         //Helper function that updates the location/newLocation and processes wins and losses based on the checked move.
         //The move arg should be a value returned by checkMove.
-        //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let updateMove = function(move){
             switch(move){
                 case "empty":
@@ -524,7 +516,6 @@ class Game {
         }.bind(this)
 
         //Processes user move input. 
-        //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let move = function(key){
             let direction = key.toUpperCase();
             switch(direction){
@@ -561,8 +552,6 @@ class Game {
         process.stdin.on( 'data', move);
         
         //Draws the frames and checks game status.
-        //.bind(this) is used to reference the mainInterface object's "this" rather than the function's "this".
-        //**Could be possible to write a while loop, starts logging the time, then at the end subtracts the amount of time that has passed for processing from the total time you want for each frame (1000/60) and waits for that time to elapse before continuing the loop again. */
         let mainLoop = function(){
             console.clear();
             if(!gameOver){
@@ -666,7 +655,7 @@ class Field {
             }
         }
     
-        //Runs setHole() until the desired number of holes is reached and then runs setHat()
+        //Runs setHole() until the desired number of holes is reached and then runs setHat().
         let setHatAndHoles = function(holes){
             for(let i=0; i<holes; i++){
                 setHole(Field.createPossibleCoordinatesArray(x,y));
@@ -678,39 +667,37 @@ class Field {
     }
     
     //Validates a field object and returns true if it is winnable and false if it is not.
-    //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
     static validateField(testField){
         let x = 0;
         let y = 0;
         let valid = undefined;
-        //Creates an array to test containing 0s in place of path characters
+        //Creates an array to test containing 0s in place of path characters. These will be used to count crumbs while traversing the maze.
         let testFieldArray = testField.hiddenField.map(row => row.map(column => (column === grass) ? 0 : column));
 
-        //First checks that the starting possition is not a hole.
-        //***can this be moved to the createRandomField() method? As in dont put a hole in 0, 0 */
+        //First checks that the starting possition is not a hole or a hat.
         if(testFieldArray[0][0] === hole || testFieldArray[0][0] === hat){
             valid = false;
         }
+
         //Helper function that decides which direction to move based on the crumbs present at adjacent spaces.
         //Sets valid to true or false if the hat is found or all adjacent paths have 2 crumbs/holes.
-        //.bind(this) is used to reference the Field object's "this" rather than the function's "this".
         let decideDirection = function(){
             
             //Finds values for crumbs dropped on adjacent moves.
-            //Uses optional chaining operator to avoid out of bounds moves which would cause a runtime error.
+            //Uses optional chaining operators to prevent out of bounds moves from throwing runtime errors. They will now return undefined. 
             let possibleMoves = {
                 W: testFieldArray?.[y-1]?.[x],
                 A: testFieldArray?.[y]?.[x-1],
                 S: testFieldArray?.[y+1]?.[x],
                 D: testFieldArray?.[y]?.[x+1]
             };
+            
             //Loops through each direction and records the direction with the least crumbs. If multiple directions have the same number, it will select the first one. 
             //If all moves have more than 3 crumbs, it will return false as the field is invalid.
             //The number of crumbs to count should be one less than the total number of possible paths coming to an intersection. In the case of this simple field it is 4 paths (In a real life maze you would not need to place any crumbs at intersections).
             //If a move encounters the hat, it will return true as the field is valid.
-            //There is no need to check for holes or out of bounds as they will resolve to false when compared within the conditional statements
+            //There is no need to check for holes or out of bounds as they will resolve to false when compared to the crumb numbers within the conditional statements
             //The maximum number of acceptible crumbs is 3 which allows to account for dead ends.
-            //**could add a checkSpot(x,y) method to check if its out of bounds, hole, or hat
             let directionOfLeastCrumbs = undefined;
             for(let direction in possibleMoves){
                 if(directionOfLeastCrumbs === undefined && possibleMoves[direction] < 3){
@@ -879,27 +866,9 @@ let prompts = {
     difficulty(){
         return this.formattedPrompt(["Easy", "Medium", "Hard", "Exit"]);
     },
-
-    //Prompts the user for direction input and returns it. If input is invalid it will ask again.
-    //*Can this also be a switch?
-    direction(){
-        let direction = this.formattedDirectionPrompt();
-        if(direction==="W"){
-            return "W";
-        }else if(direction==="A"){
-            return "A";
-        }else if(direction==="S"){
-            return "S";
-        }else if(direction==="D"){
-            return "D";
-        //Returns undefined if a key other than WASD is pressed.
-        }else{
-            return undefined;
-        }
-    },
 };
 
- //Dialog object used by prompt and game objects.
+ //Dialog object used by prompts.
  let dialogs = {
     //Used to randomly select one of the options and log it to the console.
     randomSelector(options){
@@ -907,7 +876,7 @@ let prompts = {
     },
 
     hello(){
-        console.clear()
+        console.clear();
         let options = ["Hello? Hello?! Who's there?!"];
         this.randomSelector(options);
     },
@@ -917,7 +886,7 @@ let prompts = {
     },
 
     returningPlayer(player){
-        console.clear()
+        console.clear();
         let name = player.name;
         let options = [
             `Oh ${name}, you gave me quite the fright!`, 
@@ -928,23 +897,23 @@ let prompts = {
     },
 
     newPlayer(player){
-        console.clear()
+        console.clear();
         let name = player.name;
         console.log(`Why ${name}, I don't believe I've had the pleasure. It's very nice to meet you!`);
     },
 
     unspportedString(){
-        console.clear()
+        console.clear();
         console.log("I'm sorry please only use up to 15 numbers and letters...It's just easier for me to remember that way.");
     },
 
     mainMenu(){
-        console.clear()
+        console.clear();
         console.log("What would you like to do now?");
     },
 
     intro(){
-        console.clear()
+        console.clear();
         console.log(
 `Thankfully the tornado missed your home town, 
 but the winds were still strong, and you lost your hat!
@@ -975,7 +944,7 @@ You can use W, A, S, D to move around and look for it.`
     },
 
     tryAgain(){
-        console.clear()
+        console.clear();
         let options = ["What would you like to do now?"];
         this.randomSelector(options);
     },
@@ -990,7 +959,7 @@ You can use W, A, S, D to move around and look for it.`
     },
 
     excitedConfirmation(){
-        console.clear()
+        console.clear();
         let options = [
             "That's great to hear, I'm excited for you!",
             "You just made me so happy!",
@@ -1004,12 +973,12 @@ You can use W, A, S, D to move around and look for it.`
     },
 
     difficulty(){
-        console.clear()
+        console.clear();
         console.log("What difficulty would you like to play?");
     },
 
     difficultyResponse(difficulty){
-        console.clear()
+        console.clear();
         if(difficulty === 'easy'){
             let options = ["Alright, this should be a cinch!"];
             this.randomSelector(options);
@@ -1023,21 +992,19 @@ You can use W, A, S, D to move around and look for it.`
     },
 
     stats(player){
-        console.clear()
-        console.log("")
-        console.log(Player.createProcessedStatsTable(player))
+        console.clear();
+        console.log("");
+        console.log(Player.createProcessedStatsTable(player));
         let options = [
             "Not too bad, but not quite as good as me.",
             "Not quite as good as me, but I'm sure you're doing your best",
             "That's pretty good. If you keep it up, you might be almost as good as me some day.",
             "Not bad, but you still have a long way to go if you want to be a pro like me."
         ]
-        this.randomSelector(options)
+        this.randomSelector(options);
     }
 };
 
-//***change name to application
-//****Maybe I should call functions prompt handlers? */
 let mainInterface = {
     player: undefined,
     //Contains a list of all local players.
@@ -1070,15 +1037,11 @@ let mainInterface = {
         }.bind(this)
         eventEmitter.on("lossMenu", lossMenuHandler)
 
-        //Increments totalMoves, updates the current game, and writes to playersJSON
+        //Increments totalMoves, updates the current game, and writes to playersJSON.
         //Creates a handler for moves and adds it to the eventEmitter.
-        //.bind(this) is used to reference the mainInterface object's "this" rather than the function's "this".
-        //*********should mainInterface.player.games.splice(-1, 1, mainInterface.game) instances be their own method?*/
-
         let moveHandler = function(){
-            //Increment stats and updates the playerJSON.
             this.game.gameStats.moves ++;
-            this.player.games.splice(-1, 1, {stats: this.game.gameStats, field: this.game.field.hiddenField});
+            this.updatePlayerGames();
             this.updatePlayersJSON();
         }.bind(this);
         eventEmitter.on("move", moveHandler);
@@ -1086,10 +1049,9 @@ let mainInterface = {
         //Increments the game attempts stat and writes to playersJSON.
         //Prevents player from force quitting to avoid an attempt stat.
         //Creates a handler for attempts and adds it to the eventEmitter.
-        //.bind(this) is used to reference the mainInterface object's "this" rather than the function's "this".
         let attemptHandler = function(){
             this.game.gameStats.attempts ++;
-            this.player.games.splice(-1, 1, {stats: this.game.gameStats, field: this.game.field.hiddenField});
+            this.updatePlayerGames();
             this.updatePlayersJSON();
         }.bind(this);
         eventEmitter.on("attempt", attemptHandler);
@@ -1097,18 +1059,16 @@ let mainInterface = {
         //Increments the game days stat and writes to playersJSON.
         //Prevents player from force quitting to avoid a day stat.
         //Creates a handler for days and adds it to the eventEmitter.
-        //.bind(this) is used to reference the mainInterface object's "this" rather than the function's "this".
         let dayHandler = function(){
             this.game.gameStats.days ++;
-            this.player.games.splice(-1, 1, {stats: this.game.gameStats, field: this.game.field.hiddenField});
+            this.updatePlayerGames();
             this.updatePlayersJSON();
         }.bind(this);
         eventEmitter.on("day", dayHandler);
 
 
         //Creates a handler for wins and adds it to the eventEmitter.
-        //.bind(this) is used to reference the mainInterface object's "this" rather than the function's "this".
-        let winHandler = function(){            
+            let winHandler = function(){            
             //Updates player object's total stats and writes to JSON. Marks the game as solved, increments the wins, and updates the attempts/moves from the game object.
             this.player.stats[this.game.difficulty].unsolved --;
             this.player.stats[this.game.difficulty].wins ++;
@@ -1130,7 +1090,6 @@ let mainInterface = {
         eventEmitter.on("win", winHandler);
 
         //Creates a handler for losses and adds it to the eventEmitter.
-        //.bind(this) is used to reference the mainInterface object's "this" rather than the function's "this".
         let lossHandler = function(){
             //Initiates dialog, options, and logic for the first ever loss by the player.
             if(this.player.firstLoss === false){
@@ -1243,6 +1202,11 @@ let mainInterface = {
         this.players.push(this.player);
         this.updatePlayersJSON();
         return false;
+    },
+
+    //Updates the games property of the player object with new stats for the current game.
+    updatePlayerGames(){
+        this.player.games.splice(-1, 1, {stats: this.game.gameStats, field: this.game.field.hiddenField});
     },
 
     //Update the players JSON with the most recent player stats.
