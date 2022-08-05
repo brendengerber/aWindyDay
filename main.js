@@ -720,14 +720,19 @@ class Field {
         let move = function(direction){
             //Adds crumbs to the intersection before moving.
             testFieldArray[y][x]++;
-            if(direction === "W"){
-                y--;
-            }else if(direction === "A"){
-                x--;
-            }else if(direction === "S"){
-                y++;
-            }else if(direction === "D"){
-                x++;
+            switch(direction){
+                case "W":
+                    y--;
+                    break
+                case "A":
+                    x--;
+                    break
+                case "S":
+                    y++;
+                    break
+                case "D":
+                    x++;
+                    break 
             }
         };
         //Continues to move around the board until either a win condition is met, or the field is found invalid.
