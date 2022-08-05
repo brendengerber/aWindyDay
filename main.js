@@ -2,19 +2,20 @@
 //reorder functions and mthods so grouping makes more sense
 
 //be consistent about helpers
+//start at validateField
+//is move a helper?
+//Maybe all the move stuff can be their own method instead of nested? like the other methods, but they need to be able to access the possition stuff. maybe possition stuff should be properties instead of variables
+//is setHatAndHoles a helper? maybe not since its the last one that then uses all of the helpers.
+
+//change field move to a switch
+
+
+//rewrite adding assets to be clearer and simpler
 
 //Do the interview stuff
 
+//spacing
 
-//make field and fence offsets populate automatically based on field size if possible
-
-// NEXT 
-// should color and possition be methods on draw, or each asset?
-// maybe position sprite should not be a method of  each asset. Draw should loop through and draw each sprite (and possition them), based on the current state. That means move position sprite out of the asset. Should all be called using a loop in the composite stage. That way to add an object, you just have to add the object and the state, you dont have to updtade draw, position, and color too. Draw frame can loop through all assets, color them, and then possition/layer them. It will be a loop so that assets dont have to be called individually. The functions can take in the state object, and the asset array. Each asset it checks it's state. colors it, possitions it, and at the end draws it all.  state[asset].color can work for all of them
-
-// FINAL
-// update will be a function that calls all the assets update methods, draw will be a function that calls all of the assets draw methods, adding them to an array which will then be composited using the draw method.  Should draw be a method of each asset with position and color? could be nice symetry for calling all the update methods by a loop.
-// each draw method on the assets will consist of a possition call and color call. Both calls are methods of draw. Call color first inside of possition. Each take an array and return an array. Color returns a new version of the stock, which is the array arg for possition which returns a colored and possitioned.
 
 // For interview, might be good to eliminate hidden field. Make field an asset. Can create field based on the array made by generate valid field. But each space is an object, frame is grass, and a state for hole and hat as well. check move then checks the state of that object.
 // alternatively i can set the field asset rather than a field property. that field object can have a state object that is the current field and the hidden field. then check move checks the state to see the validity of the move. 
@@ -106,7 +107,7 @@ class Player{
         return processedStats;
     };
 
-    //Method to create a table of all the stats for each difficulty.
+    //Creates a table of all the stats for each difficulty.
     //Uses processStats method.
     static createProcessedStatsTable(player){
         //Contains the processed stats to parse into a table.
@@ -190,7 +191,6 @@ let settings = {
             },
             fence: {
                 offset: {x:13, y:13}
-
             }  
         }
     },
@@ -208,7 +208,7 @@ let settings = {
             }  
         }
     },
-    //Sets the default states not dependent on difficulty
+    //Sets the default states not dependent on difficulty.
     initialStates: {
         fieldAsset: {
             draw: true,
@@ -469,7 +469,8 @@ class Game {
             outcome = "win";
         }.bind(this);
   
-        //Helper function that checks the move for out of bounds as well as win/loss.
+        //Helper function that checks if the move is out of bounds or contains a hat or hole.
+        //Returns the checked status of the space.
         let checkMove = function(){
             if(!this.field.isOutOfBounds(newLocation.x, newLocation.y)){
                 if(!this.field.isHole(newLocation.x, newLocation.y) && !this.field.isHat(newLocation.x, newLocation.y)){
@@ -516,28 +517,28 @@ class Game {
         }.bind(this)
 
         //Processes user move input. 
-        let move = function(key){
+        let processMove = function(key){
             let direction = key.toUpperCase();
             switch(direction){
                 case "W":  
                     newLocation.x = location.x;
                     newLocation.y = location.y - 1;
-                    updateMove(checkMove(newLocation));
+                    updateMove(checkMove());
                     break;  
                 case "A":  
                     newLocation.x = location.x - 1;
                     newLocation.y = location.y;
-                    updateMove(checkMove(newLocation));
+                    updateMove(checkMove());
                     break;
                 case "S":
                     newLocation.x =  location.x;
                     newLocation.y = location.y + 1; 
-                    updateMove(checkMove(newLocation));
+                    updateMove(checkMove());
                     break;
                 case "D":   
                     newLocation.x = location.x + 1;
                     newLocation.y = location.y;    
-                    updateMove(checkMove(newLocation));
+                    updateMove(checkMove());
                     break;
                 };
         }.bind(this);
@@ -548,10 +549,10 @@ class Game {
         process.stdin.setRawMode(true);
         //Sets encoding.
         process.stdin.setEncoding( 'utf8' );
-        //Turns on the move listener and calls move to handle player movements
-        process.stdin.on( 'data', move);
+        //Turns on the move listener and calls move to handle player movements.
+        process.stdin.on( 'data', processMove);
         
-        //Draws the frames and checks game status.
+        //Checks game status and then updates/draws frames or ends mainLoop.
         let mainLoop = function(){
             console.clear();
             if(!gameOver){
@@ -564,14 +565,14 @@ class Game {
             if(gameOver){
                 //Stops rendering the frames.
                 clearInterval(mainLoopInterval);
-                //Turns off the move listener
-                process.stdin.removeListener('data', move);
-                //Returns outcome of the game
+                //Turns off the move listener.
+                process.stdin.removeListener('data', processMove);
+                //Returns outcome of the game.
                 return outcome;
             }
         }.bind(this);
 
-        //Sets the framerate and draws the frame
+        //Sets the framerate and draws the frame.
         let mainLoopInterval = setInterval(mainLoop, 1000/30);
     }; 
 };
@@ -600,7 +601,7 @@ class Field {
 
     //Creates a random field of size x by y containing the provided number of holes with a random distribution accross the board.
     static generateRandomField(x,y,holes){
-        //Creates a blank field filled with grass according to the given dimensions
+        //Creates a blank field filled with grass according to the given dimensions.
         let newHiddenFieldArray = [];
         for(let i=0; i<y; i++){
             let newRow = [];
@@ -609,12 +610,10 @@ class Field {
             }
             newHiddenFieldArray.push(newRow);
         }
-        //Used to add holes, if there is already a hole in the random spot then the function runs again. 
+        //Helper function that adds holes, if there is already a hole in the random spot then the function runs again. 
         //This allows adding holes randomly throughout the field rather than having them clustered at the beginning if a simple loop was used to add randomly grass or hole characters until the desired number of holes was reached.
-        //Used to add the hat, if there is a hole in the randomly selected location then the function will run again with the location removed from possible locations.
-        //A recursive function is used and unsuitable location are removed when encountered to avoid a callstack overflow error on edge case.
         let setHole = function(possibleCoordinatesArray){
-            //Selects a random x and y coordinate from the array of available coordinates
+            //Selects a random x and y coordinate from the array of available coordinates.
             let testCoordinates = possibleCoordinatesArray[Math.floor(Math.random() * (possibleCoordinatesArray.length))]
             //Sets the coordinates for the location on the field.
             let xCoordinate = testCoordinates.x;
@@ -633,10 +632,10 @@ class Field {
             }
         }
     
-        //Used to add the hat, if there is a hole in the randomly selected location then the function will run again with the location removed from possible locations.
+        //Helper function that adds the hat, if there is a hole in the randomly selected location then the function will run again with the location removed from possible locations.
         //A recursive function is used and unsuitable location are removed when encountered to avoid a callstack overflow error on edge case.
         let setHat = function(possibleCoordinatesArray){
-            //Selects a random x and y coordinate from the array of available coordinates
+            //Selects a random x and y coordinate from the array of available coordinates.
             let testCoordinates = possibleCoordinatesArray[Math.floor(Math.random() * (possibleCoordinatesArray.length))]
             //Sets the coordinates for the location on the field.
             let xCoordinate = testCoordinates.x;
@@ -696,7 +695,7 @@ class Field {
             //If all moves have more than 3 crumbs, it will return false as the field is invalid.
             //The number of crumbs to count should be one less than the total number of possible paths coming to an intersection. In the case of this simple field it is 4 paths (In a real life maze you would not need to place any crumbs at intersections).
             //If a move encounters the hat, it will return true as the field is valid.
-            //There is no need to check for holes or out of bounds as they will resolve to false when compared to the crumb numbers within the conditional statements
+            //There is no need to check for holes or out of bounds as they will resolve to false when compared to the crumb numbers within the conditional statements.
             //The maximum number of acceptible crumbs is 3 which allows to account for dead ends.
             let directionOfLeastCrumbs = undefined;
             for(let direction in possibleMoves){
@@ -719,6 +718,7 @@ class Field {
 
         //Helper function that will move the xy possition and set crumbs on the previous space.
         let move = function(direction){
+            //Adds crumbs to the intersection before moving.
             testFieldArray[y][x]++;
             if(direction === "W"){
                 y--;
@@ -730,7 +730,7 @@ class Field {
                 x++;
             }
         };
-        //Continues to move around the board until either a win condition is met, or the field is found invalid
+        //Continues to move around the board until either a win condition is met, or the field is found invalid.
         while(valid === undefined){
             move(decideDirection());
         }
@@ -823,7 +823,6 @@ class Field {
     };
 };
 
-
 //Contains all the prompts used within the game logic.
 let prompts = {    
 
@@ -837,6 +836,9 @@ let prompts = {
         }     
     },
 
+    //Helper method used in prompts. 
+    //Options should be an array of strings. 
+    //Selection will be returned in all lower case letters.
     formattedPrompt(options){
         let answer = readlineSync.keyInSelect(options, "", {guide: false, cancel: false, hideEchoBack: true, mask: ""});
             return options[answer].toLowerCase();
@@ -858,7 +860,6 @@ let prompts = {
         return this.formattedPrompt(["Bad", "Okay", "Good", "Exit"]);
     },
 
-    //Asks the user if they would like to play again on the same field. Then asks if they are ready. Returns Y or N.
     tryAgain(){
         return this.formattedPrompt(["Try again", "Check Your Stats", "Exit"]);
     },
@@ -870,7 +871,7 @@ let prompts = {
 
  //Dialog object used by prompts.
  let dialogs = {
-    //Used to randomly select one of the options and log it to the console.
+    //Helper method randomly selects one of the options and log it to the console.
     randomSelector(options){
         console.log(options[Math.floor(Math.random() * (options.length))]);
     },
@@ -1041,7 +1042,7 @@ let mainInterface = {
         //Creates a handler for moves and adds it to the eventEmitter.
         let moveHandler = function(){
             this.game.gameStats.moves ++;
-            this.updatePlayerGames();
+            this.updatePlayerGamesWithCurrent();
             this.updatePlayersJSON();
         }.bind(this);
         eventEmitter.on("move", moveHandler);
@@ -1051,7 +1052,7 @@ let mainInterface = {
         //Creates a handler for attempts and adds it to the eventEmitter.
         let attemptHandler = function(){
             this.game.gameStats.attempts ++;
-            this.updatePlayerGames();
+            this.updatePlayerGamesWithCurrent();
             this.updatePlayersJSON();
         }.bind(this);
         eventEmitter.on("attempt", attemptHandler);
@@ -1061,14 +1062,13 @@ let mainInterface = {
         //Creates a handler for days and adds it to the eventEmitter.
         let dayHandler = function(){
             this.game.gameStats.days ++;
-            this.updatePlayerGames();
+            this.updatePlayerGamesWithCurrent();
             this.updatePlayersJSON();
         }.bind(this);
         eventEmitter.on("day", dayHandler);
 
-
         //Creates a handler for wins and adds it to the eventEmitter.
-            let winHandler = function(){            
+        let winHandler = function(){            
             //Updates player object's total stats and writes to JSON. Marks the game as solved, increments the wins, and updates the attempts/moves from the game object.
             this.player.stats[this.game.difficulty].unsolved --;
             this.player.stats[this.game.difficulty].wins ++;
@@ -1167,6 +1167,7 @@ let mainInterface = {
         }
     },
     
+    //Sets the player object based on user input.
     setPlayer(){
         dialogs.hello();
         //Prompts player to enter their name.
@@ -1205,11 +1206,11 @@ let mainInterface = {
     },
 
     //Updates the games property of the player object with new stats for the current game.
-    updatePlayerGames(){
+    updatePlayerGamesWithCurrent(){
         this.player.games.splice(-1, 1, {stats: this.game.gameStats, field: this.game.field.hiddenField});
     },
 
-    //Update the players JSON with the most recent player stats.
+    //Updates the players JSON with the most recent player stats.
     updatePlayersJSON(){
         this.players[this.playerIndex] = this.player;
         fs.writeFileSync('./players.json', JSON.stringify(this.players));
@@ -1261,7 +1262,7 @@ let mainInterface = {
         }
     },
     
-    //Used to say goodbye and close the application.
+    //Says goodbye and closes the application.
     exit(){
         console.clear();
         dialogs.goodbye();
