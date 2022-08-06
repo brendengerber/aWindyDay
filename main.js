@@ -351,7 +351,7 @@ let settings = {
 };
 
 //Contains game logic.
-class Game {
+class Game{
     constructor(difficulty, field){
         this._difficulty = difficulty;
         this._field = field;
@@ -404,41 +404,6 @@ class Game {
         cloud: new assets.Cloud(settings.frameDimensions.x)
     };
 
-    // Loops through all of the assets and updates the state object if the asset has an update method.
-    update(){
-        for(let asset in this.assets){
-            //Checks that the object has an update method and runs it if so.
-            if(this.assets[asset].update){
-                this.assets[asset].update(asset, this.state);
-            }
-        }
-    }
-    
-    //Composits all of the assets into a single frame and draws it.
-    //Loops through all assets and calls draw.possitionSprite() and draw.color() eliminating the need for individual asset methods.
-    drawCurrentFrame(){
-        let frameAssets = [];
-        //Loops through all assets present in state.
-        //The first asset listed in state will be the top layer and the following assets will be drawn under the top layer in decending order.
-        for(let key of Object.keys(this.state)){
-            //Checks if current asset should be drawn, processes position and color if so, and adds it to the array to composite.
-            if(this.state[key].draw){
-                //Possitions the sprite.
-                let possitionedColoredArray = draw.possitionSprite(this.assets[key]["frame"+this.state[key].frame], this.state[key].offset, settings.frameDimensions);
-                //Colors the array if necessary.
-                if(this.state[key].color){
-                    possitionedColoredArray = draw.colorSprite(possitionedColoredArray, this.state[key].color);
-                }
-                frameAssets.push(possitionedColoredArray);
-            }
-        }
-        //Creates the composited frame.
-        let frameArray = draw.createFrame(frameAssets, settings.frameDimensions);
-        //Transforms the frame array to a string and logs it.
-        let frameString = draw.arrayToString(frameArray);
-        console.log(frameString);
-    };
-
     //Contains game logic.
     playGame(){
         console.clear();
@@ -449,26 +414,6 @@ class Game {
         eventEmitter.emit("attempt");
         eventEmitter.emit("day");
 
-        //Helper function that displays the final field, resets the state object, addresses stats, and emits a loss event.
-        let lose = function(){
-            console.clear();
-            this.drawCurrentFrame()
-            //Resets the state property.
-            this._state = _.merge({}, settings.frameDimensions, settings.initialStates, settings[this.difficulty].states);
-            this.gameStats.win = false;
-            eventEmitter.emit("loss");
-            outcome = "loss";
-        }.bind(this);
-
-        //Helper function that displays the final field, addresses stats, and emits a win event.
-        let win = function(){
-            console.clear();
-            this.drawCurrentFrame();
-            this.gameStats.win = true;
-            eventEmitter.emit("win");
-            outcome = "win";
-        }.bind(this);
-  
         //Helper function that checks if the move is out of bounds or contains a hat or hole.
         //Returns the checked status of the space.
         let checkMove = function(){
@@ -517,7 +462,7 @@ class Game {
         }.bind(this)
 
         //Processes user move input. 
-        let processMove = function(key){
+        let moveHandler = function(key){
             let direction = key.toUpperCase();
             switch(direction){
                 case "W":  
@@ -542,31 +487,88 @@ class Game {
                     break;
                 };
         }.bind(this);
-        
         //Resumes stdin since readlineSync pauses it when run.
         process.stdin.resume();
         //Sets raw mode to read keystrokes without pressing enter.
         process.stdin.setRawMode(true);
         //Sets encoding.
         process.stdin.setEncoding( 'utf8' );
-        //Turns on the move listener and calls move to handle player movements.
-        process.stdin.on( 'data', processMove);
+        //Turns on the move listener and calls moveHandler to handle player movements.
+        process.stdin.on( 'data', moveHandler);
+    
+        //Helper function that displays the final field, resets the state object, addresses stats, and emits a loss event.
+        let lose = function(){
+            console.clear();
+            mainLoopDraw()
+            //Resets the state property.
+            this._state = _.merge({}, settings.frameDimensions, settings.initialStates, settings[this.difficulty].states);
+            this.gameStats.win = false;
+            eventEmitter.emit("loss");
+            outcome = "loss";
+        }.bind(this);
+
+        //Helper function that displays the final field, addresses stats, and emits a win event.
+        let win = function(){
+            console.clear();
+            mainLoopDraw();
+            this.gameStats.win = true;
+            eventEmitter.emit("win");
+            outcome = "win";
+        }.bind(this);
+
+        //Update function used by the main game loop.
+        //Loops through all of the assets and updates the state object if the asset has an update method.
+        let mainLoopUpdate = function(){
+            for(let asset in this.assets){
+                //Checks that the object has an update method and runs it if so.
+                if(this.assets[asset].update){
+                    this.assets[asset].update(asset, this.state);
+                }
+            }
+        }.bind(this);
         
+        //Draw function used by the main game loop.
+        //Creates the current frame by compositing all of the assets into a single frame, and then draws the frame. 
+        //Loops through all assets and calls draw.possitionSprite() and draw.color() eliminating the need for individual asset draw methods.
+        let mainLoopDraw = function(){
+            let frameAssets = [];
+            //Loops through all assets present in state.
+            //The first asset listed in state will be the top layer and the following assets will be drawn under the top layer in decending order.
+            for(let key of Object.keys(this.state)){
+                //Checks if current asset should be drawn, processes position and color if so, and adds it to the array to composite.
+                if(this.state[key].draw){
+                    //Possitions the sprite.
+                    let possitionedColoredArray = draw.possitionSprite(this.assets[key]["frame"+this.state[key].frame], this.state[key].offset, settings.frameDimensions);
+                    //Colors the array if necessary.
+                    if(this.state[key].color){
+                        possitionedColoredArray = draw.colorSprite(possitionedColoredArray, this.state[key].color);
+                    }
+                    frameAssets.push(possitionedColoredArray);
+                }
+            }
+            //Creates the composited frame.
+            let frameArray = draw.createFrame(frameAssets, settings.frameDimensions);
+            //Transforms the frame array to a string and logs it.
+            let frameString = draw.arrayToString(frameArray);
+            console.log(frameString);
+        }.bind(this);
+
+        //Begins the main game loop.
         //Checks game status and then updates/draws frames or ends mainLoop.
         let mainLoop = function(){
             console.clear();
             if(!gameOver){
                 //Updates states.
-                this.update()
+                mainLoopUpdate();
                 //Draws the current frame.
-                this.drawCurrentFrame()
+                mainLoopDraw();
             }
 
             if(gameOver){
                 //Stops rendering the frames.
                 clearInterval(mainLoopInterval);
                 //Turns off the move listener.
-                process.stdin.removeListener('data', processMove);
+                process.stdin.removeListener('data', moveHandler);
                 //Returns outcome of the game.
                 return outcome;
             }
