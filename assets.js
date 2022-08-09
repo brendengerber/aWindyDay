@@ -1,17 +1,17 @@
 //ADDING NEW ASSETS
-    //Create asset in assets.js as a class.
+    //Create asset in assets.js as a new class and export it.
     //Assets should be an array of arrays. Use draw.stringToArray to convert multi line string art into an asset.
     //Assets should be rectangular i.e., all rows should be the same length, and all columns should be the same length. The draw.makeRectangular method can help by adding blank space to the end of shorter rows. 
     //Transparent characters should be 'blank' while ' ' is used for solid space. This allows for the layering of sprites with transparent backgrounds.
     
     //Add any new instances to game.assets.
-    //Add default individual state object to full state object via settings.
+    //Add an individual default state object (for the instance of the new asset) to the full state object via the settings object.
     //The first object in settings will be drawn as the top layer, with all subsequent objects drawn below in decending order.
 
     //When adding a new asset the following are required.
-    //State setting offset. Set to an object such as {X:1, y:2}.
-    //State setting frame. Set to 1. Even if there is only one frame, as it is needed for the loop to recognize and draw.
-    //State setting draw. Set either to true or false.
+    //State property offset. Set to an object such as {X:1, y:2}. The offset is measured from the top left corner.
+    //State property frame. Set to 1. Even if there is only one frame, as it is needed for the loop to recognize and draw.
+    //State property draw. Set either to true or false.
     //Asset property frame1. Set to a 2D array consisting of what will be drawn. Further frames can be numbered frame2, frame3, etc.
     
     //Update methods are optional.

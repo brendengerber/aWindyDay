@@ -1,35 +1,5 @@
-
-//reorder functions and mthods so grouping makes more sense
-
-
-//change field move to a switch
-
-
-//rewrite adding assets to be clearer and simpler
-
-//Do the interview stuff
-
-//spacing
-
-
-// For interview, might be good to eliminate hidden field. Make field an asset. Can create field based on the array made by generate valid field. But each space is an object, frame is grass, and a state for hole and hat as well. check move then checks the state of that object.
-// alternatively i can set the field asset rather than a field property. that field object can have a state object that is the current field and the hidden field. then check move checks the state to see the validity of the move. 
-// either way would want to add field to assets and remove the function that draws it in the draw current frame method.
-//*The way to do this is move field to assets. then have it build the field like the other assets (only need one class then), might be nice to move hidden field to the state and have isHole and isHat check the state. For sure move it to assets though and have it construct like an asset. And put the update method in the class directly too. */
-//Constructor sets frame asset rather than frame property
-//Make sure field still gets saved to gameStats, where is that happening?
-        //*each grass could be an object with a hole property, drawn at it's coordinates, when the player moves there, the property is checked for hole, the gras is printed, but the player is printed over the grass kinda */
-
-
-// add emotions convo, makes him more quarky and grumpy
-// Make sure there is an explanation about hwo the sprites work using invisible margins
-
-// have an old offset and a new offset, if new offset = old offset, then do not redraw possitioned sprite. If update changes new offset, then redraw the sprite
-
-// in a perfect world I would make each grass it's own object. Have the object contain if it has a hole. Then when landing on that grid space, would run a check to see. That would allow me to have larger assets.  Game could be a grid with the center of the objects on the grid point and the assets bounce from one to the next and check other objects with that state. could even make hitboxes that way by having their state contain several points connected to the middle.
-
-// Inspired by maze craze
-
+//A simple maze game and interface. 
+//Inspired by one of my favorite games growing up: Maze Craze.
 
 //Requires necessary custom modules.
 const draw = require('./draw.js')
@@ -449,7 +419,7 @@ class Game{
             }
         }.bind(this)
 
-        //Processes user move input. 
+        //Processes user move input based on what key is pressed. 
         let moveHandler = function(key){
             let direction = key.toUpperCase();
             switch(direction){
@@ -654,7 +624,7 @@ class Field {
         }
         setHatAndHoles(holes);
         return new Field(newHiddenFieldArray);
-    }
+    };
     
     //Validates a field object and returns true if it is winnable and false if it is not.
     static validateField(testField){
@@ -816,7 +786,6 @@ class Field {
 
 //Contains all the prompts used within the game logic.
 let prompts = {    
-
     //Used for obtaining a username. Allows only alphanumeric characters up to 15 long.
     formattedNamePrompt(){
         let answer = readlineSync.prompt()

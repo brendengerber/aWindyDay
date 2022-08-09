@@ -63,51 +63,6 @@ module.exports = {
         }
         return frame;
     },
-    //Used to create a string from the frame array.
-    arrayToString: function(array){
-        let string = ``;   
-        for(let row of array){
-            for(let character of row){
-                string+=character;
-            }
-            string += '\n';
-        }
-        return string;
-    },
-
-    //Can be used to convert string art to an array for drawing. 
-    //Create a multi line string with String.raw` and begin on the next line. This is important especially if the asset includes backslashes which would normall escape.
-    stringToArray: function(string){
-        let array = [];
-        for(let row of string.split('\n')){
-            let rowArray = [];
-            for(let character of row){
-                rowArray.push(character);
-            }
-            array.push(rowArray);
-        }
-        array.shift();
-        return JSON.stringify(array);
-    },
-
-    //Helpful to add 'blank' space to the end of an array making it rectangular for drawing.
-    makeRectangular: function(array){
-        let rectangularArray = array;
-        let maxLength = 0;
-        for(let row of rectangularArray){
-            if(row.length > maxLength){
-                maxLength = row.length;
-            }
-        }
-        for(let row of rectangularArray){
-            if(row.length < maxLength){
-                for(let i = (maxLength - row.length); i > 0; i--){
-                    row.push('blank');
-                }
-            }
-        }
-        return JSON.stringify(rectangularArray);
-    },
 
     //Adds 'blank'/transparent margins to possition a sprite correctly in the frame.
     //Offset argument is an object such as {x:0, y:0}.
@@ -215,5 +170,51 @@ module.exports = {
             }
         }
         animationLoopInterval = setInterval(animationLoop, 1000/fps);
+    },
+
+    //Creates a string from the frame array asset.
+    arrayToString: function(array){
+        let string = ``;   
+        for(let row of array){
+            for(let character of row){
+                string+=character;
+            }
+            string += '\n';
+        }
+        return string;
+    },
+
+    //Converts string art to an array for drawing. 
+    //Argument should be a multi line string with String.raw` and begin on the next line. This is important especially if the asset includes backslashes which would normall escape.
+    stringToArray: function(string){
+        let array = [];
+        for(let row of string.split('\n')){
+            let rowArray = [];
+            for(let character of row){
+                rowArray.push(character);
+            }
+            array.push(rowArray);
+        }
+        array.shift();
+        return JSON.stringify(array);
+    },
+
+    //Adds 'blank' space to the end of each row of an asset array making it rectangular for drawing.
+    makeRectangular: function(array){
+        let rectangularArray = array;
+        let maxLength = 0;
+        for(let row of rectangularArray){
+            if(row.length > maxLength){
+                maxLength = row.length;
+            }
+        }
+        for(let row of rectangularArray){
+            if(row.length < maxLength){
+                for(let i = (maxLength - row.length); i > 0; i--){
+                    row.push('blank');
+                }
+            }
+        }
+        return JSON.stringify(rectangularArray);
     }
 };
