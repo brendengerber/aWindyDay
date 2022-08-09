@@ -1,11 +1,6 @@
 
 //reorder functions and mthods so grouping makes more sense
 
-//be consistent about helpers
-//start at validateField
-//is move a helper?
-//Maybe all the move stuff can be their own method instead of nested? like the other methods, but they need to be able to access the possition stuff. maybe possition stuff should be properties instead of variables
-//is setHatAndHoles a helper? maybe not since its the last one that then uses all of the helpers.
 
 //change field move to a switch
 
@@ -87,8 +82,8 @@ class Player{
             totalDaysToWin: 0 
         },
     }
+     
     games = [];
-
     firstLoss = false;
     
     //Processes the stats of a player.
@@ -108,20 +103,18 @@ class Player{
     };
 
     //Creates a table of all the stats for each difficulty.
-    //Uses processStats method.
     static createProcessedStatsTable(player){
         //Contains the processed stats to parse into a table.
         let stats = Player.processStats(player);   
-
-        //Helper function to create an array from the processedStats object. 
+        //Creates an array from the processedStats object. 
         //The stat arg should be the object prepared by Player.processStats(player).
         let createStatsTableArray = function(stats){
-            //Used to create an array which will be filled with all processed stats for each difficulty.
+            //Used to create an array which will be filled with each processed stat for each difficulty.
             let statsTable = [[]];
             for(let key in stats.easy){
                 statsTable.push([]);
             }
-            //Used to track the colums and rows where stats will be entered.
+            //Tracks the colums and rows where stats will be entered.
             let column = 0;
             let row = 1;
             //Parses the stats object and enters them into the array where appropriate to display the difficulties horizontally.
@@ -144,7 +137,6 @@ class Player{
             }
             return statsTable;
         };        
-
         //Config object for logging the table of stats.
         const config = {
             spanningCells: [
@@ -154,17 +146,15 @@ class Player{
             ],
             header: {alignment: 'center', content: `${player.name}'s Stats`}
           };
-
         return table(createStatsTableArray(stats), config);
     }
 };
 
-//Sets ifficulty settings and default settings.
+//Sets difficulty settings and default settings.
 //Balancing and tweaks can be done here.
 let settings = {
     //Sets the dimensions of the frame.
     frameDimensions: {x:55, y:23},
-
     //Used to set the number of holes and field dimensions for each difficulty level as well as states dependent on difficulty.
     easy: {
         fieldSettings:{
@@ -225,11 +215,11 @@ let settings = {
             frame: 1,
             offset: {x:24, y:3}
         },
+        //The initialOffset property is used to reset the cloud after a full pass. Should be the same as offset.
         cloud:{
             draw: true,
             frame: 1,
             offset: {x:55, y:3},
-            //Used to reset the cloud after a full pass. Should be the same as offset.
             initialOffset: {x:55, y:3},
             color: '\x1b[97m',
             counter: 0
@@ -329,11 +319,11 @@ let settings = {
             frame: 1,
             offset: {x:0, y:11}
         },
+        //The initialOffset property is used to reset the body after a full arch. Should be the same as offset.
         celestialBody: {
             draw: true,
             frame: 1,
             offset: {x:1, y:10},
-            //Used to reset the body after a full arch. Should be the same as offset.
             initialOffset: {x:1, y:10},
             counter: 0,
             steps: 0,
@@ -355,14 +345,11 @@ class Game{
     constructor(difficulty, field){
         this._difficulty = difficulty;
         this._field = field;
-        
         //Sets the state from settings object based on difficulty level.
         //Empty object is filled with settings thus leaving the original settings object in tact.
         this._state =  _.merge({}, settings.initialStates, settings[difficulty].states)
-
         //Adds fieldAsset.
         this.assets.fieldAsset = new assets.FieldAsset(this.field)
-        
         //Adds a fence that fits the field to assets.
         this.assets.fence = new assets.Fence(this.assets.fieldAsset.frame1[0].length, this.assets.fieldAsset.frame1.length)
     };
@@ -382,6 +369,7 @@ class Game{
         moves: 0,
         win: false,
     };
+
     //Contains all of the visual assets for the game.
     assets = {
         celestialBody: new assets.CelestialBody(),
@@ -414,7 +402,7 @@ class Game{
         eventEmitter.emit("attempt");
         eventEmitter.emit("day");
 
-        //Helper function that checks if the move is out of bounds or contains a hat or hole.
+        //Checks if the move is out of bounds or contains a hat or hole.
         //Returns the checked status of the space.
         let checkMove = function(){
             if(!this.field.isOutOfBounds(newLocation.x, newLocation.y)){
@@ -429,7 +417,7 @@ class Game{
             return "outOfBounds";
         }.bind(this)
 
-        //Helper function that updates the location/newLocation and processes wins and losses based on the checked move.
+        //Updates the location/newLocation and processes wins and losses based on the checked move.
         //The move arg should be a value returned by checkMove.
         let updateMove = function(move){
             switch(move){
@@ -487,6 +475,7 @@ class Game{
                     break;
                 };
         }.bind(this);
+
         //Resumes stdin since readlineSync pauses it when run.
         process.stdin.resume();
         //Sets raw mode to read keystrokes without pressing enter.
@@ -495,11 +484,11 @@ class Game{
         process.stdin.setEncoding( 'utf8' );
         //Turns on the move listener and calls moveHandler to handle player movements.
         process.stdin.on( 'data', moveHandler);
-    
-        //Helper function that displays the final field, resets the state object, addresses stats, and emits a loss event.
+
+        //Used upon loss to display the final field, reset the state object for next try, addresses stats, and emits a loss event.
         let lose = function(){
             console.clear();
-            mainLoopDraw()
+            drawCurrentFrame()
             //Resets the state property.
             this._state = _.merge({}, settings.frameDimensions, settings.initialStates, settings[this.difficulty].states);
             this.gameStats.win = false;
@@ -507,10 +496,10 @@ class Game{
             outcome = "loss";
         }.bind(this);
 
-        //Helper function that displays the final field, addresses stats, and emits a win event.
+        //Used upon win to display the final field, address stats, and emit a win event.
         let win = function(){
             console.clear();
-            mainLoopDraw();
+            drawCurrentFrame();
             this.gameStats.win = true;
             eventEmitter.emit("win");
             outcome = "win";
@@ -518,7 +507,7 @@ class Game{
 
         //Update function used by the main game loop.
         //Loops through all of the assets and updates the state object if the asset has an update method.
-        let mainLoopUpdate = function(){
+        let updateAssetStates = function(){
             for(let asset in this.assets){
                 //Checks that the object has an update method and runs it if so.
                 if(this.assets[asset].update){
@@ -530,7 +519,7 @@ class Game{
         //Draw function used by the main game loop.
         //Creates the current frame by compositing all of the assets into a single frame, and then draws the frame. 
         //Loops through all assets and calls draw.possitionSprite() and draw.color() eliminating the need for individual asset draw methods.
-        let mainLoopDraw = function(){
+        let drawCurrentFrame = function(){
             let frameAssets = [];
             //Loops through all assets present in state.
             //The first asset listed in state will be the top layer and the following assets will be drawn under the top layer in decending order.
@@ -559,11 +548,10 @@ class Game{
             console.clear();
             if(!gameOver){
                 //Updates states.
-                mainLoopUpdate();
+                updateAssetStates();
                 //Draws the current frame.
-                mainLoopDraw();
+                drawCurrentFrame();
             }
-
             if(gameOver){
                 //Stops rendering the frames.
                 clearInterval(mainLoopInterval);
@@ -612,7 +600,8 @@ class Field {
             }
             newHiddenFieldArray.push(newRow);
         }
-        //Helper function that adds holes, if there is already a hole in the random spot then the function runs again. 
+
+        //Adds holes, if there is already a hole in the random spot then the function runs again. 
         //This allows adding holes randomly throughout the field rather than having them clustered at the beginning if a simple loop was used to add randomly grass or hole characters until the desired number of holes was reached.
         let setHole = function(possibleCoordinatesArray){
             //Selects a random x and y coordinate from the array of available coordinates.
@@ -623,7 +612,7 @@ class Field {
             //Sets the index where the test coordinates are in possibleCoordinatesArray.
             //This will be used later in the event that the coordinates are not grass to remove them from the array passed to the next recursive call.
             let coordinatesIndex = possibleCoordinatesArray.findIndex(coordinates =>  coordinates.x === testCoordinates.x && coordinates.y === testCoordinates.y);
-            //Runs setHat again() if the random possition is not available.
+            //Runs setHat again if the random possition is not available.
             if(newHiddenFieldArray[yCoordinate][xCoordinate] !== grass){
                 //Removes x and y coordinates if they are not grass in order to prevent a callstack overflow error in edge cases.
                 possibleCoordinatesArray.splice(coordinatesIndex, 1);
@@ -634,8 +623,8 @@ class Field {
             }
         }
     
-        //Helper function that adds the hat, if there is a hole in the randomly selected location then the function will run again with the location removed from possible locations.
-        //A recursive function is used and unsuitable location are removed when encountered to avoid a callstack overflow error on edge case.
+        //Adds the hat, if there is a hole in the randomly selected location then the function will run again with the location removed from possible locations.
+        //A recursive function is used and unsuitable location are removed when encountered to avoid a callstack overflow error.
         let setHat = function(possibleCoordinatesArray){
             //Selects a random x and y coordinate from the array of available coordinates.
             let testCoordinates = possibleCoordinatesArray[Math.floor(Math.random() * (possibleCoordinatesArray.length))]
@@ -674,16 +663,13 @@ class Field {
         let valid = undefined;
         //Creates an array to test containing 0s in place of path characters. These will be used to count crumbs while traversing the maze.
         let testFieldArray = testField.hiddenField.map(row => row.map(column => (column === grass) ? 0 : column));
-
         //First checks that the starting possition is not a hole or a hat.
         if(testFieldArray[0][0] === hole || testFieldArray[0][0] === hat){
             valid = false;
         }
-
-        //Helper function that decides which direction to move based on the crumbs present at adjacent spaces.
+        //Decides which direction to move based on the crumbs present at adjacent spaces.
         //Sets valid to true or false if the hat is found or all adjacent paths have 2 crumbs/holes.
         let decideDirection = function(){
-            
             //Finds values for crumbs dropped on adjacent moves.
             //Uses optional chaining operators to prevent out of bounds moves from throwing runtime errors. They will now return undefined. 
             let possibleMoves = {
@@ -692,7 +678,6 @@ class Field {
                 S: testFieldArray?.[y+1]?.[x],
                 D: testFieldArray?.[y]?.[x+1]
             };
-            
             //Loops through each direction and records the direction with the least crumbs. If multiple directions have the same number, it will select the first one. 
             //If all moves have more than 3 crumbs, it will return false as the field is invalid.
             //The number of crumbs to count should be one less than the total number of possible paths coming to an intersection. In the case of this simple field it is 4 paths (In a real life maze you would not need to place any crumbs at intersections).
@@ -718,9 +703,8 @@ class Field {
             return directionOfLeastCrumbs;
         }.bind(this);
 
-        //Helper function that will move the xy possition and set crumbs on the previous space.
+        //Adds crumbs to the intersection and moves to the next possition.
         let move = function(direction){
-            //Adds crumbs to the intersection before moving.
             testFieldArray[y][x]++;
             switch(direction){
                 case "W":
@@ -843,7 +827,7 @@ let prompts = {
         }     
     },
 
-    //Helper method used in prompts. 
+    //Used in prompts to obtain user input.
     //Options should be an array of strings. 
     //Selection will be returned in all lower case letters.
     formattedPrompt(options){
@@ -878,7 +862,7 @@ let prompts = {
 
  //Dialog object used by prompts.
  let dialogs = {
-    //Helper method randomly selects one of the options and log it to the console.
+    //Randomly selects one of the options and log it to the console.
     randomSelector(options){
         console.log(options[Math.floor(Math.random() * (options.length))]);
     },
@@ -1030,7 +1014,6 @@ let mainInterface = {
         if(!fs.existsSync("./players.json")){
             fs.writeFileSync("./players.json", JSON.stringify([]));
         };
-
         //Loads the player list
         this.players = require("./players.json");
 
@@ -1040,6 +1023,7 @@ let mainInterface = {
         }.bind(this)
         eventEmitter.on("mainMenu", mainMenuHandler)
 
+        //Used to avoid recursion from lossMenu calling itself.
         let lossMenuHandler = function(){
             mainInterface.lossMenu()
         }.bind(this)
@@ -1083,15 +1067,12 @@ let mainInterface = {
             this.player.stats[this.game.difficulty].totalDaysToWin += this.game.gameStats.days;
             this.player.stats[this.game.difficulty].totalMovesToWin += this.game.gameStats.moves;
             this.updatePlayersJSON();
-            
-            //Begins dialog and options.
-            dialogs.win();
-            this.next();
-
             //Resets the current field and game.
             this.field = undefined;
             this.game = undefined;
-
+            //Begins dialog and next options.
+            dialogs.win();
+            this.next();
             this.mainMenu()
         }.bind(this);
         eventEmitter.on("win", winHandler);
@@ -1105,7 +1086,6 @@ let mainInterface = {
                 this.updatePlayersJSON();
                 this.next();
                 this.lossMenu();
-
             //Initiates dialog, options, and logic for the all subsequent losses by the player.
             }else{
                 dialogs.lose();
@@ -1114,7 +1094,6 @@ let mainInterface = {
             }
         }.bind(this);
         eventEmitter.on("loss", lossHandler);
-
         //Begins Dialog and options.
         this.setPlayer();
         hideCursor();
@@ -1132,7 +1111,6 @@ let mainInterface = {
         }else if(!this.firstGameOfSession){
             answer = prompts.mainMenu();
         }
-
         if(answer === "play a game" || answer === "play again"){ 
             dialogs.excitedConfirmation();
             this.next();
@@ -1244,7 +1222,6 @@ let mainInterface = {
         this.player.stats[this.game.difficulty].unsolved ++;
         this.player.games.push({stats: this.game.gameStats, field: this.game.field.hiddenField});
         this.updatePlayersJSON();
-        
         //Calls the game logic.
         this.game.playGame();
     },
@@ -1254,7 +1231,6 @@ let mainInterface = {
         //Resets the play field to blank.
         this.game.field.resetPlayField();
         this.game.assets.fieldAsset.frame1 = this.game.field.playField
-
         //Calls the game logic.
         this.game.playGame();
     },
@@ -1279,7 +1255,7 @@ let mainInterface = {
         showCursor();
         process.exit();
     }
-}
+};
 
 //Initiates the application.
 mainInterface.begin();

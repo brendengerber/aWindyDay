@@ -13,7 +13,6 @@ module.exports = {
         if(dimensions !== undefined){
             xDimension = dimensions.x;
             yDimension = dimensions.y;
-        
         //Sets the frame's dimensions in case no dimensions arg was given.
         }else{
             //Finds the array with the most columns and sets the dimension.
@@ -90,6 +89,7 @@ module.exports = {
         array.shift();
         return JSON.stringify(array);
     },
+
     //Helpful to add 'blank' space to the end of an array making it rectangular for drawing.
     makeRectangular: function(array){
         let rectangularArray = array;
@@ -169,7 +169,6 @@ module.exports = {
             let outOfFrame =  possitionedSprite.length - dimensions.y;
             possitionedSprite.splice(possitionedSprite.length - outOfFrame, outOfFrame);
         }
-
         return possitionedSprite;
     },
 
@@ -217,4 +216,4 @@ module.exports = {
         }
         animationLoopInterval = setInterval(animationLoop, 1000/fps);
     }
-}
+};

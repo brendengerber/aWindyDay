@@ -20,7 +20,7 @@
 
 const eventEmitter  = require('./eventEmitter.js');
 
-//Same helper function for use within the module.
+//Updates the color in an asset's state based on the time of day.
 let updateColorByTime = function(name, state){
     if(state.time.current === 'day'){
         state[name].color = '\x1b[97m';
@@ -39,7 +39,7 @@ module.exports.FieldAsset = class{
     update(name, state){
         updateColorByTime(name, state)
     }
-}
+};
 
 module.exports.Star = class{
     //Arguments are entered as integers for the number of desired frames.
@@ -302,7 +302,7 @@ module.exports.CelestialBody = class{
             state[name].counter++;
         }
     }
-}
+};
 
 module.exports.Cloud = class{
     frame1 = [
@@ -326,7 +326,7 @@ module.exports.Cloud = class{
         }
         
     };
-}
+};
 
 
 
