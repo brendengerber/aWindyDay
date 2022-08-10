@@ -488,7 +488,7 @@ class Game{
         
         //Draw function used by the main game loop.
         //Creates the current frame by compositing all of the assets into a single frame, and then draws the frame. 
-        //Loops through all assets and calls draw.possitionSprite() and draw.color() eliminating the need for individual asset draw methods.
+        //Loops through all assets and calls draw.positionSprite() and draw.color() eliminating the need for individual asset draw methods.
         let drawCurrentFrame = function(){
             let frameAssets = [];
             //Loops through all assets present in state.
@@ -497,12 +497,12 @@ class Game{
                 //Checks if current asset should be drawn, processes position and color if so, and adds it to the array to composite.
                 if(this.state[key].draw){
                     //Possitions the sprite.
-                    let possitionedColoredArray = draw.possitionSprite(this.assets[key]["frame"+this.state[key].frame], this.state[key].offset, settings.frameDimensions);
+                    let positionedColoredArray = draw.positionSprite(this.assets[key]["frame"+this.state[key].frame], this.state[key].offset, settings.frameDimensions);
                     //Colors the array if necessary.
                     if(this.state[key].color){
-                        possitionedColoredArray = draw.colorSprite(possitionedColoredArray, this.state[key].color);
+                        positionedColoredArray = draw.colorSprite(positionedColoredArray, this.state[key].color);
                     }
-                    frameAssets.push(possitionedColoredArray);
+                    frameAssets.push(positionedColoredArray);
                 }
             }
             //Creates the composited frame.
@@ -582,12 +582,12 @@ class Field {
             //Sets the index where the test coordinates are in possibleCoordinatesArray.
             //This will be used later in the event that the coordinates are not grass to remove them from the array passed to the next recursive call.
             let coordinatesIndex = possibleCoordinatesArray.findIndex(coordinates =>  coordinates.x === testCoordinates.x && coordinates.y === testCoordinates.y);
-            //Runs setHat again if the random possition is not available.
+            //Runs setHat again if the random position is not available.
             if(newHiddenFieldArray[yCoordinate][xCoordinate] !== grass){
                 //Removes x and y coordinates if they are not grass in order to prevent a callstack overflow error in edge cases.
                 possibleCoordinatesArray.splice(coordinatesIndex, 1);
                 setHole(possibleCoordinatesArray);
-            //Sets the hole possition.
+            //Sets the hole position.
             }else{
                 newHiddenFieldArray[yCoordinate][xCoordinate] = hole;
             }
@@ -604,12 +604,12 @@ class Field {
             //Sets the index where the test coordinates are in possibleCoordinatesArray.
             //This will be used later in the event that the coordinates are not grass to remove them from the array passed to the next recursive call.
             let coordinatesIndex = possibleCoordinatesArray.findIndex(coordinates =>  coordinates.x === testCoordinates.x && coordinates.y === testCoordinates.y);
-            //Runs setHat again() if the random possition is not available.
+            //Runs setHat again() if the random position is not available.
             if(newHiddenFieldArray[yCoordinate][xCoordinate] !== grass){
                 //Removes x and y coordinates if they are not grass in order to prevent a callstack overflow error in edge cases.
                 possibleCoordinatesArray.splice(coordinatesIndex, 1);
                 setHat(possibleCoordinatesArray);
-            //Sets the hat possition.
+            //Sets the hat position.
             }else{
                 newHiddenFieldArray[yCoordinate][xCoordinate] = hat;
             }
@@ -633,7 +633,7 @@ class Field {
         let valid = undefined;
         //Creates an array to test containing 0s in place of path characters. These will be used to count crumbs while traversing the maze.
         let testFieldArray = testField.hiddenField.map(row => row.map(column => (column === grass) ? 0 : column));
-        //First checks that the starting possition is not a hole or a hat.
+        //First checks that the starting position is not a hole or a hat.
         if(testFieldArray[0][0] === hole || testFieldArray[0][0] === hat){
             valid = false;
         }
@@ -673,7 +673,7 @@ class Field {
             return directionOfLeastCrumbs;
         }.bind(this);
 
-        //Adds crumbs to the intersection and moves to the next possition.
+        //Adds crumbs to the intersection and moves to the next position.
         let move = function(direction){
             testFieldArray[y][x]++;
             switch(direction){

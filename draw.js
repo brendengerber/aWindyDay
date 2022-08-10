@@ -3,7 +3,7 @@ module.exports = {
     //Array sprites should be rectangular i.e., all rows should be the same length, and all columns should be the same length. The draw.makeRectangular method can help by adding blank space to the end of shorter rows. 
     //Layers assets and treats "blank" as transparent which allows for transparent asset backgrounds and layering.
     //The first array will be the top layer, while the final array will be the bottom layer.
-    //Dimensions arg should be an object such as {x:, y:}. Anything possitioned outside of those dimensions will not be drawn.
+    //Dimensions arg should be an object such as {x:, y:}. Anything positioned outside of those dimensions will not be drawn.
     //Default dimensions are the longest x and the longest y dimensions present in the array of sprites.
     createFrame: function(arrays, dimensions){
         let frame;
@@ -64,26 +64,26 @@ module.exports = {
         return frame;
     },
 
-    //Adds 'blank'/transparent margins to possition a sprite correctly in the frame.
+    //Adds 'blank'/transparent margins to position a sprite correctly in the frame.
     //Offset argument is an object such as {x:0, y:0}.
     //Dimensions argument is an object such as {x:0, y:0} representing size of the final frame.
     //Moves the top left corner of the sprite from the top left of the frame according to the offset.
     //Negative coordinates are allowed and any portion of the sprite not in the frame will not be drawn.
-    possitionSprite(array, offset, dimensions){
-        let possitionedSprite = [];
-        //Creates a copy of the sprite to add margins/possition to while leaving the original sprite in tact.
+    positionSprite(array, offset, dimensions){
+        let positionedSprite = [];
+        //Creates a copy of the sprite to add margins/position to while leaving the original sprite in tact.
         for(let row of array){
             let rowCopy = [];
             for(let character of row){
                 rowCopy.push(character);   
             }
-            possitionedSprite.push(rowCopy);
+            positionedSprite.push(rowCopy);
         }
 
         //Possitions sprite if x offset is positive.
         if(offset.x > 0){
             //Adds a blank margin to the left side to move the sprite right according to the offset.
-            for(let row of possitionedSprite){
+            for(let row of positionedSprite){
                 for(let x = offset.x; x>0; x--){
                     row.unshift('blank');
                 }
@@ -95,13 +95,13 @@ module.exports = {
             //Adds a blank margin to the top to move the sprite down according to the offset.
             for(let y = offset.y; y > 0; y--){
                 //Adds a row of the proper length filled with 'blank'
-                possitionedSprite.unshift(Array.from({length: possitionedSprite[0].length}, () => "blank"))
+                positionedSprite.unshift(Array.from({length: positionedSprite[0].length}, () => "blank"))
             }
         }
 
         //Possitions sprite if x offset is negative.
         if(offset.x < 0){
-            for(let row of possitionedSprite){
+            for(let row of positionedSprite){
                 row.splice(0, Math.abs(offset.x));
             }
         }
@@ -112,19 +112,19 @@ module.exports = {
         }
 
         //Possitions the sprite if x offset brings part of the array out of the frame on the right.
-        if(possitionedSprite[0].length > dimensions.x){
-            let outOfFrame =  possitionedSprite[0].length - dimensions.x; 
-            for(let row of possitionedSprite){
+        if(positionedSprite[0].length > dimensions.x){
+            let outOfFrame =  positionedSprite[0].length - dimensions.x; 
+            for(let row of positionedSprite){
                 row.splice(row.length - outOfFrame, outOfFrame);
             }
         }
 
         //Possitions the sprite if y offset brings part of the array out of the frame on the bottom.
-        if(possitionedSprite.length > dimensions.y){
-            let outOfFrame =  possitionedSprite.length - dimensions.y;
-            possitionedSprite.splice(possitionedSprite.length - outOfFrame, outOfFrame);
+        if(positionedSprite.length > dimensions.y){
+            let outOfFrame =  positionedSprite.length - dimensions.y;
+            positionedSprite.splice(positionedSprite.length - outOfFrame, outOfFrame);
         }
-        return possitionedSprite;
+        return positionedSprite;
     },
 
     //Colors a sprite. Color should be supplied as a string escape sequence such as "\x1b[31m".

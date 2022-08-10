@@ -15,15 +15,17 @@
 ## **Functionality**
     1. Generates a random maze using a recursive function.
 
-    2. Validates the randomly generated maze with a custom maze solver based on the Hansel and Gretel bread crumb method.
+    2. Validates the randomly generated maze with a custom maze solver based on the Hansel and Gretel bread crumb method.   
+    
+    3. Manages assets allowing them to be easily created and added to the game. Assets can be created by using standard ANSI characters. Asset update methods can change the asset's current position, color, and shape. Asset sprites have transparent backgrounds allowing them to be easily layered.
 
-    3. Renders sprites and builds frames for the game engine to display using a custom draw module. Sprites have transparent backgrounds allowing them to be layered easily.
+    4. Renders sprites and builds frames for the game engine to display using a custom draw module. 
 
-    4. Manages assets allowing them to be easily created and added to the game. Assets can be created by using standard ANSI characters. Asset update methods can change the asset's color, possition, and current frame. 
+    5. Draws and updates assets using a custom game engine.
+    
+    6. Tracks the game using a state object.
 
-    5. Tracks the game using a state object which allows for updates.
-
-    7. Draws and updates assets using a custom game engine.
+    7. Records stats locally for each individual player using custom events.
 
 ## **Credits**
     Thank you for the inspiration to create this game.
