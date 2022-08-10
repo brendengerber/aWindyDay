@@ -1,4 +1,4 @@
-# **Find Your Hat**
+# **A Windy Day**
 ## **Desctiption**
     This is a small game I created which was inspired by one of my all time favorites growing up: Maze Craze. The game featured randomly generated mazes and had a mode where you could not see the maze and had to memorize it as you played. 
 
