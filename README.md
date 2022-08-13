@@ -8,7 +8,7 @@ This is a small game I created which was inspired by one of my all time favorite
 
 ## **Usage**
 1. If you do not have Node.js and NPM installed, you can download them from thier official [website](https://nodejs.org/en/).
-2. Navigate to the project's directory in the command line install modules with the command "npm install".
+2. Navigate to the project's directory in the command prompt and install modules with the command "npm install".
 3. Run the script with the command "node main.js". For best results use windows cmd prompt.
 4. Play the game and enjoy.
 
