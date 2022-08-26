@@ -232,7 +232,7 @@ module.exports.CelestialBody = class{
     frame2 = [["\x1b[1mC"]];
     update(name, state){
         //Sets the movement delay in number of frames.
-        let delay = 20;
+        let delay = 10;
         let initialOffset = {x: state[name].initialOffset.x, y: state[name].initialOffset.y};
         //Controls the initial ascent.        
         if(state[name].counter === delay && state[name].direction === 'rise'){
