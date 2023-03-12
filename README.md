@@ -2,6 +2,8 @@
 ## **Desctiption**
 This is a small game I created which was inspired by one of my all time favorites growing up: Maze Craze. The game featured randomly generated mazes and had a mode where you could not see the maze and had to memorize it as you played. 
 
+![](README_gif_assets/gameplay.gif)
+
 ## **Technologies**
 1. JavaScript
 2. Node.js v16.16.0
@@ -16,10 +18,13 @@ This is a small game I created which was inspired by one of my all time favorite
 1. Generates a random maze using a recursive function.
 2. Validates the randomly generated maze with a custom maze solver based on the Hansel and Gretel bread crumb method.   
 3. Manages assets allowing them to be easily created and added to the game. Assets can be created by using standard ANSI characters. Asset update methods can change the asset's current position, color, and shape. Asset sprites have transparent backgrounds allowing them to be easily layered.
-4. Renders sprites and builds frames for the game engine to display using a custom draw module. 
-5. Draws and updates assets using a custom game engine.
-6. Tracks the game using a state object.
+4. Draws and updates assets using a custom game loop.
+5. Update function updates a game state object for each frame.
+6. Draw function renders sprites and builds the frame for the game engine to display. 
 7. Records stats locally for each individual player using custom events.
+8. Function to animate an array of frames (to use for cutscenes etc.)
+
+![](README_gif_assets/tornado_animation.gif)
 
 ## **Credits**
 Thank you for the inspiration to create this game.
@@ -28,3 +33,5 @@ Thank you for the inspiration to create this game.
 
 ## **License**
 GNU General Public License v3.0, see COPYING.txt for complete document.
+
+
