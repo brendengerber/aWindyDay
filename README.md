@@ -22,7 +22,7 @@ This is a small game I created which was inspired by one of my all time favorite
 5. Update function updates a game state object for each frame.
 6. Draw function renders sprites and builds the frame for the game engine to display. 
 7. Records stats locally for each individual player using custom events.
-8. Function to animate an array of frames (to use for cutscenes etc.)
+8. Animate function animates an array of frames (to use for cutscenes etc.)
 
 ![](README_gif_assets/tornado_animation.gif)
 
