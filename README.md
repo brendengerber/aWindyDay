@@ -29,7 +29,7 @@ This is a small game I created which was inspired by one of my all time favorite
 
 ![](README_assets/tornado_animation.gif)
 
-9. Runs at 30 frames per second which is sufficient for smooth gameplay.
+9. Adjustable frame rate to ensure smooth gameplay (default is set to 30 fps).
 
 ## **Credits**
 Thank you for the inspiration to create this game.
