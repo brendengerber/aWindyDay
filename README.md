@@ -23,7 +23,7 @@ This is a small game I created which was inspired by one of my all time favorite
 6. Draw function renders sprites and builds the frame for the game engine to display. 
 7. Records stats locally for each individual player.
 
-![](README_assets/stats.JPG)
+![](README_assets/stats.jpg)
 
 8. Animate function animates an array of frames (to use for cutscenes etc.).
 
