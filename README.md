@@ -15,8 +15,8 @@ This is a small game I created which was inspired by one of my all time favorite
 4. Play the game and enjoy.
 
 ## **Functionality**
-1. Recursive function generates a random maze using a recursive function and validates for solvability using the Hansel and Gretel bread crumb method.
-2. Validates the randomly generated maze with a custom maze solver based on the Hansel and Gretel bread crumb method.   
+1. Generates a random maze using a custom recursive function.
+2. Validates the randomly generated maze for solvability using a custom algorithm based on the Hansel and Gretel bread crumb method.   
 3. Manages assets allowing them to be easily created and added to the game. Assets can be created by using standard ANSI characters. Asset update methods can change the asset's current position, color, and shape. Asset sprites have transparent backgrounds allowing them to be easily layered.
 4. Draws and updates assets using a custom game loop.
 5. Update function updates the game state object for each frame.
